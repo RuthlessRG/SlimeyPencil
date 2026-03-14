@@ -1,0 +1,16 @@
+# Godot 4 .gitignore
+
+# Godot-specific ignores
+.godot/
+
+# Mono-specific ignores
+.mono/
+data_*/
+mono_crash.*.json
+
+# Local Claude Code settings
+.claude/
+
+# OS-specific
+.DS_Store
+Thumbs.db
