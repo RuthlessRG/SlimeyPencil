@@ -201,12 +201,15 @@ func _on_login() -> void:
 	if uname.length() == 0 or pwd.length() == 0:
 		_set_status("Enter username and password.", Color(0.90, 0.60, 0.20))
 		return
-	if PlayerData.login(uname, pwd):
+	_set_busy(true)
+	_set_status("Logging in…", Color(0.75, 0.68, 0.25))
+	if await PlayerData.login(uname, pwd):
 		_logged_in = true
 		_set_status("Logged in as  %s" % uname, Color(0.30, 0.85, 0.45))
 		_apply_play_style()
 	else:
 		_set_status("Wrong username or password.", Color(0.90, 0.35, 0.25))
+	_set_busy(false)
 
 func _on_register() -> void:
 	var uname = _user_field.text.strip_edges()
@@ -217,12 +220,20 @@ func _on_register() -> void:
 	if pwd.length() < 4:
 		_set_status("Password must be 4+ characters.", Color(0.90, 0.60, 0.20))
 		return
-	if PlayerData.register(uname, pwd):
+	_set_busy(true)
+	_set_status("Creating account…", Color(0.75, 0.68, 0.25))
+	if await PlayerData.register(uname, pwd):
 		_logged_in = true
 		_set_status("Account created!  Welcome,  %s" % uname, Color(0.30, 0.85, 0.45))
 		_apply_play_style()
 	else:
 		_set_status("Username already taken.", Color(0.90, 0.35, 0.25))
+	_set_busy(false)
+
+# Disable UI during async auth to prevent double-clicks
+func _set_busy(busy: bool) -> void:
+	if _user_field: _user_field.editable = not busy
+	if _pass_field: _pass_field.editable = not busy
 
 func _set_status(msg: String, col: Color) -> void:
 	_status_lbl.text = msg
