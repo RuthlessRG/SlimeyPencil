@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bdwmjxwb8hk8m"]
+
+[ext_resource type="Script" uid="uid://blv0f1ex8sg3v" path="res://Scripts/SpaceportScene.gd" id="1_avlk1"]
+
+[node name="Spaceport" type="Node2D" unique_id=178817676]
+script = ExtResource("1_avlk1")

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bsst4rt5cr33n"]
+
+[ext_resource type="Script" uid="uid://dstartscr00001" path="res://Scripts/StartScreen.gd" id="1_startscr"]
+
+[node name="StartScreen" type="Node2D" unique_id=100000001]
+script = ExtResource("1_startscr")
