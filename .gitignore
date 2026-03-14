@@ -11,6 +11,9 @@ mono_crash.*.json
 # Local Claude Code settings
 .claude/
 
+# Nakama local runtime data (cookies, generated files)
+server/nakama/data/
+
 # OS-specific
 .DS_Store
 Thumbs.db
