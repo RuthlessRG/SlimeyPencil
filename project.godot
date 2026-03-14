@@ -20,6 +20,7 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]
 
+Nakama="*res://addons/com.heroiclabs.nakama/Nakama.gd"
 Relay="*res://Scripts/Relay.gd"
 PlayerData="*res://Scripts/PlayerData.gd"
 
@@ -29,3 +30,7 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/size/mode=3
 window/size/borderless=true
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/com.heroiclabs.nakama/plugin.cfg")
