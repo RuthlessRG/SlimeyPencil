@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://dl41gs8f3wfg2"]
+
+[ext_resource type="Texture2D" uid="uid://5fkboh70764n" path="res://Downloads/delorean.png" id="1_aiudt"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_u6ns5"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yc88f"]
+atlas = ExtResource("1_aiudt")
+region = Rect2(1110, 321, 222, 270)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_aiudt"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yc88f")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="DeLorean" type="Node2D" unique_id=720856241]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1889038520]
+shape = SubResource("RectangleShape2D_u6ns5")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=607678358]
+sprite_frames = SubResource("SpriteFrames_aiudt")
+frame_progress = 0.94949627

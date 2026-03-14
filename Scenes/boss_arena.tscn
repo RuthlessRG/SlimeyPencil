@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://bhbl764n8226r"]
+
+[ext_resource type="Script" uid="uid://cawmxxs1jye3b" path="res://Scripts/BossArenaScene.gd" id="1_5sxfj"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_0k513"]
+
+[node name="BossArena" type="Node2D" unique_id=39110385]
+script = ExtResource("1_5sxfj")
+
+[node name="CharacterBody2D" type="CharacterBody2D" parent="." unique_id=892682393]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D" unique_id=996466942]
+shape = SubResource("CapsuleShape2D_0k513")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CharacterBody2D" unique_id=1387325217]
