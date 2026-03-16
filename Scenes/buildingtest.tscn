@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://b4m7l6du76pmm"]
+
+[ext_resource type="PackedScene" uid="uid://dbwooqhfrqpb6" path="res://Scenes/domebuildingruins.tscn" id="1_3ip01"]
+
+[node name="buildingtest" type="Node2D" unique_id=543377435]
+
+[node name="Sprite2D" parent="." unique_id=1182360396 instance=ExtResource("1_3ip01")]

@@ -9,7 +9,7 @@ extends CanvasLayer
 # ============================================================
 
 const COLS       : int   = 8
-const ROWS       : int   = 3
+const ROWS       : int   = 1
 const SLOT_COUNT : int   = 8      # functional main row slots
 const SLOT_SZ    : float = 44.0
 const SLOT_PAD   : float = 4.0
@@ -34,8 +34,6 @@ var _mouse_was_held     : bool       = false
 
 # Row labels for keybind display
 const ROW_LABELS : Array = [
-	["C+1","C+2","C+3","C+4","C+5","C+6","C+7","C+8"],
-	["S+1","S+2","S+3","S+4","S+5","S+6","S+7","S+8"],
 	["1","2","3","4","5","6","7","8"],
 ]
 
@@ -78,7 +76,7 @@ func _build_ui() -> void:
 		var row_y = BAR_PAD + row * (SLOT_SZ + ROW_PAD)
 		for col in COLS:
 			var slot_x = BAR_PAD + col * (SLOT_SZ + SLOT_PAD)
-			var is_main = (row == 2)  # bottom row is functional
+			var is_main = (row == 0)  # single row is functional
 
 			var slot_panel          = Panel.new()
 			slot_panel.position     = Vector2(slot_x, row_y)

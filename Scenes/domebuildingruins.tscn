@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://dbwooqhfrqpb6"]
+
+[ext_resource type="Texture2D" uid="uid://d1h527noa1kbj" path="res://Assets/Backgrounds/naboostuff2final.png" id="1_wu7yu"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_2mapx"]
+radius = 52.46904
+
+[node name="Sprite2D" type="Sprite2D" unique_id=1182360396]
+texture = ExtResource("1_wu7yu")
+region_enabled = true
+region_rect = Rect2(0, 530, 260, 178)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1606741085]
+position = Vector2(-14, -10)
+shape = SubResource("CircleShape2D_2mapx")

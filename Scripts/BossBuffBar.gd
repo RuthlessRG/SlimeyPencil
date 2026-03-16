@@ -37,10 +37,11 @@ func _process(delta: float) -> void:
 	_aura_t += delta
 	# Track the player frame and sit directly below it
 	if is_instance_valid(_player):
+		# Walk up to the scene root to find _player_frame
 		var scene = _player.get_parent()
 		if scene:
-			# Player frame lives inside the scene's _hud CanvasLayer
-			# We walk up to find it by checking the scene for a _player_frame property
+			scene = scene.get_parent()  # WorldLayer -> TheedScene/SpaceportScene
+		if scene:
 			var pf = scene.get("_player_frame")
 			if pf and is_instance_valid(pf):
 				_container.position = pf.position + Vector2(0, pf.size.y + 4)

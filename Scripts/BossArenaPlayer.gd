@@ -6,7 +6,7 @@ var _roboto : Font = load("res://Assets/Fonts/Roboto/static/Roboto-Regular.ttf")
 #  BossArenaPlayer.gd — Beyond the Veil | Boss Arena
 # ============================================================
 
-const SPEED = 55.0
+const SPEED = 75.0
 
 # ── CLASS & STATS ─────────────────────────────────────────────
 var character_class : String = "melee"
@@ -43,6 +43,10 @@ var _item_agi : int = 0
 var _item_int : int = 0
 var _item_spi : int = 0
 
+# ── BANK STORAGE ─────────────────────────────────────────────
+var bank_credits  : int = 0
+var bank_items    : Array = []
+
 # ── CREDITS & EXPERIENCE ──────────────────────────────────────
 var credits       : int = 0
 var _float_stack  : int = 0   # tracks stacked floating texts
@@ -52,6 +56,7 @@ var exp_needed : float = 100.0   # scales: 100 * level
 # ── FACING & ANIMATION ────────────────────────────────────────
 var _facing      : String = "s"
 var _is_attacking: bool   = false
+var _blend_attack_anim: String = ""
 var _moving      : bool   = false
 
 # ── AUTO-ATTACK ───────────────────────────────────────────────
@@ -110,14 +115,30 @@ var _snd_melee_hits : Array = []   # knife slash sound variants
 var _snd_rifle_shot : AudioStreamPlayer = null
 var _snd_hum        : AudioStreamPlayer = null   # vehicle engine hum
 var _footstep_timer : float = 0.0
-const FOOTSTEP_INTERVAL : float = 0.37
+const FOOTSTEP_INTERVAL : float = 0.31
 
 # ── READY ─────────────────────────────────────────────────────
 func _ready() -> void:
 	add_to_group("player")
 	_setup_stats()
+	_give_starting_items()
 	_spawn_chat()
 	_setup_sounds()
+
+func _give_starting_items() -> void:
+	if inventory.size() == 0:
+		inventory.append({
+			"id": "mount_speeder_mk1",
+			"name": "LandSpeeder MK1",
+			"rarity": "blue",
+			"type": "mount",
+			"cost": 10000,
+			"speed_mult": 5.0,
+			"mount_variant": "fighter",
+			"attr_str": 0, "attr_agi": 0, "attr_int": 0, "attr_spi": 0,
+			"desc": "Mount: 5x speed\nSleek fighter speeder",
+			"equipped": false,
+		})
 
 func _spawn_chat() -> void:
 	var script = load("res://Scripts/BossChatWindow.gd")
@@ -443,7 +464,6 @@ func _process(delta: float) -> void:
 			if not _snd_hum.playing: _snd_hum.play()
 		else:
 			_snd_hum.volume_db = -80.0
-	queue_redraw()
 	_tick_skills(delta)
 	_tick_auto_attack(delta)
 	_update_animation()
@@ -764,34 +784,61 @@ func _update_animation() -> void:
 	var sprite = get_node_or_null("Sprite") as AnimatedSprite2D
 	if sprite == null or sprite.sprite_frames == null:
 		return
+	var upper = get_node_or_null("SpriteUpper") as AnimatedSprite2D
 	# Hide character sprite while mounted; show otherwise
 	sprite.visible = not _mounted
 	sprite.modulate.a = _fade_t if not _mounted else (1.0 - _fade_t)
-	if _mounted: return
+	if upper:
+		# Don't set upper.visible here — blend logic below handles it
+		upper.modulate.a = sprite.modulate.a
+	if _mounted:
+		if upper: upper.visible = false
+		return
 
 	# Kiting: moving after firing cancels attack animation for projectile classes
 	if _is_attacking and _moving and (character_class == "ranged" or character_class == "mage" or character_class == "medic"):
 		_cancel_attack()
 
-	var anim : String
-	if _is_attacking:
-		anim = "attack_" + _facing
-	elif _moving:
-		anim = "run_" + _facing
+	# Brawlernew: run always wins over attack when moving
+	if upper:
+		upper.visible = false
+		sprite.material = null
+	if character_class == "brawler":
+		var anim : String
+		if _moving:
+			anim = "run_" + _facing  # Run ALWAYS wins when moving
+		elif _is_attacking:
+			anim = "attack_" + _facing
+		else:
+			anim = "idle_" + _facing
+		if sprite.sprite_frames.has_animation(anim):
+			if sprite.animation != anim:
+				sprite.play(anim)
 	else:
-		anim = "idle_" + _facing
+		# Standard single-sprite animation for all other classes
+		if upper: upper.visible = false
+		var anim : String
+		if _is_attacking:
+			anim = "attack_" + _facing
+		elif _moving:
+			anim = "run_" + _facing
+		else:
+			anim = "idle_" + _facing
 
-	if sprite.sprite_frames.has_animation(anim):
-		if sprite.animation != anim:
-			sprite.play(anim)
-	else:
-		if sprite.sprite_frames.has_animation("idle_s") and sprite.animation != "idle_s":
-			sprite.play("idle_s")
+		if sprite.sprite_frames.has_animation(anim):
+			if sprite.animation != anim:
+				sprite.play(anim)
+		else:
+			if sprite.sprite_frames.has_animation("idle_s") and sprite.animation != "idle_s":
+				sprite.play("idle_s")
+
 	# Brawler lean — 10° forward tilt when running east/west
-	if character_class == "brawler" and _moving and _facing in ["e", "w"]:
+	if (character_class == "brawler") and _moving and _facing in ["e", "w"]:
 		sprite.rotation = deg_to_rad(10.0) if _facing == "e" else deg_to_rad(-10.0)
+		if upper: upper.rotation = sprite.rotation
 	else:
 		sprite.rotation = 0.0
+		if upper: upper.rotation = 0.0
 
 # ── PLACEHOLDER DRAW ──────────────────────────────────────────
 func _draw() -> void:
@@ -809,7 +856,7 @@ func _draw() -> void:
 	# ── Gold aura — PD2-style soft energy cloud around body ──────
 	for _aura_item in inventory:
 		if _aura_item.get("equipped", false) and _aura_item.get("rarity", "") == "gold":
-			var _body_cy = -20.0 if character_class == "brawler" else -12.0
+			var _body_cy = -20.0 if (character_class == "brawler") else -12.0
 			var _c       = Vector2(0.0, _body_cy)
 			# Two independent slow pulses for organic breathing feel
 			var _p1v = 0.55 + sin(_aura_t * 1.8) * 0.18
@@ -878,27 +925,11 @@ func _draw() -> void:
 					draw_circle(_sp2, _ssz * 0.45, Color(1.00, 1.00, 1.00, _salpha * 0.80))
 			break
 
-	# Nameplate — always visible above head (zoom-compensated for crisp rendering)
-	if character_name.length() > 0:
-		var font    = load("res://Assets/Fonts/Archivo_Black/ArchivoBlack-Regular.ttf")
-		var font_sz = 7
-		var name_y  = -46.0 if character_class == "brawler" else -28.0
-		# Counter-scale so text rasterizes at exact screen-pixel size
-		var ct_sc   = get_canvas_transform().get_scale()
-		var inv     = Vector2(1.0 / ct_sc.x, 1.0 / ct_sc.y)
-		var rend_sz = maxi(1, int(round(font_sz * ct_sc.x)))
-		var text_w  = font.get_string_size(character_name, HORIZONTAL_ALIGNMENT_LEFT, -1, rend_sz).x
-		draw_set_transform(Vector2(0, name_y), 0.0, inv)
-		var dx = -text_w * 0.5
-		# Black outline — draw at 1px offsets in 8 directions for crisp edge
-		for ox in [-1, 0, 1]:
-			for oy in [-1, 0, 1]:
-				if ox == 0 and oy == 0: continue
-				draw_string(font, Vector2(dx + ox, oy), character_name,
-					HORIZONTAL_ALIGNMENT_LEFT, -1, rend_sz, Color(0.0, 0.0, 0.0, 1.0))
-		draw_string(font, Vector2(dx, 0), character_name,
-			HORIZONTAL_ALIGNMENT_LEFT, -1, rend_sz, Color(0.90, 0.95, 1.0, 1.0))
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	# ── Character ground shadow (sun from NW — shadow falls SE) ─────
+	if not _mounted:
+		_draw_character_shadow()
+
+	# Nameplate removed — name shown in target widget only
 
 	var sprite = get_node_or_null("Sprite") as AnimatedSprite2D
 	if sprite and sprite.sprite_frames and sprite.sprite_frames.get_animation_names().size() > 0:
@@ -914,6 +945,18 @@ func _draw() -> void:
 		var a = float(i) / 12.0 * TAU
 		shadow_pts.append(Vector2(cos(a) * 14.0, sin(a) * 5.0) + Vector2(0, 16))
 	draw_colored_polygon(shadow_pts, Color(0, 0, 0, 0.22))
+
+func _draw_character_shadow() -> void:
+	var sx : float = 6.75
+	var sy : float = 2.4
+	match character_class:
+		"brawler": sx = 7.65; sy = 2.85
+		"ranged": sx = 5.8; sy = 2.2
+	var pts = PackedVector2Array()
+	for i in 16:
+		var a = float(i) / 16.0 * TAU
+		pts.append(Vector2(cos(a) * sx, sin(a) * sy))
+	draw_colored_polygon(pts, Color(0, 0, 0, 0.25))
 
 func _get_class_color() -> Color:
 	match character_class:
@@ -1011,13 +1054,22 @@ func _do_attack() -> void:
 		_facing = "s" if to_target.y > 0.0 else "n"
 
 	var sprite = get_node_or_null("Sprite") as AnimatedSprite2D
-	if sprite and sprite.sprite_frames:
-		var anim_name = "attack_" + _facing
-		if sprite.sprite_frames.has_animation(anim_name):
+	var anim_name = "attack_" + _facing
+	_is_attacking = true
+	_blend_attack_anim = anim_name
+
+	# Brawlernew while moving: run animation wins, don't play attack visually
+	if character_class == "brawler" and _moving:
+		# Damage is dealt below, but visually keep running
+		# Clear _is_attacking immediately since no animation_finished will fire
+		_is_attacking = false
+	else:
+		# All other classes / standing still: play attack on main sprite
+		if sprite and sprite.sprite_frames and sprite.sprite_frames.has_animation(anim_name):
 			sprite.play(anim_name)
-			_is_attacking = true
-			if not sprite.animation_finished.is_connected(_on_attack_anim_done):
-				sprite.animation_finished.connect(_on_attack_anim_done, CONNECT_ONE_SHOT)
+			if sprite.animation_finished.is_connected(_on_attack_anim_done):
+				sprite.animation_finished.disconnect(_on_attack_anim_done)
+			sprite.animation_finished.connect(_on_attack_anim_done, CONNECT_ONE_SHOT)
 
 	var dmg : float
 	if _one_shot_kill:
@@ -1256,12 +1308,28 @@ func _get_dmg_color() -> Color:
 func _on_attack_anim_done() -> void:
 	_is_attacking = false
 
+var _lower_clip_mat : ShaderMaterial = null
+func _get_lower_clip_material() -> ShaderMaterial:
+	if _lower_clip_mat == null:
+		var sh = Shader.new()
+		sh.code = "shader_type canvas_item;\nvoid fragment() {\n\tif (UV.y < 0.45) discard;\n}\n"
+		_lower_clip_mat = ShaderMaterial.new()
+		_lower_clip_mat.shader = sh
+	return _lower_clip_mat
+
 func _cancel_attack() -> void:
 	_is_attacking = false
+	_blend_attack_anim = ""
 	var sprite = get_node_or_null("Sprite") as AnimatedSprite2D
 	if sprite:
 		if sprite.animation_finished.is_connected(_on_attack_anim_done):
 			sprite.animation_finished.disconnect(_on_attack_anim_done)
+		sprite.material = null
+	var upper = get_node_or_null("SpriteUpper") as AnimatedSprite2D
+	if upper:
+		if upper.animation_finished.is_connected(_on_attack_anim_done):
+			upper.animation_finished.disconnect(_on_attack_anim_done)
+		upper.visible = false
 
 # ── TARGET SYSTEM ─────────────────────────────────────────────
 func _refresh_target_candidates() -> void:

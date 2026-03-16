@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cjfe1t5htmy5b"]
+
+[ext_resource type="Script" uid="uid://ckygq2cp66mgi" path="res://Scripts/TheedScene.gd" id="1_theed"]
+
+[node name="Theed" type="Node2D"]
+script = ExtResource("1_theed")
