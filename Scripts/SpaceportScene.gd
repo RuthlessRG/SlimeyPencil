@@ -68,6 +68,7 @@ var _player        : Node        = null
 var _select_layer  : CanvasLayer = null
 var _hud           : CanvasLayer = null
 var _cam_zoom_base : float       = 1.1
+var _cam_zoom_target : float     = 1.1
 var _pending_nickname : String   = ""
 
 # Pre-generated decoration data (seeded RNG so it's deterministic)
@@ -173,6 +174,8 @@ func _start_music() -> void:
 
 # ── PROCESS ───────────────────────────────────────────────────
 func _process(delta: float) -> void:
+	_cam_zoom_base = lerpf(_cam_zoom_base, _cam_zoom_target, 1.0 - exp(-8.0 * delta))
+	_camera.zoom = Vector2.ONE * _cam_zoom_base
 	if _minimap_draw != null:
 		_minimap_draw.queue_redraw()
 	# Theed ambient music fades in near spaceport, out when player leaves
@@ -239,11 +242,9 @@ func _tick_poison(delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_cam_zoom_base = clampf(_cam_zoom_base + 0.1, 0.5, 2.5)
-			_camera.zoom = Vector2.ONE * _cam_zoom_base
+			_cam_zoom_target = clampf(_cam_zoom_target + 0.15, 0.5, 4.0)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_cam_zoom_base = clampf(_cam_zoom_base - 0.1, 0.5, 2.5)
-			_camera.zoom = Vector2.ONE * _cam_zoom_base
+			_cam_zoom_target = clampf(_cam_zoom_target - 0.15, 0.5, 4.0)
 		elif event.button_index == MOUSE_BUTTON_LEFT or event.button_index == MOUSE_BUTTON_RIGHT:
 			# Check click near a remote player
 			var world_pos = _camera.get_screen_center_position() + \
@@ -2328,7 +2329,7 @@ func _show_character_select() -> void:
 		{ "key":"brawler",  "label":"BRAWLER",  "color":Color(0.40,0.85,0.30), "desc":"Heavyweight bruiser.\nAbsorbs punishment\nand hits harder.\n\nHP: 350\nAtk every: 2s\nRange: 130px", "locked":false },
 		{ "key":"ranged",   "label":"MARKSMAN", "color":Color(0.35,0.80,0.95), "desc":"Long-range marksman.\nKeep your distance\nand chip away.\n\nHP: 180\nAtk every: 2.5s\nRange: 700px", "locked":false },
 		{ "key":"medic",    "label":"MEDIC",    "color":Color(0.30,0.85,0.90), "desc":"Combat medic.\nHeals allies with\ncanisters, poisons\nenemies.\n\nHP: 220\nAtk every: 3s\nRange: 500px", "locked":false },
-		{ "key":"future1",  "label":"?",        "color":Color(0.40,0.40,0.50), "desc":"Coming soon...", "locked":true },
+		{ "key":"brawler","label":"BRAWLER II","color":Color(0.45,0.90,0.35), "desc":"Heavyweight bruiser.\nAbsorbs punishment\nand hits harder.\n\nHP: 350\nAtk every: 2s\nRange: 130px", "locked":false },
 		{ "key":"future2",  "label":"?",        "color":Color(0.40,0.40,0.50), "desc":"Coming soon...", "locked":true },
 	]
 
@@ -2492,8 +2493,8 @@ func _spawn_player(cls: String) -> void:
 		sprite.scale  = Vector2(44.0 / 160.0, 44.0 / 160.0)
 		sprite.offset = Vector2(0, -80)
 	elif cls == "brawler":
-		sprite.scale  = Vector2(44.0 / 160.0, 44.0 / 160.0)
-		sprite.offset = Vector2(0, -80)
+		sprite.scale  = Vector2(0.088, 0.088)
+		sprite.offset = Vector2(0, -121)
 	elif cls == "medic":
 		sprite.scale  = Vector2(44.0 / 144.0, 44.0 / 144.0)
 		sprite.offset = Vector2(0, -72)
@@ -2504,6 +2505,9 @@ func _spawn_player(cls: String) -> void:
 		sprite.scale  = Vector2(1.0, 1.0)
 		sprite.offset = Vector2(0, -12)
 	_player.add_child(sprite)
+
+	if cls == "brawler":
+		_attach_split_body_shaders(sprite, _build_frames(cls))
 
 	var col   = CollisionShape2D.new()
 	var shape = CapsuleShape2D.new()
@@ -2539,6 +2543,21 @@ func _spawn_teleporter_at_player() -> void:
 		{ "label": "Coronet Spaceport — Main Gate", "pos": SPAWN_POS },
 	])
 
+# ── Split-body blend (upper/lower clip shaders for brawlernew) ──
+func _attach_split_body_shaders(lower_sprite: AnimatedSprite2D, frames: SpriteFrames) -> void:
+	var upper = AnimatedSprite2D.new()
+	upper.name = "SpriteUpper"
+	upper.sprite_frames = frames
+	upper.scale  = lower_sprite.scale
+	upper.offset = lower_sprite.offset
+	upper.visible = false
+	var upper_shader = Shader.new()
+	upper_shader.code = "shader_type canvas_item;\nvoid fragment() {\n\tif (UV.y > 0.55) discard;\n}\n"
+	var upper_mat = ShaderMaterial.new()
+	upper_mat.shader = upper_shader
+	upper.material = upper_mat
+	lower_sprite.get_parent().add_child(upper)
+
 # ── SPRITE FRAMES (identical to BossArenaScene) ───────────────
 func _build_frames(cls: String) -> SpriteFrames:
 	var frames = SpriteFrames.new()
@@ -2547,7 +2566,7 @@ func _build_frames(cls: String) -> SpriteFrames:
 	match cls:
 		"melee":
 			var base = "res://Characters/minimmo/meleenew/"
-			for dir in ["s","n","e","w","se","sw","ne","nw"]:
+			for dir in ["s","n","e","w","se","sw","nw"]:
 				_add_strip(frames,"idle_"+dir,  base+"idle/idle_"+dir+".png",   160,160,8,8.0)
 				_add_strip(frames,"run_"+dir,   base+"run/run_"+dir+".png",    160,160,8,10.0)
 				_add_strip(frames,"attack_"+dir,base+"attack/attack_"+dir+".png",160,160,6,12.0,false)
@@ -2563,19 +2582,51 @@ func _build_frames(cls: String) -> SpriteFrames:
 				_add_strip(frames,"idle_"+dir,  base+"idle/idle_"+dir+".png",   24,24,8,8.0)
 				_add_strip(frames,"run_"+dir,   base+"run/run_"+dir+".png",    24,24,8,10.0)
 				_add_strip(frames,"attack_"+dir,base+"attack/attack_"+dir+".png",32,32,16,14.0,false)
-		"brawler":
-			var base = "res://Characters/minimmo/brawler/"
-			for dir in ["s","n","e","w","se","sw","ne","nw"]:
-				_add_strip(frames,"idle_"+dir,  base+"idle/idle_"+dir+".png",   160,160,8,8.0)
-				_add_strip(frames,"run_"+dir,   base+"run/run_"+dir+".png",     160,160,8,10.0)
-				_add_strip(frames,"attack_"+dir,base+"attack/attack_"+dir+".png",160,160,6,12.0,false)
 		"medic":
 			var base = "res://Characters/minimmo/medic/"
-			for dir in ["s","n","e","w","se","sw","ne","nw"]:
+			for dir in ["s","n","e","w","se","sw","nw"]:
 				_add_strip(frames,"idle_"+dir,   base+"idle/idle_"+dir+".png",   144,144,8,8.0)
 				_add_strip(frames,"run_"+dir,    base+"run/run_"+dir+".png",     144,144,8,10.0)
 				_add_strip(frames,"attack_"+dir, base+"toss/toss_"+dir+".png",   144,144,7,12.0,false)
+		"brawler":
+			var bnbase = "res://Characters/NEWFOUNDMETHOD/Brawler/"
+			var cw = 768; var ch = 448
+			for dir in ["n","e","w","se","sw","nw"]:
+				_add_grid(frames,"idle_"+dir, bnbase+"idle/idle_"+dir+".png", cw,ch,4,29,10.0)
+			_add_grid(frames,"idle_s", bnbase+"idle/idle_sw.png", cw,ch,4,29,10.0)
+			_add_grid(frames,"idle_ne", bnbase+"idle/idle_ne.png", cw,ch,4,28,10.0)
+			for dir in ["n","e","ne","se","sw"]:
+				_add_grid(frames,"run_"+dir, bnbase+"run/run_"+dir+".png", cw,ch,4,17,20.0)
+			for dir in ["w","nw"]:
+				_add_grid(frames,"run_"+dir, bnbase+"run/run_"+dir+".png", cw,ch,4,17,18.0,true,true)
+			_add_grid(frames,"run_s", bnbase+"run/run_s.png", cw,ch,4,17,20.0)
+			for dir in ["s","n","ne","se"]:
+				_add_grid(frames,"attack_"+dir, bnbase+"attack/attack_"+dir+".png", cw,ch,4,29,24.0,false)
+			_add_grid(frames,"attack_e", bnbase+"attack/attack_e.png", cw,ch,4,24,24.0,false)
+			for dir in ["sw","nw"]:
+				_add_grid(frames,"attack_"+dir, bnbase+"attack/attack_"+dir+".png", cw,ch,4,29,24.0,false,true)
+			_add_grid(frames,"attack_w", bnbase+"attack/attack_w.png", cw,ch,4,24,24.0,false,true)
 	return frames
+
+func _add_grid(frames:SpriteFrames, anim_name:String, path:String,
+		cell_w:int, cell_h:int, cols:int, total_frames:int, fps:float,
+		loop:bool=true, hflip:bool=false) -> void:
+	var tex = load(path) as Texture2D
+	if tex == null:
+		push_warning("SpaceportScene: could not load "+path)
+		return
+	frames.add_animation(anim_name)
+	frames.set_animation_speed(anim_name, fps)
+	frames.set_animation_loop(anim_name, loop)
+	for i in total_frames:
+		var col = i % cols
+		var row = i / cols
+		if hflip:
+			col = (cols - 1) - col
+		var atlas = AtlasTexture.new()
+		atlas.atlas  = tex
+		atlas.region = Rect2(col*cell_w, row*cell_h, cell_w, cell_h)
+		frames.add_frame(anim_name, atlas)
 
 func _add_strip(frames:SpriteFrames, anim_name:String, path:String,
 		frame_w:int, frame_h:int, frame_count:int, fps:float, loop:bool=true) -> void:
@@ -3562,8 +3613,8 @@ func _add_remote_player(peer_id: int, cls: String, pos: Vector2, nick: String) -
 		sprite.scale  = Vector2(44.0 / 160.0, 44.0 / 160.0)
 		sprite.offset = Vector2(0, -80)
 	elif valid_cls == "brawler":
-		sprite.scale  = Vector2(44.0 / 160.0, 44.0 / 160.0)
-		sprite.offset = Vector2(0, -80)
+		sprite.scale  = Vector2(0.088, 0.088)
+		sprite.offset = Vector2(0, -121)
 	elif valid_cls == "medic":
 		sprite.scale  = Vector2(44.0 / 144.0, 44.0 / 144.0)
 		sprite.offset = Vector2(0, -72)

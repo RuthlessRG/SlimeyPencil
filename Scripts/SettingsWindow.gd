@@ -135,7 +135,7 @@ func _open_window() -> void:
 	_open = true
 	var vp   = get_viewport().get_visible_rect().size
 	var W  = 340.0
-	var H  = 380.0
+	var H  = 440.0
 
 	_panel          = Panel.new()
 	_panel.size     = Vector2(W, H)
