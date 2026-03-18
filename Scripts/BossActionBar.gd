@@ -262,6 +262,11 @@ func _on_ghost_drop(mouse_pos: Vector2) -> void:
 	_ghost_skill         = {}
 
 func _on_slot_gui_input(event: InputEvent, slot_idx: int) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+		# Right-click: remove this slot's ability from the combat queue
+		if _slots[slot_idx] != null and _player != null and _player.has_method("dequeue_ability"):
+			_player.call("dequeue_ability", _slots[slot_idx].get("id", ""))
+		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		if _slots[slot_idx] != null:
 			_ghost_skill        = _slots[slot_idx]
@@ -297,6 +302,80 @@ func _activate_slot(idx: int) -> void:
 		_player.call("activate_skill", skill.get("id", ""))
 		_cooldowns[idx] = skill.get("cooldown", 0.0)
 		_refresh_slot_overlay(idx)
+		# Flash the slot briefly
+		_flash_slot(idx)
+
+func update_queue_display(queue: Array) -> void:
+	# Reset all slot borders and clear old queue labels/overlays
+	for si in _slot_panels.size():
+		var sp  = _slot_panels[si]
+		var old = sp.get_node_or_null("QueueLabel")
+		if old: old.queue_free()
+		var old_glow = sp.get_node_or_null("NextGlow")
+		if old_glow: old_glow.queue_free()
+		# Restore default border
+		var ssty = StyleBoxFlat.new()
+		ssty.bg_color     = Color(0.06, 0.06, 0.05, 0.92)
+		ssty.border_color = Color(0.40, 0.35, 0.22, 0.75)
+		ssty.set_border_width_all(1)
+		ssty.set_corner_radius_all(2)
+		sp.add_theme_stylebox_override("panel", ssty)
+
+	# Show queue position on matching slots
+	for qi in queue.size():
+		var skill_id = queue[qi]
+		for si in _slots.size():
+			if _slots[si] != null and _slots[si].get("id", "") == skill_id:
+				var sp = _slot_panels[si]
+
+				# Gold border for NEXT (qi==0), dimmer gold for queued
+				var ssty = StyleBoxFlat.new()
+				ssty.bg_color = Color(0.06, 0.06, 0.05, 0.92)
+				if qi == 0:
+					ssty.border_color = Color(1.0, 0.85, 0.20, 0.95)
+					ssty.set_border_width_all(2)
+					# Inner glow tint
+					var glow = ColorRect.new()
+					glow.name  = "NextGlow"
+					glow.size  = Vector2(SLOT_SZ, SLOT_SZ)
+					glow.color = Color(0.95, 0.80, 0.10, 0.12)
+					glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+					sp.add_child(glow)
+					sp.move_child(glow, 0)
+				else:
+					ssty.border_color = Color(0.70, 0.58, 0.20, 0.60)
+					ssty.set_border_width_all(1)
+				ssty.set_corner_radius_all(2)
+				sp.add_theme_stylebox_override("panel", ssty)
+
+				# Queue position number
+				var qlbl = Label.new()
+				qlbl.name = "QueueLabel"
+				qlbl.text = str(qi + 1)
+				qlbl.add_theme_font_override("font", load("res://Assets/Fonts/Roboto/static/Roboto-Bold.ttf"))
+				qlbl.add_theme_font_size_override("font_size", 15 if qi == 0 else 12)
+				qlbl.add_theme_color_override("font_color",
+					Color(1.0, 0.92, 0.20, 1.0) if qi == 0 else Color(0.85, 0.72, 0.30, 0.80))
+				qlbl.size = Vector2(SLOT_SZ, SLOT_SZ)
+				qlbl.position = Vector2.ZERO
+				qlbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				qlbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+				qlbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				sp.add_child(qlbl)
+				break  # Only mark first matching slot
+
+func _flash_slot(idx: int) -> void:
+	if idx < 0 or idx >= _slot_panels.size(): return
+	var slot_panel = _slot_panels[idx]
+	var flash = ColorRect.new()
+	flash.color = Color(1.0, 1.0, 1.0, 0.6)
+	flash.size = Vector2(SLOT_SZ, SLOT_SZ)
+	flash.position = Vector2.ZERO
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	slot_panel.add_child(flash)
+	var tw = flash.create_tween()
+	tw.tween_property(flash, "color:a", 0.0, 0.25)
+	tw.tween_callback(flash.queue_free)
 
 func _show_level_noob() -> void:
 	var vp  = get_viewport().get_visible_rect().size
@@ -353,7 +432,20 @@ func _draw_triple(cx, cy):
 \t\tvar oc=c+offsets[i]; var tip=oc+Vector2(0,-10); var bl=oc+Vector2(-3,3); var br=oc+Vector2(3,3)
 \t\tdraw_colored_polygon(PackedVector2Array([tip,bl,br]),Color(1.0,0.35,0.35,p))
 \t\tdraw_circle(oc+Vector2(0,4),2.0,Color(1.0,0.60,0.20,p))
-""" % icon_id
+func _draw_generic(cx, cy):
+\tvar c = Vector2(cx, cy); var p = 0.6 + sin(_t * 3.0) * 0.2
+\tdraw_circle(c, 16.0, Color(0.20, 0.50, 0.80, 0.3))
+\tdraw_circle(c, 10.0, Color(0.30, 0.65, 0.95, p * 0.5))
+\tdraw_circle(c, 3.0, Color(0.50, 0.85, 1.00, p))
+\tfor i in 4:
+\t\tvar a = float(i)/4.0*6.2832+_t*1.5; var r = 8.0
+\t\tdraw_circle(c+Vector2(cos(a)*r,sin(a)*r),1.8,Color(0.40,0.75,1.00,p*0.6))
+"""
+	# Use known icon draw function or generic fallback
+	if icon_id in ["sprint", "sensu", "triple"]:
+		src = src % icon_id
+	else:
+		src = src % "generic"
 	var s = GDScript.new(); s.source_code = src; s.reload(); return s
 
 func _cooldown_overlay_script(frac: float, cd_txt: String) -> GDScript:

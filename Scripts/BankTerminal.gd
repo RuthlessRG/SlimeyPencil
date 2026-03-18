@@ -6,7 +6,7 @@ extends Node2D
 #  to open the bank terminal (stub — deposit/withdraw coming soon).
 # ============================================================
 
-const INTERACT_RANGE : float = 38.0
+const INTERACT_RANGE : float = 100.0
 
 var _t           : float = 0.0
 var _player_near : bool  = false
@@ -29,17 +29,28 @@ func _ready() -> void:
 	_prompt_lbl.add_theme_font_size_override("font_size", 9)
 	_prompt_lbl.add_theme_color_override("font_color", Color(1.0, 0.88, 0.35))
 	_prompt_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_prompt_lbl.position = Vector2(-40, -58)
 	_prompt_lbl.size     = Vector2(82, 14)
 	_prompt_lbl.visible  = false
 	_prompt_lbl.z_index  = 10
+	var spr = get_node_or_null("AnimatedSprite2D")
+	if spr:
+		_prompt_lbl.position = spr.position + Vector2(-40, -58)
+	else:
+		_prompt_lbl.position = Vector2(-40, -58)
 	add_child(_prompt_lbl)
+
+func _get_interact_position() -> Vector2:
+	var spr = get_node_or_null("AnimatedSprite2D")
+	if spr:
+		return spr.global_position
+	return global_position
 
 func _process(delta: float) -> void:
 	_t += delta
 	var near = false
+	var my_pos = _get_interact_position()
 	for p in get_tree().get_nodes_in_group("player"):
-		if is_instance_valid(p) and global_position.distance_to(p.global_position) <= INTERACT_RANGE:
+		if is_instance_valid(p) and my_pos.distance_to(p.global_position) <= INTERACT_RANGE:
 			near = true
 			break
 	if near != _player_near:
@@ -63,7 +74,10 @@ func _get_player() -> Node:
 
 func _toggle_panel() -> void:
 	if _panel != null:
+		var parent_layer = _panel.get_parent()
 		_panel.queue_free()
+		if parent_layer and parent_layer.name == "BankPanelLayer":
+			parent_layer.queue_free()
 		_panel = null
 		_credit_lbl = null
 		_bank_lbl = null
@@ -74,7 +88,12 @@ func _toggle_panel() -> void:
 	if player == null:
 		return
 	_panel = _build_panel(player)
-	get_tree().current_scene.add_child(_panel)
+	# Add to a CanvasLayer so it's screen-space, not world-space
+	var cl = CanvasLayer.new()
+	cl.name = "BankPanelLayer"
+	cl.layer = 100
+	get_tree().current_scene.add_child(cl)
+	cl.add_child(_panel)
 
 func _make_label(text: String, size: int, color: Color, halign := HORIZONTAL_ALIGNMENT_LEFT) -> Label:
 	var lbl = Label.new()
@@ -98,7 +117,7 @@ func _make_button(text: String, callback: Callable) -> Button:
 
 func _build_panel(player: Node) -> Control:
 	var W = 420.0
-	var H = 380.0
+	var H = 415.0
 	var p = Panel.new()
 	p.size = Vector2(W, H)
 	p.position = Vector2(
@@ -180,6 +199,54 @@ func _build_panel(player: Node) -> Control:
 	bank_scroll.add_child(_bank_container)
 
 	_refresh_items(player)
+
+	# ── Wound treatment section ──────────────────────────────
+	var wound_sep = ColorRect.new()
+	wound_sep.position = Vector2(10, 336)
+	wound_sep.size     = Vector2(W - 20, 1)
+	wound_sep.color    = Color(0.8, 0.4, 0.4, 0.5)
+	p.add_child(wound_sep)
+
+	var wound_title = _make_label("WOUND TREATMENT", 10, Color(0.9, 0.5, 0.5), HORIZONTAL_ALIGNMENT_LEFT)
+	wound_title.position = Vector2(14, 341)
+	wound_title.size     = Vector2(200, 16)
+	p.add_child(wound_title)
+
+	var total_wounds = int(player.get("wound_health")) + int(player.get("wound_action")) + int(player.get("wound_mind"))
+	var wound_info = _make_label("Wounds H:%d  A:%d  M:%d" % [
+		int(player.get("wound_health")), int(player.get("wound_action")), int(player.get("wound_mind"))],
+		10, Color(1.0, 0.7, 0.7), HORIZONTAL_ALIGNMENT_LEFT)
+	wound_info.name     = "WoundInfo"
+	wound_info.position = Vector2(14, 358)
+	wound_info.size     = Vector2(240, 16)
+	p.add_child(wound_info)
+
+	var heal_cost = maxi(500, total_wounds * 15)
+	var heal_btn  = _make_button("Heal All Wounds\n(%d cr)" % heal_cost, func():
+		var pw = player.get("wound_health") as float
+		var pa = player.get("wound_action") as float
+		var pm = player.get("wound_mind") as float
+		if pw <= 0.0 and pa <= 0.0 and pm <= 0.0:
+			return
+		var cost = maxi(500, int(pw + pa + pm) * 15)
+		if player.get("credits") < cost:
+			return
+		player.set("credits", player.get("credits") - cost)
+		player.set("wound_health", 0.0)
+		player.set("wound_action", 0.0)
+		player.set("wound_mind",   0.0)
+		if player.has_method("_recalc_stats"):
+			player.call("_recalc_stats")
+		if player.has_method("_spawn_floating_text"):
+			player.call("_spawn_floating_text", "WOUNDS HEALED", Color(0.3, 1.0, 0.5))
+		# Refresh labels
+		if _credit_lbl: _credit_lbl.text = "On Hand: %d credits" % player.get("credits")
+		var wi = p.get_node_or_null("WoundInfo") as Label
+		if wi: wi.text = "Wounds H:0  A:0  M:0"
+	)
+	heal_btn.position = Vector2(270, 350)
+	heal_btn.custom_minimum_size = Vector2(130, 30)
+	p.add_child(heal_btn)
 
 	# Close hint
 	var close = _make_label("[F] Close", 9, Color(0.5, 0.9, 0.5), HORIZONTAL_ALIGNMENT_CENTER)
@@ -283,6 +350,8 @@ func _rarity_color(rarity: String) -> Color:
 		_: return Color(0.8, 0.8, 0.8)
 
 func _draw() -> void:
+	if get_node_or_null("AnimatedSprite2D") != null:
+		return
 	var glow        = 0.55 + sin(_t * 2.3) * 0.30
 	var screen_glow = 0.50 + sin(_t * 3.9) * 0.22
 

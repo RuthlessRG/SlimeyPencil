@@ -26,21 +26,27 @@ var _player        : Node         = null
 var _select_layer  : CanvasLayer  = null
 var _hud           : CanvasLayer  = null
 var _cam_zoom_base : float        = 2.5
-var _cam_zoom_target : float      = 4.0
+var _cam_zoom_target : float      = 3.2
 var _zoom_locked   : bool         = true
 var _pending_nickname : String    = ""
 
 # HUD refs
 var _player_frame    : Panel        = null
 var _player_name_lbl : Label        = null
-var _hp_bar          : ProgressBar  = null
-var _mp_bar          : ProgressBar  = null
+var _hp_bar          : ProgressBar  = null  # Health (red)
+var _action_hud_bar  : ProgressBar  = null  # Action (yellow)
+var _mind_bar        : ProgressBar  = null  # Mind (blue)
 var _xp_bar          : ProgressBar  = null
 var _hp_bar_lbl      : Label        = null
-var _mp_bar_lbl      : Label        = null
+var _action_bar_lbl  : Label        = null
+var _mind_bar_lbl    : Label        = null
+# Wound overlays — black bar on right side of each HAM bar
+var _hp_wound_ov     : ColorRect    = null
+var _action_wound_ov : ColorRect    = null
+var _mind_wound_ov   : ColorRect    = null
 var _xp_bar_lbl      : Label        = null
-var _hp_pct_lbl      : Label        = null
-var _level_lbl       : Label        = null
+var _hp_pct_lbl      : Label        = null  # unused, kept for compat
+var _level_lbl       : Label        = null  # unused, kept for compat
 var _tgt_panel       : Panel        = null
 var _tgt_name_lbl    : Label        = null
 var _tgt_hp_bar      : ProgressBar  = null
@@ -93,6 +99,10 @@ func _ready() -> void:
 	overlay.set_script(load("res://Scripts/TheedAnimOverlay.gd"))
 	add_child(overlay)
 	var city_node = get_node_or_null("City")
+	# Disable collision on City StaticBody2D so player doesn't get stuck at spawn
+	if city_node and city_node is StaticBody2D:
+		city_node.collision_layer = 0
+		city_node.collision_mask = 0
 	var city_pos = city_node.position if city_node else _tile_to_world(20, 76)
 	overlay.call("set_city_center", city_pos)
 	_show_character_select()
@@ -135,9 +145,8 @@ func _setup_camera() -> void:
 	_camera      = Camera2D.new()
 	_camera.name = "Camera"
 	_camera.position = Vector2.ZERO
-	_camera.zoom     = Vector2(4.0, 4.0)
-	_camera.position_smoothing_enabled = true
-	_camera.position_smoothing_speed   = 5.0
+	_camera.zoom     = Vector2(3.2, 3.2)
+	_camera.position_smoothing_enabled = false  # We handle smoothing manually
 	add_child(_camera)
 	_camera.make_current()
 
@@ -182,16 +191,29 @@ func _draw():
 	return s
 
 # ── PROCESS ───────────────────────────────────────────────────
-func _physics_process(_phys_delta: float) -> void:
-	# Camera follows player in physics step to match CharacterBody2D movement
+func _physics_process(phys_delta: float) -> void:
+	# Camera follows player with smooth lag — slower catchup for cinematic feel
 	if is_instance_valid(_player):
-		_camera.global_position = _player.global_position
+		var target = _player.global_position
+		var is_mounted = _player.get("_mounted") as bool if _player.get("_mounted") != null else false
+		# Vehicle = slower camera catchup (more cinematic), walking = tighter follow
+		var lerp_speed = 2.5 if is_mounted else 6.0
+		_camera.global_position = _camera.global_position.lerp(target, 1.0 - exp(-lerp_speed * phys_delta))
+
+var _minimap_timer : float = 0.0
 
 func _process(delta: float) -> void:
-	if _minimap_draw != null and is_instance_valid(_minimap_draw):
+	_minimap_timer += delta
+	if _minimap_timer >= 0.1 and _minimap_draw != null and is_instance_valid(_minimap_draw):
 		_minimap_draw.queue_redraw()
-	# Smooth zoom interpolation
-	_cam_zoom_base = lerpf(_cam_zoom_base, _cam_zoom_target, 1.0 - exp(-8.0 * delta))
+		_minimap_timer = 0.0
+	# Smooth zoom interpolation — zoom out when mounted
+	var zoom_target = _cam_zoom_target
+	if is_instance_valid(_player):
+		var is_mounted = _player.get("_mounted") as bool if _player.get("_mounted") != null else false
+		if is_mounted:
+			zoom_target = minf(zoom_target, 1.4)  # Force zoomed out when in vehicle
+	_cam_zoom_base = lerpf(_cam_zoom_base, zoom_target, 1.0 - exp(-3.0 * delta))
 	_camera.zoom = Vector2.ONE * _cam_zoom_base
 	if is_instance_valid(_player):
 		_broadcast_timer += delta
@@ -230,10 +252,12 @@ func _unhandled_input(event: InputEvent) -> void:
 				if has_target:
 					_clear_target()
 				else:
-					# No target — toggle settings menu
+					# No target — toggle settings window ONLY
 					for child in get_children():
-						if child.has_method("_toggle"):
-							child.call("_toggle")
+						var scr = child.get_script()
+						if scr != null and scr.resource_path.find("SettingsWindow") != -1:
+							if child.has_method("_toggle"):
+								child.call("_toggle")
 							break
 		if is_instance_valid(_player):
 			match event.keycode:
@@ -242,46 +266,28 @@ func _unhandled_input(event: InputEvent) -> void:
 				KEY_F3: _spawn_cyberlord()
 				KEY_F4: _spawn_zerg_mob()
 				KEY_F5: _spawn_cyber_mob()
+				KEY_F9: _spawn_vampire()
+				KEY_F10: _spawn_armored_thug()
+				KEY_F11:
+					if _player.has_method("reset_skill_points"):
+						_player.call("reset_skill_points")
 				KEY_H:
 					_player.set("credits", (_player.get("credits") as int) + 5000)
 				KEY_F6:
 					var p = _player.global_position
 					print("Player position: Vector2(%.1f, %.1f)" % [p.x, p.y])
 				KEY_F7:
-					# Test: ship landing near player
-					var pp = _player.global_position
-					var overlay2 = get_node_or_null("TheedOverlay")
-					if overlay2 == null:
-						for c in get_children():
-							if c.has_method("spawn_event"):
-								overlay2 = c
-								break
-					if overlay2:
-						overlay2.call("spawn_event", "landing",
-							pp + Vector2(-400, -300), pp + Vector2(80, 40))
+					pass  # Reserved
 				KEY_F8:
-					# Test: ship warp departure from near player
-					var pp2 = _player.global_position
-					var overlay3 = null
-					for c in get_children():
-						if c.has_method("spawn_event"):
-							overlay3 = c
-							break
-					if overlay3:
-						overlay3.call("spawn_event", "warp",
-							pp2 + Vector2(60, 30), pp2 + Vector2(800, -400))
-	if not _zoom_locked and event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_cam_zoom_target = clampf(_cam_zoom_target + 0.15, 0.5, 4.0)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_cam_zoom_target = clampf(_cam_zoom_target - 0.15, 0.5, 4.0)
+					pass  # Reserved
+	# Zoom handled in _input only — removed duplicate here
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		if not _zoom_locked and event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_cam_zoom_target = clampf(_cam_zoom_target + 0.15, 0.5, 4.0)
+			_cam_zoom_target = clampf(_cam_zoom_target + 0.08, 0.5, 3.2)
 		elif not _zoom_locked and event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_cam_zoom_target = clampf(_cam_zoom_target - 0.15, 0.5, 4.0)
+			_cam_zoom_target = clampf(_cam_zoom_target - 0.08, 0.5, 3.2)
 		elif event.button_index == MOUSE_BUTTON_LEFT or event.button_index == MOUSE_BUTTON_RIGHT:
 			_handle_click(event)
 
@@ -388,8 +394,9 @@ func _show_character_select() -> void:
 		# Old brawler removed
 		{ "key":"ranged",   "label":"MARKSMAN", "color":Color(0.35,0.80,0.95), "desc":"Long-range marksman.\nKeep your distance\nand chip away.\n\nHP: 180\nAtk every: 2.5s\nRange: 700px", "locked":false },
 		{ "key":"medic",    "label":"MEDIC",    "color":Color(0.30,0.85,0.90), "desc":"Combat medic.\nHeals allies with\ncanisters, poisons\nenemies.\n\nHP: 220\nAtk every: 3s\nRange: 500px", "locked":false },
-		{ "key":"brawler","label":"BRAWLER","color":Color(0.45,0.90,0.35), "desc":"Heavyweight bruiser.\nAbsorbs punishment\nand hits harder.\n\nHP: 350\nAtk every: 2s\nRange: 130px", "locked":false },
-		{ "key":"future2",  "label":"?",        "color":Color(0.40,0.40,0.50), "desc":"Coming soon...", "locked":true },
+		{ "key":"scrapper","label":"SCRAPPER","color":Color(0.45,0.90,0.35), "desc":"Tough close-range\nfighter. Takes a\nbeating and hits back.\n\nHP: 500\nAtk every: 2s\nRange: 130px", "locked":false },
+		{ "key":"streetfighter","label":"STREET FIGHTER","color":Color(0.90,0.45,0.25), "desc":"Slow but devastating.\nWalk before you run.\nTwo attack styles.\n\nHP: 600\nAtk every: 2.5s\nRange: 130px", "locked":false },
+		{ "key":"robo","label":"ROBO","color":Color(0.50,0.70,0.90), "desc":"Combat medic robot.\nHeals allies, poisons\nenemies from range.\n\nHP: 350\nAtk every: 3s\nRange: 500px", "locked":false },
 	]
 
 	var card_w  = 180.0; var card_h  = 300.0; var gap = 28.0
@@ -511,22 +518,25 @@ func _spawn_player(cls: String) -> void:
 	if cls == "melee":
 		sprite.scale  = Vector2(44.0 / 160.0, 44.0 / 160.0)
 		sprite.offset = Vector2(0, -80)
-	elif cls == "brawler":
-		sprite.scale  = Vector2(0.088, 0.088)
-		sprite.offset = Vector2(0, -121)
+	elif cls == "scrapper":
+		sprite.scale  = Vector2(0.28, 0.28)
+		sprite.offset = Vector2(0, -160)
 	elif cls == "medic":
-		sprite.scale  = Vector2(0.088, 0.088)
+		sprite.scale  = Vector2(0.38, 0.38)
 		sprite.offset = Vector2(0, -121)
 	elif cls == "ranged":
-		sprite.scale  = Vector2(0.088, 0.088)
+		sprite.scale  = Vector2(0.38, 0.38)
 		sprite.offset = Vector2(0, -121)
+	elif cls == "streetfighter":
+		sprite.scale  = Vector2(0.28, 0.28)
+		sprite.offset = Vector2(0, -160)
+	elif cls == "robo":
+		sprite.scale  = Vector2(0.28, 0.28)
+		sprite.offset = Vector2(0, -160)
 	else:
 		sprite.scale  = Vector2(1.0, 1.0)
 		sprite.offset = Vector2(0, -12)
 	_player.add_child(sprite)
-
-	if cls == "brawler":
-		_attach_split_body_shaders(sprite, _build_frames(cls))
 
 	var col   = CollisionShape2D.new()
 	var shape = CapsuleShape2D.new()
@@ -563,9 +573,76 @@ func _attach_split_body_shaders(lower_sprite: AnimatedSprite2D, frames: SpriteFr
 func _spawn_terminals() -> void:
 	pass
 
-# ── TREES — (removed, no trees/plants spawned) ──────────────
+# ── VEGETATION ───────────────────────────────────────────────
 func _spawn_trees() -> void:
-	pass
+	var city_node = get_node_or_null("City")
+	var city_pos = city_node.position if city_node else _tile_to_world(20, 76)
+	var city_radius = 3400.0  # Ring around city — no trees inside this (city is ~5760x3333)
+	var map_radius = 8000.0  # How far out to spawn vegetation
+
+	var rng = RandomNumberGenerator.new()
+	rng.seed = 77331
+
+	var tree1_tex = load("res://Assets/Backgrounds/tree1.png") as Texture2D
+	var tree2_tex = load("res://Assets/Backgrounds/tree2.png") as Texture2D
+	var mush_tex  = load("res://Assets/Backgrounds/mushroom.png") as Texture2D
+	var bush1_tex = load("res://Assets/Backgrounds/bush1.png") as Texture2D
+	var bush3_tex = load("res://Assets/Backgrounds/bush3.png") as Texture2D
+
+	# ── TREES (lots!) ────────────────────────────────────────
+	for i in 350:
+		var angle = rng.randf() * TAU
+		var dist = rng.randf_range(city_radius + 40, map_radius)
+		# Cluster trees more densely near the city edge
+		if rng.randf() < 0.4:
+			dist = rng.randf_range(city_radius + 40, city_radius + 600)
+		var pos = city_pos + Vector2(cos(angle), sin(angle)) * dist
+		# Slight random offset for natural look
+		pos += Vector2(rng.randf_range(-30, 30), rng.randf_range(-30, 30))
+		var tex = tree1_tex if rng.randf() < 0.55 else tree2_tex
+		if tex == null: continue
+		var spr = Sprite2D.new()
+		spr.texture = tex
+		spr.position = pos
+		var sc = rng.randf_range(0.18, 0.38)
+		spr.scale = Vector2(sc, sc)
+		spr.z_index = 0
+		# Slight random flip for variety
+		if rng.randf() < 0.3:
+			spr.flip_h = true
+		_world_layer.add_child(spr)
+
+	# ── BUSHES (scattered, small) ────────────────────────────
+	for i in 200:
+		var angle = rng.randf() * TAU
+		var dist = rng.randf_range(city_radius - 20, map_radius)
+		var pos = city_pos + Vector2(cos(angle), sin(angle)) * dist
+		pos += Vector2(rng.randf_range(-20, 20), rng.randf_range(-20, 20))
+		var tex = bush1_tex if rng.randf() < 0.7 else bush3_tex
+		if tex == null: continue
+		var spr = Sprite2D.new()
+		spr.texture = tex
+		spr.position = pos
+		var sc = rng.randf_range(0.06, 0.18)
+		spr.scale = Vector2(sc, sc)
+		spr.z_index = 0
+		if rng.randf() < 0.4:
+			spr.flip_h = true
+		_world_layer.add_child(spr)
+
+	# ── MUSHROOMS (sparse, small) ────────────────────────────
+	for i in 40:
+		var angle = rng.randf() * TAU
+		var dist = rng.randf_range(city_radius + 100, map_radius)
+		var pos = city_pos + Vector2(cos(angle), sin(angle)) * dist
+		if mush_tex == null: continue
+		var spr = Sprite2D.new()
+		spr.texture = mush_tex
+		spr.position = pos
+		var sc = rng.randf_range(0.04, 0.10)
+		spr.scale = Vector2(sc, sc)
+		spr.z_index = 0
+		_world_layer.add_child(spr)
 
 
 # ── MUSIC SYSTEM ─────────────────────────────────────────────
@@ -740,20 +817,35 @@ func _build_frames(cls: String) -> SpriteFrames:
 				_add_strip(frames,"run_"+dir,   base+"run/run_"+dir+".png",    24,24,4,10.0)
 				_add_strip(frames,"attack_"+dir,base+"attack/attack_"+dir+".png",24,24,6,12.0,false)
 		"ranged":
-			var rbase = "res://Characters/NEWFOUNDMETHOD/Marksman/"
-			var rcw = 768; var rch = 448
-			# Idle — per direction, 29 frames
+			var rbase = "res://Characters/NEWFOUNDMETHOD/marksman2/"
 			for dir in ["s","n","e","w","se","sw","ne","nw"]:
-				_add_grid(frames,"idle_"+dir, rbase+"idle/idle_"+dir+".png", rcw,rch,4,29,10.0)
-			# Run — only run_s exists, use for all directions
-			for dir in ["s","n","e","w","se","sw","ne","nw"]:
-				_add_grid(frames,"run_"+dir, rbase+"run/run_s.png", rcw,rch,4,29,18.0)
-			# Attack — per direction, 25 frames (7 rows)
-			for dir in ["s","n","e","ne","se"]:
-				_add_grid(frames,"attack_"+dir, rbase+"attack/attack_"+dir+".png", rcw,rch,4,25,24.0,false)
-			for dir in ["w","nw"]:
-				_add_grid(frames,"attack_"+dir, rbase+"attack/attack_"+dir+".png", rcw,rch,4,25,24.0,false,true)
-			_add_grid(frames,"attack_sw", rbase+"attack/attack_sw.png", rcw,rch,4,25,24.0,false)
+				# Idle: 3 parts played in sequence (idle1->idle2->idle3)
+				var idle_anim = "idle_" + dir
+				frames.add_animation(idle_anim)
+				frames.set_animation_speed(idle_anim, 20.0)
+				frames.set_animation_loop(idle_anim, true)
+				for part in ["idle1", "idle2", "idle3"]:
+					var path = rbase + "idle/" + part + "/" + part + "_" + dir + ".png"
+					if not ResourceLoader.exists(path): continue
+					var tex = load(path) as Texture2D
+					if tex == null: continue
+					var fw = 512
+					var fc = int(tex.get_width() / fw)
+					for fi in fc:
+						var atlas = AtlasTexture.new()
+						atlas.atlas = tex
+						atlas.region = Rect2(fi * fw, 0, fw, tex.get_height())
+						frames.add_frame(idle_anim, atlas)
+				# Run
+				var run_path = rbase + "run/run_" + dir + ".png"
+				var rtex = load(run_path) as Texture2D
+				var rfc = int(rtex.get_width() / 512) if rtex else 21
+				_add_strip(frames, "run_" + dir, run_path, 512, 512, rfc, 24.0)
+				# Attack
+				var atk_path = rbase + "attack/attack_" + dir + ".png"
+				var atex = load(atk_path) as Texture2D
+				var afc = int(atex.get_width() / 512) if atex else 30
+				_add_strip(frames, "attack_" + dir, atk_path, 512, 512, afc, 24.0, false)
 		"medic":
 			var mbase = "res://Characters/NEWFOUNDMETHOD/TechnoNun/"
 			var mcw = 768; var mch = 448
@@ -772,24 +864,43 @@ func _build_frames(cls: String) -> SpriteFrames:
 				_add_grid(frames,"attack_"+dir, mbase+"attack/attack_"+dir+".png", mcw,mch,4,29,24.0,false,true)
 			_add_grid(frames,"attack_sw", mbase+"attack/attack_sw.png", mcw,mch,4,29,24.0,false)
 			_add_grid(frames,"attack_s", mbase+"attack/attack_se.png", mcw,mch,4,29,24.0,false)
-		"brawler":
-			var bnbase = "res://Characters/NEWFOUNDMETHOD/Brawler/"
-			var cw = 768; var ch = 448
-			for dir in ["n","e","w","se","sw","nw"]:
-				_add_grid(frames,"idle_"+dir, bnbase+"idle/idle_"+dir+".png", cw,ch,4,29,10.0)
-			_add_grid(frames,"idle_s", bnbase+"idle/idle_sw.png", cw,ch,4,29,10.0)
-			_add_grid(frames,"idle_ne", bnbase+"idle/idle_ne.png", cw,ch,4,28,10.0)
-			for dir in ["n","e","ne","se","sw"]:
-				_add_grid(frames,"run_"+dir, bnbase+"run/run_"+dir+".png", cw,ch,4,17,22.0)
-			for dir in ["w","nw"]:
-				_add_grid(frames,"run_"+dir, bnbase+"run/run_"+dir+".png", cw,ch,4,17,20.0,true,true)
-			_add_grid(frames,"run_s", bnbase+"run/run_s.png", cw,ch,4,17,20.0)
-			for dir in ["s","n","ne","se"]:
-				_add_grid(frames,"attack_"+dir, bnbase+"attack/attack_"+dir+".png", cw,ch,4,29,24.0,false)
-			_add_grid(frames,"attack_e", bnbase+"attack/attack_e.png", cw,ch,4,24,24.0,false)
-			for dir in ["sw","nw"]:
-				_add_grid(frames,"attack_"+dir, bnbase+"attack/attack_"+dir+".png", cw,ch,4,29,24.0,false,true)
-			_add_grid(frames,"attack_w", bnbase+"attack/attack_w.png", cw,ch,4,24,24.0,false,true)
+		"scrapper":
+			var scbase = "res://Characters/NEWFOUNDMETHOD/Brawler3/"
+			for dir in ["s","n","e","w","se","sw","ne","nw"]:
+				# Idle: 4 parts played in sequence (idle1->idle2->idle3->idle4)
+				# Each part is a strip, combined into one animation
+				var idle_anim = "idle_" + dir
+				frames.add_animation(idle_anim)
+				frames.set_animation_speed(idle_anim, 24.0)
+				frames.set_animation_loop(idle_anim, true)
+				for part in ["idle1", "idle2", "idle3", "idle4"]:
+					var path = scbase + "idle/" + part + "/" + part + "_" + dir + ".png"
+					if not ResourceLoader.exists(path): continue
+					var tex = load(path) as Texture2D
+					if tex == null: continue
+					var fw = 512
+					var fc = int(tex.get_width() / fw)
+					for fi in fc:
+						var atlas = AtlasTexture.new()
+						atlas.atlas = tex
+						atlas.region = Rect2(fi * fw, 0, fw, tex.get_height())
+						frames.add_frame(idle_anim, atlas)
+				_add_strip(frames, "run_"+dir, scbase+"run/run_"+dir+".png", 512, 512, 20, 24.0)
+				_add_strip(frames, "attack_"+dir, scbase+"attack/attack_"+dir+".png", 512, 512, 30, 24.0, false)
+		"streetfighter":
+			var sfbase = "res://Characters/NEWFOUNDMETHOD/Brawler2/"
+			for dir in ["s","n","e","w","se","sw","ne","nw"]:
+				_add_strip(frames, "idle_"+dir, sfbase+"idle/idle_"+dir+".png", 512, 512, 30, 10.0)
+				_add_strip(frames, "walk_"+dir, sfbase+"walk/walk_"+dir+".png", 512, 512, 30, 12.0)
+				_add_strip(frames, "run_"+dir, sfbase+"run/run_"+dir+".png", 512, 512, 30, 16.0)
+				_add_strip(frames, "attack_"+dir, sfbase+"attack/attack_"+dir+".png", 512, 512, 30, 18.0, false)
+				_add_strip(frames, "attack2_"+dir, sfbase+"attack2/attack2_"+dir+".png", 512, 512, 30, 18.0, false)
+		"robo":
+			var rbase2 = "res://Characters/NEWFOUNDMETHOD/DeadpoolRobot/"
+			for dir in ["s","n","e","w","se","sw","ne","nw"]:
+				_add_strip(frames, "idle_"+dir, rbase2+"idle/idle_"+dir+".png", 512, 512, 30, 10.0)
+				_add_strip(frames, "run_"+dir, rbase2+"run/run_"+dir+".png", 512, 512, 30, 14.0)
+				_add_strip(frames, "attack_"+dir, rbase2+"attack/attack_"+dir+".png", 512, 512, 30, 18.0, false)
 	return frames
 
 func _add_grid(frames: SpriteFrames, anim_name: String, path: String,
@@ -837,112 +948,80 @@ func _setup_hud(_cls: String) -> void:
 	var font = _roboto
 	var bold = load("res://Assets/Fonts/Roboto/static/Roboto-Bold.ttf") if ResourceLoader.exists("res://Assets/Fonts/Roboto/static/Roboto-Bold.ttf") else font
 
-	const PF_W  : float = 290.0
-	const PF_H  : float = 100.0
-	const PORT  : float = 64.0
-	const BAR_X : float = 78.0
-	const BAR_W : float = 200.0
+	const PF_W  : float = 220.0
+	const PF_H  : float = 72.0
+	const BAR_X : float = 8.0
+	const BAR_W : float = 204.0
 
 	_player_frame          = Panel.new()
 	_player_frame.size     = Vector2(PF_W, PF_H)
 	_player_frame.position = Vector2(10, 10)
 	var pf_sty             = StyleBoxFlat.new()
-	pf_sty.bg_color        = Color(0.06, 0.05, 0.04, 0.92)
-	pf_sty.border_color    = Color(0.35, 0.28, 0.18, 0.90)
+	pf_sty.bg_color        = Color(0.03, 0.06, 0.12, 0.92)
+	pf_sty.border_color    = Color(0.12, 0.40, 0.55, 0.85)
 	pf_sty.set_border_width_all(2)
+	pf_sty.set_corner_radius_all(2)
 	pf_sty.shadow_color    = Color(0.0, 0.0, 0.0, 0.50)
 	pf_sty.shadow_size     = 4
 	_player_frame.add_theme_stylebox_override("panel", pf_sty)
 	_hud.add_child(_player_frame)
 	_player_frame.gui_input.connect(_on_frame_drag)
 
-	var port_bg       = ColorRect.new()
-	port_bg.color     = Color(0.03, 0.03, 0.03, 1.0)
-	port_bg.size      = Vector2(PORT + 4, PORT + 4)
-	port_bg.position  = Vector2(5, 5)
-	port_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_player_frame.add_child(port_bg)
-
-	_portrait_rect          = TextureRect.new()
-	_portrait_rect.size     = Vector2(PORT, PORT)
-	_portrait_rect.position = Vector2(7, 7)
-	_portrait_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_player_frame.add_child(_portrait_rect)
-
-	var cls_letter        = Label.new()
-	cls_letter.name       = "PortraitLetter"
-	cls_letter.add_theme_font_override("font", bold)
-	cls_letter.add_theme_font_size_override("font_size", 28)
-	cls_letter.add_theme_color_override("font_color", Color(0.85, 0.78, 0.60))
-	cls_letter.text       = _cls.substr(0, 1).to_upper() if _cls.length() > 0 else "?"
-	cls_letter.size       = Vector2(PORT, PORT)
-	cls_letter.position   = Vector2(7, 7)
-	cls_letter.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	cls_letter.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
-	cls_letter.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_player_frame.add_child(cls_letter)
-
-	_level_lbl = Label.new()
-	_level_lbl.add_theme_font_override("font", bold)
-	_level_lbl.add_theme_font_size_override("font_size", 11)
-	_level_lbl.add_theme_color_override("font_color", Color(1.0, 0.92, 0.55))
-	_level_lbl.text     = "1"
-	_level_lbl.size     = Vector2(22, 16)
-	_level_lbl.position = Vector2(7, PORT - 6)
-	_level_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_level_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_player_frame.add_child(_level_lbl)
-	var lvl_bg        = ColorRect.new()
-	lvl_bg.color      = Color(0.10, 0.08, 0.04, 0.95)
-	lvl_bg.size       = Vector2(22, 16)
-	lvl_bg.position   = Vector2(7, PORT - 6)
-	lvl_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_player_frame.add_child(lvl_bg)
-	_player_frame.move_child(lvl_bg, _player_frame.get_child_count() - 2)
-
+	# Name strip
 	_player_name_lbl = Label.new()
-	var archivo = load("res://Assets/Fonts/Archivo_Black/ArchivoBlack-Regular.ttf")
-	_player_name_lbl.add_theme_font_override("font", archivo if archivo else font)
-	_player_name_lbl.add_theme_font_size_override("font_size", 13)
-	_player_name_lbl.add_theme_color_override("font_color", Color(0.92, 0.88, 0.72))
-	_player_name_lbl.position = Vector2(BAR_X, 6)
-	_player_name_lbl.size     = Vector2(BAR_W, 18)
+	_player_name_lbl.add_theme_font_override("font", bold)
+	_player_name_lbl.add_theme_font_size_override("font_size", 10)
+	_player_name_lbl.add_theme_color_override("font_color", Color(0.70, 0.85, 1.0))
+	_player_name_lbl.position = Vector2(BAR_X, 3)
+	_player_name_lbl.size     = Vector2(BAR_W, 14)
+	_player_name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_player_name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_player_frame.add_child(_player_name_lbl)
 
-	_hp_bar = _make_bar(Color(0.72, 0.14, 0.10), Vector2(BAR_X, 26), Vector2(BAR_W, 18))
+	# ── HAM Bars (Health / Action / Mind) ────────────────────
+	_hp_bar = _make_bar(Color(0.72, 0.14, 0.10), Vector2(BAR_X, 18), Vector2(BAR_W, 14))
 	_player_frame.add_child(_hp_bar)
-	_hp_bar_lbl = _make_bar_label(Vector2(BAR_X, 26), Vector2(BAR_W, 18))
+	_hp_bar_lbl = _make_bar_label(Vector2(BAR_X, 18), Vector2(BAR_W, 14))
 	_player_frame.add_child(_hp_bar_lbl)
 
-	_mp_bar = _make_bar(Color(0.15, 0.30, 0.72), Vector2(BAR_X, 48), Vector2(BAR_W, 16))
-	_player_frame.add_child(_mp_bar)
-	_mp_bar_lbl = _make_bar_label(Vector2(BAR_X, 48), Vector2(BAR_W, 16))
-	_player_frame.add_child(_mp_bar_lbl)
+	_action_hud_bar = _make_bar(Color(0.80, 0.68, 0.10), Vector2(BAR_X, 34), Vector2(BAR_W, 14))
+	_player_frame.add_child(_action_hud_bar)
+	_action_bar_lbl = _make_bar_label(Vector2(BAR_X, 34), Vector2(BAR_W, 14))
+	_player_frame.add_child(_action_bar_lbl)
 
-	_xp_bar = _make_bar(Color(0.82, 0.68, 0.15), Vector2(BAR_X, 68), Vector2(BAR_W, 8))
-	_player_frame.add_child(_xp_bar)
-	_xp_bar_lbl = _make_bar_label(Vector2(BAR_X, 67), Vector2(BAR_W, 10))
+	_mind_bar = _make_bar(Color(0.15, 0.30, 0.72), Vector2(BAR_X, 50), Vector2(BAR_W, 14))
+	_player_frame.add_child(_mind_bar)
+	_mind_bar_lbl = _make_bar_label(Vector2(BAR_X, 50), Vector2(BAR_W, 14))
+	_player_frame.add_child(_mind_bar_lbl)
+
+	# ── Wound overlays — black bar over right side of each HAM bar ──
+	# Added after labels so they render on top of everything
+	_hp_wound_ov = _make_wound_overlay(Vector2(BAR_X + BAR_W, 18), 14)
+	_player_frame.add_child(_hp_wound_ov)
+	_action_wound_ov = _make_wound_overlay(Vector2(BAR_X + BAR_W, 34), 14)
+	_player_frame.add_child(_action_wound_ov)
+	_mind_wound_ov = _make_wound_overlay(Vector2(BAR_X + BAR_W, 50), 14)
+	_player_frame.add_child(_mind_wound_ov)
+
+	# ── XP Bar (positioned at bottom center, under action bar) ──
+	var vp2 = get_viewport().get_visible_rect().size
+	var xp_w = 380.0
+	var xp_panel = Panel.new()
+	xp_panel.name = "XPBarPanel"
+	xp_panel.size = Vector2(xp_w + 8, 16)
+	xp_panel.position = Vector2(vp2.x * 0.5 - (xp_w + 8) * 0.5, vp2.y - 26)
+	var xp_sty = StyleBoxFlat.new()
+	xp_sty.bg_color = Color(0.03, 0.03, 0.05, 0.75)
+	xp_sty.set_border_width_all(0); xp_sty.set_corner_radius_all(2)
+	xp_panel.add_theme_stylebox_override("panel", xp_sty)
+	xp_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hud.add_child(xp_panel)
+
+	_xp_bar = _make_bar(Color(0.60, 0.50, 0.12), Vector2(4, 2), Vector2(xp_w, 12))
+	xp_panel.add_child(_xp_bar)
+	_xp_bar_lbl = _make_bar_label(Vector2(4, 2), Vector2(xp_w, 12))
 	_xp_bar_lbl.add_theme_font_size_override("font_size", 8)
-	_player_frame.add_child(_xp_bar_lbl)
-
-	_hp_pct_lbl = Label.new()
-	_hp_pct_lbl.name = "HPPct"
-	_hp_pct_lbl.add_theme_font_override("font", font)
-	_hp_pct_lbl.add_theme_font_size_override("font_size", 10)
-	_hp_pct_lbl.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.75))
-	_hp_pct_lbl.size     = Vector2(40, 18)
-	_hp_pct_lbl.position = Vector2(BAR_X + BAR_W - 42, 26)
-	_hp_pct_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_hp_pct_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_player_frame.add_child(_hp_pct_lbl)
-
-	var pf_accent        = ColorRect.new()
-	pf_accent.color      = Color(0.55, 0.42, 0.18, 0.70)
-	pf_accent.size       = Vector2(PF_W - 4, 1)
-	pf_accent.position   = Vector2(2, 2)
-	pf_accent.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_player_frame.add_child(pf_accent)
+	xp_panel.add_child(_xp_bar_lbl)
 
 	# Target panel
 	const TGT_W : float = 280.0
@@ -952,11 +1031,12 @@ func _setup_hud(_cls: String) -> void:
 	_tgt_panel.position = Vector2(vp.x * 0.5 - TGT_W * 0.5, 10)
 	_tgt_panel.visible  = false
 	var tp_sty          = StyleBoxFlat.new()
-	tp_sty.bg_color     = Color(0.06, 0.04, 0.04, 0.92)
-	tp_sty.border_color = Color(0.50, 0.18, 0.12, 0.90)
+	tp_sty.bg_color     = Color(0.04, 0.06, 0.12, 0.92)
+	tp_sty.border_color = Color(0.50, 0.18, 0.14, 0.85)
 	tp_sty.set_border_width_all(2)
-	tp_sty.shadow_color = Color(0.0, 0.0, 0.0, 0.40)
-	tp_sty.shadow_size  = 3
+	tp_sty.set_corner_radius_all(2)
+	tp_sty.shadow_color = Color(0.0, 0.0, 0.0, 0.50)
+	tp_sty.shadow_size  = 4
 	_tgt_panel.add_theme_stylebox_override("panel", tp_sty)
 	_hud.add_child(_tgt_panel)
 
@@ -986,7 +1066,7 @@ func _setup_hud(_cls: String) -> void:
 	_mm_location_lbl = Label.new()
 	_mm_location_lbl.add_theme_font_override("font", bold)
 	_mm_location_lbl.add_theme_font_size_override("font_size", 12)
-	_mm_location_lbl.add_theme_color_override("font_color", Color(0.90, 0.85, 0.65))
+	_mm_location_lbl.add_theme_color_override("font_color", Color(0.55, 0.90, 1.0))
 	_mm_location_lbl.text = "THEED"
 	_mm_location_lbl.size = Vector2(MMAP_W, 18)
 	_mm_location_lbl.position = Vector2(vp.x + MMAP_X, 10)
@@ -1005,7 +1085,7 @@ func _setup_hud(_cls: String) -> void:
 	mm_sty.shadow_color   = Color(0.0, 0.0, 0.0, 0.65)
 	mm_sty.shadow_size    = 8
 	_minimap_panel.add_theme_stylebox_override("panel", mm_sty)
-	_minimap_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_minimap_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_hud.add_child(_minimap_panel)
 
 	# Reuse LunarMinimapDraw — it reads _player, _remote_players, _world_layer, _tilemap
@@ -1067,6 +1147,22 @@ func _make_bar(col: Color, pos: Vector2, sz: Vector2) -> ProgressBar:
 	bar.add_theme_stylebox_override("background", bg)
 	return bar
 
+func _apply_wound_overlay(ov: ColorRect, wound: float, raw_max: float, bar_x: float, bar_w: float) -> void:
+	if ov == null or raw_max <= 0.0:
+		return
+	var frac = clampf(wound / raw_max, 0.0, 1.0)
+	var w = frac * bar_w
+	ov.size.x    = w
+	ov.position.x = bar_x + bar_w - w
+
+func _make_wound_overlay(right_edge: Vector2, h: float) -> ColorRect:
+	var cr = ColorRect.new()
+	cr.color = Color(0.0, 0.0, 0.0, 0.88)
+	cr.size = Vector2(0.0, h)
+	cr.position = right_edge  # x will be pushed left as wounds grow
+	cr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return cr
+
 func _make_bar_label(pos: Vector2, sz: Vector2) -> Label:
 	var l = Label.new()
 	l.add_theme_font_override("font", _roboto)
@@ -1086,15 +1182,38 @@ func _update_hud() -> void:
 	var lvl    = _player.get("level") as int
 	_player_name_lbl.text = "%s  [%s]" % [name_s, cls.to_upper()]
 	if _level_lbl: _level_lbl.text = str(lvl)
-	var hp  = _player.get("hp") as float;       var mhp = _player.get("max_hp") as float
-	var mp  = _player.get("mp") as float;       var mmp = _player.get("max_mp") as float
-	var xp  = _player.get("exp_points") as float; var mxp = _player.get("exp_needed") as float
-	_hp_bar.max_value = mhp; _hp_bar.value = hp
-	_mp_bar.max_value = mmp; _mp_bar.value = mp
+	# ── HAM bars ─────────────────────────────────────────────
+	var h_cur = _player.get("ham_health") as float
+	var h_max = _player.call("get_effective_max_health") as float
+	var a_cur = _player.get("ham_action") as float
+	var a_max = _player.call("get_effective_max_action") as float
+	var m_cur = _player.get("ham_mind") as float
+	var m_max = _player.call("get_effective_max_mind") as float
+	var xp  = _player.get("exp_points") as float
+	var mxp = _player.get("exp_needed") as float
+
+	_hp_bar.max_value = h_max; _hp_bar.value = h_cur
+	if _action_hud_bar: _action_hud_bar.max_value = a_max; _action_hud_bar.value = a_cur
+	if _mind_bar: _mind_bar.max_value = m_max; _mind_bar.value = m_cur
+
+	# ── Wound overlays (black bar from right, sized by wound / raw max) ──
+	const _BAR_W : float = 204.0
+	const _BAR_X : float = 8.0
+	var w_h = _player.get("wound_health") as float
+	var w_a = _player.get("wound_action") as float
+	var w_m = _player.get("wound_mind")   as float
+	var raw_h = _player.get("ham_health_max") as float
+	var raw_a = _player.get("ham_action_max") as float
+	var raw_m = _player.get("ham_mind_max")   as float
+	_apply_wound_overlay(_hp_wound_ov,     w_h, raw_h, _BAR_X, _BAR_W)
+	_apply_wound_overlay(_action_wound_ov, w_a, raw_a, _BAR_X, _BAR_W)
+	_apply_wound_overlay(_mind_wound_ov,   w_m, raw_m, _BAR_X, _BAR_W)
 	_xp_bar.max_value = mxp; _xp_bar.value = xp
-	var hp_pct = int(hp / maxf(mhp, 1.0) * 100.0)
-	_hp_bar_lbl.text = "%d / %d" % [int(hp), int(mhp)]
-	_mp_bar_lbl.text = "%d / %d" % [int(mp), int(mmp)]
+
+	var hp_pct = int(h_cur / maxf(h_max, 1.0) * 100.0)
+	_hp_bar_lbl.text = "%d / %d" % [int(h_cur), int(h_max)]
+	if _action_bar_lbl: _action_bar_lbl.text = "%d / %d" % [int(a_cur), int(a_max)]
+	if _mind_bar_lbl: _mind_bar_lbl.text = "%d / %d" % [int(m_cur), int(m_max)]
 	_xp_bar_lbl.text = "%d / %d" % [int(xp), int(mxp)]
 	if _hp_pct_lbl: _hp_pct_lbl.text = "%d%%" % hp_pct
 	var tgt = _player.get("_current_target")
@@ -1250,7 +1369,7 @@ func _handle_remote_move(data: Dictionary, from_peer: int) -> void:
 				sprite.play(idle_anim)
 
 func _angle_to_dir(angle: float, cls: String) -> String:
-	var has_8dir = (cls == "melee" or cls == "brawler" or cls == "medic")
+	var has_8dir = (cls == "melee" or cls == "scrapper" or cls == "medic")
 	var deg = rad_to_deg(angle)
 	if deg < 0: deg += 360.0
 	if has_8dir:
@@ -1281,14 +1400,14 @@ func _add_remote_player(peer_id: int, cls: String, nick: String, pos: Vector2) -
 	var sprite           = AnimatedSprite2D.new()
 	sprite.name          = "Sprite"
 	sprite.sprite_frames = _build_frames(cls)
-	if cls == "melee" or cls == "brawler":
+	if cls == "melee" or cls == "scrapper":
 		sprite.scale  = Vector2(44.0 / 160.0, 44.0 / 160.0)
 		sprite.offset = Vector2(0, -80)
 	elif cls == "medic":
-		sprite.scale  = Vector2(0.088, 0.088)
+		sprite.scale  = Vector2(0.38, 0.38)
 		sprite.offset = Vector2(0, -121)
 	elif cls == "ranged":
-		sprite.scale  = Vector2(0.088, 0.088)
+		sprite.scale  = Vector2(0.38, 0.38)
 		sprite.offset = Vector2(0, -121)
 	else:
 		sprite.scale  = Vector2(1.0, 1.0)
@@ -1315,11 +1434,15 @@ func is_targeted(node: Node) -> bool:
 	var tgt = _player.get("_current_target")
 	return is_instance_valid(tgt) and tgt == node
 
-func spawn_damage_number(world_pos: Vector2, amount: float, col: Color) -> void:
+func spawn_damage_number(world_pos: Vector2, amount: float, col: Color, text_override: String = "") -> void:
 	var script = load("res://Scripts/DamageNumber.gd")
 	if script == null: return
 	var dn = Node2D.new(); dn.set_script(script); dn.position = world_pos
-	add_child(dn); dn.call("init", amount, col)
+	add_child(dn)
+	if text_override != "" and dn.has_method("init_text"):
+		dn.call("init_text", text_override, col)
+	else:
+		dn.call("init", amount, col)
 
 func spawn_fireball(spawn_pos: Vector2, target: Node, dmg: float, _broadcast: bool = true) -> void:
 	var script = load("res://Scripts/Fireball.gd")
@@ -1475,6 +1598,66 @@ func _build_cyberlord_frames() -> SpriteFrames:
 		_add_strip(frames,"run_"+dir,   base+"run/run_"+dir+".png",    144,144,8,10.0)
 		_add_strip(frames,"attack_"+dir,base+"attack/attack_"+dir+".png",144,144,7,12.0,false)
 	return frames
+
+func _build_vampire_frames() -> SpriteFrames:
+	var frames = SpriteFrames.new()
+	if frames.has_animation("default"): frames.remove_animation("default")
+	var base = "res://Characters/NEWFOUNDMETHOD/NPC/Vampirething/"
+	for dir in ["s","n","e","w","se","sw","ne","nw"]:
+		_add_strip(frames, "idle_"+dir, base+"idle/idle_"+dir+".png", 512, 512, 30, 10.0)
+		_add_strip(frames, "run_"+dir, base+"run/run_"+dir+".png", 512, 512, 30, 14.0)
+		_add_strip(frames, "attack_"+dir, base+"attack/attack_"+dir+".png", 512, 512, 30, 18.0, false)
+	return frames
+
+func _spawn_vampire(at_pos: Vector2 = Vector2.ZERO, broadcast: bool = true) -> void:
+	var script = load("res://Scripts/VampireBoss.gd")
+	if script == null: return
+	var boss = CharacterBody2D.new()
+	boss.set_script(script)
+	var sprite = AnimatedSprite2D.new()
+	sprite.name = "Sprite"; sprite.sprite_frames = _build_vampire_frames()
+	sprite.scale = Vector2(0.25, 0.25); sprite.offset = Vector2(0, -180)
+	boss.add_child(sprite)
+	var col = CollisionShape2D.new(); var shape = CapsuleShape2D.new()
+	shape.radius = 20.0; shape.height = 40.0; col.shape = shape; boss.add_child(col)
+	if at_pos == Vector2.ZERO:
+		var n = get_tree().get_nodes_in_group("vampire").size()
+		var angle = TAU * (float(n) / 6.0); var dist = 200.0 + n * 60.0
+		at_pos = _player.global_position + Vector2(cos(angle), sin(angle)) * dist
+	boss.position = at_pos; boss.collision_layer = 2; boss.collision_mask = 2
+	_world_layer.add_child(boss); boss.tree_exiting.connect(_on_targetable_removed.bind(boss))
+	if broadcast:
+		Relay.send_game_data({"cmd": "spawn_creature", "type": "vampire", "x": at_pos.x, "y": at_pos.y})
+
+func _build_thug_frames() -> SpriteFrames:
+	var frames = SpriteFrames.new()
+	if frames.has_animation("default"): frames.remove_animation("default")
+	var base = "res://Characters/NEWFOUNDMETHOD/NPC/TanArmorGuy/"
+	for dir in ["s","n","e","w","se","sw","ne","nw"]:
+		_add_strip(frames, "idle_"+dir, base+"idle/idle_"+dir+".png", 512, 512, 30, 10.0)
+		_add_strip(frames, "run_"+dir, base+"run/run_"+dir+".png", 512, 512, 30, 14.0)
+		_add_strip(frames, "attack_"+dir, base+"attack/attack_"+dir+".png", 512, 512, 30, 18.0, false)
+	return frames
+
+func _spawn_armored_thug(at_pos: Vector2 = Vector2.ZERO, broadcast: bool = true) -> void:
+	var script = load("res://Scripts/ArmoredThug.gd")
+	if script == null: return
+	var mob = CharacterBody2D.new()
+	mob.set_script(script)
+	var sprite = AnimatedSprite2D.new()
+	sprite.name = "Sprite"; sprite.sprite_frames = _build_thug_frames()
+	sprite.scale = Vector2(0.32, 0.32); sprite.offset = Vector2(0, -140)
+	mob.add_child(sprite)
+	var col = CollisionShape2D.new(); var shape = CapsuleShape2D.new()
+	shape.radius = 18.0; shape.height = 36.0; col.shape = shape; mob.add_child(col)
+	if at_pos == Vector2.ZERO:
+		var n = get_tree().get_nodes_in_group("armored_thug").size()
+		var angle = TAU * (float(n) / 8.0); var dist = 150.0 + n * 40.0
+		at_pos = _player.global_position + Vector2(cos(angle), sin(angle)) * dist
+	mob.position = at_pos; mob.collision_layer = 2; mob.collision_mask = 2
+	_world_layer.add_child(mob); mob.tree_exiting.connect(_on_targetable_removed.bind(mob))
+	if broadcast:
+		Relay.send_game_data({"cmd": "spawn_creature", "type": "armored_thug", "x": at_pos.x, "y": at_pos.y})
 
 func _spawn_zerg_mob(at_pos: Vector2 = Vector2.ZERO, broadcast: bool = true) -> void:
 	var script = load("res://Scripts/ZergMob.gd")
