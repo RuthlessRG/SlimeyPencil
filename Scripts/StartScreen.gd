@@ -13,7 +13,12 @@ var _user_field   : LineEdit         = null
 var _pass_field   : LineEdit         = null
 var _status_lbl   : Label            = null
 var _play_btn     : Button           = null
+var _spinner_lbl  : Label            = null
 var _logged_in    : bool             = false
+var _busy         : bool             = false
+var _spin_tick    : float            = 0.0
+const _SPIN_FRAMES = ["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"]
+var _spin_idx     : int              = 0
 
 func _ready() -> void:
 	_start_music()
@@ -112,6 +117,18 @@ func _build_ui() -> void:
 	_status_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(_status_lbl)
 
+	# Spinner label (hidden until busy)
+	_spinner_lbl = Label.new()
+	_spinner_lbl.add_theme_font_override("font", load("res://Assets/Fonts/Roboto/static/Roboto-Regular.ttf"))
+	_spinner_lbl.add_theme_font_size_override("font_size", 18)
+	_spinner_lbl.add_theme_color_override("font_color", Color(0.50, 0.80, 1.00))
+	_spinner_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_spinner_lbl.size     = Vector2(PW, 28)
+	_spinner_lbl.position = Vector2(0, 244)
+	_spinner_lbl.visible  = false
+	_spinner_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(_spinner_lbl)
+
 	# PLAY button
 	_play_btn          = Button.new()
 	_play_btn.text     = "PLAY"
@@ -186,6 +203,15 @@ func _apply_play_style() -> void:
 	_play_btn.add_theme_color_override("font_color",          col)
 	_play_btn.add_theme_color_override("font_disabled_color", col)
 
+func _process(delta: float) -> void:
+	if not _busy or _spinner_lbl == null:
+		return
+	_spin_tick += delta
+	if _spin_tick >= 0.08:
+		_spin_tick = 0.0
+		_spin_idx = (_spin_idx + 1) % _SPIN_FRAMES.size()
+		_spinner_lbl.text = _SPIN_FRAMES[_spin_idx]
+
 # ── Relay callbacks ────────────────────────────────────────────
 func _on_relay_connected() -> void:
 	_set_status("Connected  •  Log in or register to play.", Color(0.30, 0.85, 0.45))
@@ -201,15 +227,15 @@ func _on_login() -> void:
 	if uname.length() == 0 or pwd.length() == 0:
 		_set_status("Enter username and password.", Color(0.90, 0.60, 0.20))
 		return
-	_set_busy(true)
-	_set_status("Logging in…", Color(0.75, 0.68, 0.25))
+	_set_busy(true, "Logging in…")
 	if await PlayerData.login(uname, pwd):
 		_logged_in = true
-		_set_status("Logged in as  %s" % uname, Color(0.30, 0.85, 0.45))
+		_set_busy(false)
+		_set_status("Logged in as  %s  — press PLAY" % uname, Color(0.30, 0.85, 0.45))
 		_apply_play_style()
 	else:
-		_set_status("Wrong username or password.", Color(0.90, 0.35, 0.25))
-	_set_busy(false)
+		_set_busy(false)
+		_set_status(PlayerData.last_error, Color(0.90, 0.35, 0.25))
 
 func _on_register() -> void:
 	var uname = _user_field.text.strip_edges()
@@ -220,26 +246,36 @@ func _on_register() -> void:
 	if pwd.length() < 4:
 		_set_status("Password must be 4+ characters.", Color(0.90, 0.60, 0.20))
 		return
-	_set_busy(true)
-	_set_status("Creating account…", Color(0.75, 0.68, 0.25))
+	_set_busy(true, "Creating account…")
 	if await PlayerData.register(uname, pwd):
 		_logged_in = true
-		_set_status("Account created!  Welcome,  %s" % uname, Color(0.30, 0.85, 0.45))
+		_set_busy(false)
+		_set_status("Welcome,  %s!  Press PLAY to enter." % uname, Color(0.30, 0.85, 0.45))
 		_apply_play_style()
 	else:
-		_set_status("Username already taken.", Color(0.90, 0.35, 0.25))
-	_set_busy(false)
+		_set_busy(false)
+		_set_status(PlayerData.last_error, Color(0.90, 0.35, 0.25))
 
-# Disable UI during async auth to prevent double-clicks
-func _set_busy(busy: bool) -> void:
+# Disable UI and show spinner during async auth
+func _set_busy(busy: bool, msg: String = "") -> void:
+	_busy = busy
 	if _user_field: _user_field.editable = not busy
 	if _pass_field: _pass_field.editable = not busy
+	if _spinner_lbl:
+		_spinner_lbl.visible = busy
+	if busy and msg != "":
+		_set_status(msg, Color(0.75, 0.78, 0.95))
 
 func _set_status(msg: String, col: Color) -> void:
 	_status_lbl.text = msg
 	_status_lbl.add_theme_color_override("font_color", col)
 
 func _on_play() -> void:
+	_play_btn.disabled = true
+	_set_status("Loading world…", Color(0.55, 0.75, 1.00))
 	if _music:
+		var tween = create_tween()
+		tween.tween_property(_music, "volume_db", -80.0, 0.8)
+		await tween.finished
 		_music.stop()
-	get_tree().change_scene_to_file("res://Scenes/spaceport.tscn")
+	get_tree().change_scene_to_file("res://theed.tscn")
