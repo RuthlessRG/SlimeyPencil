@@ -6,30 +6,80 @@ var _roboto : Font = load("res://Assets/Fonts/Roboto/static/Roboto-Regular.ttf")
 #  BossArenaPlayer.gd — Beyond the Veil | Boss Arena
 # ============================================================
 
-const SPEED = 75.0
+const SPEED = 140.0
 
 # ── CLASS & STATS ─────────────────────────────────────────────
 var character_class : String = "melee"
 var character_name  : String = "Player"
 var level           : int    = 1
-var hp              : float  = 200.0
-var max_hp          : float  = 200.0
-var mp              : float  = 100.0
-var max_mp          : float  = 100.0
 
-# Base stats before attribute bonuses
-var _base_max_hp : float = 200.0
-var _base_max_mp : float = 100.0
+# ── HAM POOLS (Health / Action / Mind) ───────────────────────
+var ham_health     : float = 300.0
+var ham_health_max : float = 300.0
+var ham_action     : float = 300.0
+var ham_action_max : float = 300.0
+var ham_mind       : float = 300.0
+var ham_mind_max   : float = 300.0
 
-# ── ATTRIBUTES ────────────────────────────────────────────────
-# STR: +25 HP, +5 melee dmg, +5% dmg reduction per point
-# AGI: +5% attack speed, +2% crit chance per point
-# INT: +5% spell dmg, +2% spell crit per point
-# SPI: +25 MP, +5 spell dmg per point
-var attr_str       : int = 0
-var attr_agi       : int = 0
-var attr_int       : int = 0
-var attr_spi       : int = 0
+# Base HAM before stat bonuses
+var _base_ham_health : float = 300.0
+var _base_ham_action : float = 300.0
+var _base_ham_mind   : float = 300.0
+
+# Wounds reduce max pool — only healable at doctor/entertainer terminals
+var wound_health : float = 0.0
+var wound_action : float = 0.0
+var wound_mind   : float = 0.0
+
+func get_effective_max_health() -> float: return maxf(1.0, ham_health_max - wound_health)
+func get_effective_max_action() -> float: return maxf(1.0, ham_action_max - wound_action)
+func get_effective_max_mind() -> float: return maxf(1.0, ham_mind_max - wound_mind)
+
+# Incapacitation: any pool hits 0 → incap, 3 incaps = death
+var incap_count    : int   = 0
+const MAX_INCAPS   : int   = 3
+var _incapped      : bool  = false
+var _incap_timer   : float = 0.0
+const INCAP_DURATION : float = 10.0
+
+# ── BACKWARD-COMPAT ALIASES (enemy scripts use hp/max_hp) ────
+var hp: float:
+	get: return ham_health
+	set(v): ham_health = v
+var max_hp: float:
+	get: return get_effective_max_health()
+	set(v): ham_health_max = v
+var mp: float:
+	get: return ham_action
+	set(v): ham_action = v
+var max_mp: float:
+	get: return get_effective_max_action()
+	set(v): ham_action_max = v
+
+# ── SWG SECONDARY STATS ─────────────────────────────────────
+# Health pool: Strength (pool size), Constitution (regen)
+# Action pool: Quickness (pool size), Stamina (regen)
+# Mind pool:   Focus (pool size), Willpower (regen)
+var stat_strength     : int = 0
+var stat_constitution : int = 0
+var stat_quickness    : int = 0
+var stat_stamina      : int = 0
+var stat_focus        : int = 0
+var stat_willpower    : int = 0
+
+# ── LEGACY ATTRIBUTE ALIASES (for item/shop compatibility) ───
+var attr_str : int:
+	get: return stat_strength
+	set(v): stat_strength = v
+var attr_agi : int:
+	get: return stat_quickness
+	set(v): stat_quickness = v
+var attr_int : int:
+	get: return stat_focus
+	set(v): stat_focus = v
+var attr_spi : int:
+	get: return stat_willpower
+	set(v): stat_willpower = v
 var unspent_points : int = 0
 
 # ── INVENTORY ─────────────────────────────────────────────────
@@ -53,11 +103,161 @@ var _float_stack  : int = 0   # tracks stacked floating texts
 var exp_points : float = 0.0
 var exp_needed : float = 100.0   # scales: 100 * level
 
+# ── SWG SKILL POINT SYSTEM ──────────────────────────────────
+var skill_points_total : int = 250
+var skill_points_spent : int = 0
+
+var xp_pools : Dictionary = {
+	"unarmed": 0, "onehand": 0, "twohand": 0,
+	"pistol": 0, "rifle": 0, "carbine": 0, "ranged": 0,
+	"medical": 0, "force": 0, "crafting": 0,
+}
+
+var learned_boxes : Array = []  # array of box ID strings
+
+func get_skill_points_available() -> int:
+	return skill_points_total - skill_points_spent
+
+func add_xp(xp_type: String, amount: int) -> void:
+	if not xp_pools.has(xp_type):
+		xp_pools[xp_type] = 0
+	xp_pools[xp_type] += amount
+	_spawn_floating_text("+%d %s XP" % [amount, xp_type.to_upper()], Color(0.75, 0.25, 1.0))
+	# Also feed into legacy XP bar for visual progress
+	exp_points += amount
+	while exp_points >= exp_needed:
+		exp_points -= exp_needed
+		level += 1
+		exp_needed = 100.0 * level
+
+func learn_box(box_id: String) -> bool:
+	var box = ProfessionData.find_box(box_id)
+	if box.is_empty():
+		return false
+	var check = ProfessionData.can_learn_box(box, learned_boxes, xp_pools, get_skill_points_available(), credits)
+	if not check.can_learn:
+		_spawn_floating_text(check.reason, Color(1.0, 0.3, 0.3))
+		return false
+	# Spend resources
+	skill_points_spent += box.cost_sp
+	xp_pools[box.xp_type] -= box.xp_cost
+	credits -= box.credit_cost
+	learned_boxes.append(box_id)
+	# Apply modifiers
+	_recalc_box_modifiers()
+	_spawn_floating_text("LEARNED: " + box.name, Color(0.3, 1.0, 0.5))
+	return true
+
+func _recalc_box_modifiers() -> void:
+	# Reset combat stats
+	for key in _combat_stats:
+		_combat_stats[key] = 0
+	# Sum all modifiers from learned boxes
+	for box_id in learned_boxes:
+		var box = ProfessionData.find_box(box_id)
+		if box.is_empty():
+			continue
+		var mods = box.get("modifiers", {})
+		for stat_key in mods:
+			if _combat_stats.has(stat_key):
+				_combat_stats[stat_key] += mods[stat_key]
+
+func _get_weapon_xp_type() -> String:
+	match character_class:
+		"scrapper", "melee", "streetfighter": return "unarmed"
+		"ranged":           return "ranged"
+		"mage":             return "force"
+		"medic", "robo":    return "medical"
+	return "unarmed"
+
+# ── COMBAT STATES (SWG Pre-CU) ──────────────────────────────
+var state_dizzy      : float = 0.0
+var state_knockdown  : float = 0.0
+var state_stun       : float = 0.0
+var state_blind      : float = 0.0
+var state_intimidate : float = 0.0
+
+# ── POSTURE ──────────────────────────────────────────────────
+var posture : int = 0  # CombatEngine.Posture.STANDING
+
+# ── COMBAT STATS (from skillboxes + items) ───────────────────
+var _combat_stats : Dictionary = {
+	"accuracy": 0, "defense": 0,
+	"dodge": 0, "block": 0, "counterattack": 0,
+	"defense_vs_dizzy": 0, "defense_vs_knockdown": 0,
+	"defense_vs_stun": 0, "defense_vs_blind": 0,
+	"defense_vs_intimidate": 0,
+	"resist_kinetic": 0, "resist_energy": 0,
+	"resist_heat": 0, "resist_cold": 0,
+	"resist_acid": 0, "resist_electricity": 0,
+	"resist_blast": 0, "resist_stun": 0,
+}
+
+func get_stat(stat_name: String) -> float:
+	if _combat_stats.has(stat_name):
+		return float(_combat_stats[stat_name])
+	return 0.0
+
+const STATE_COLORS : Dictionary = {
+	"dizzy": Color(1.0, 0.85, 0.2),
+	"knockdown": Color(1.0, 0.3, 0.2),
+	"stun": Color(0.9, 0.6, 0.1),
+	"blind": Color(0.5, 0.5, 0.6),
+	"intimidate": Color(0.8, 0.4, 0.8),
+}
+
+func apply_combat_state(state_name: String, duration: float) -> void:
+	var actual_dur = duration
+	if state_name == "knockdown":
+		actual_dur = 999.0  # Knockdown lasts until stand up (space bar)
+		# Visually lay character on the floor
+		var sprite = get_node_or_null("Sprite") as AnimatedSprite2D
+		if sprite: sprite.rotation = deg_to_rad(90)
+	match state_name:
+		"dizzy":      state_dizzy = maxf(state_dizzy, actual_dur)
+		"knockdown":  state_knockdown = actual_dur
+		"stun":       state_stun = maxf(state_stun, actual_dur)
+		"blind":      state_blind = maxf(state_blind, actual_dur)
+		"intimidate": state_intimidate = maxf(state_intimidate, actual_dur)
+	_spawn_floating_text(state_name.to_upper(), STATE_COLORS.get(state_name, Color(1.0, 0.8, 0.2)))
+	# Show as debuff icon on buff bar
+	var buff_bar = get_node_or_null("BuffBar")
+	if buff_bar and buff_bar.has_method("add_buff"):
+		buff_bar.call("add_buff", {
+			"id": "state_" + state_name,
+			"icon": state_name,
+			"label": state_name.capitalize(),
+			"duration": actual_dur,
+			"color": STATE_COLORS.get(state_name, Color(1.0, 0.5, 0.2)),
+		})
+
+func _tick_combat_states(delta: float) -> void:
+	var buff_bar = get_node_or_null("BuffBar")
+	# Knockdown does NOT tick down — only cleared by space bar stand up
+	for sname in ["dizzy", "stun", "blind", "intimidate"]:
+		var val = get("state_" + sname) as float
+		if val > 0.0:
+			set("state_" + sname, maxf(0.0, val - delta))
+			if buff_bar and buff_bar.has_method("update_buff"):
+				buff_bar.call("update_buff", "state_" + sname, val - delta)
+			if val - delta <= 0.0:
+				if buff_bar and buff_bar.has_method("remove_buff"):
+					buff_bar.call("remove_buff", "state_" + sname)
+
 # ── FACING & ANIMATION ────────────────────────────────────────
 var _facing      : String = "s"
 var _is_attacking: bool   = false
 var _blend_attack_anim: String = ""
 var _moving      : bool   = false
+var _sf_attack_alt : bool = false  # Street Fighter attack alternation (attack vs attack2)
+var _sf_move_timer : float = 0.0   # Street Fighter walk→run transition timer
+const SF_WALK_DURATION : float = 0.4  # Seconds of walk before switching to run
+
+# ── COMBAT QUEUE (SWG Pre-CU style) ─────────────────────────
+var _combat_queue : Array = []  # Array of skill_id strings
+const MAX_QUEUE_SIZE : int = 4
+var _queue_timer : float = 0.0
+var _queue_speed : float = 1.5  # Base seconds between queue pops (gets faster with skills)
 
 # ── AUTO-ATTACK ───────────────────────────────────────────────
 var _attack_timer   : float = 0.0
@@ -104,8 +304,8 @@ var _target_idx        : int   = -1
 var _target_scan_timer : float = 0.0
 
 const TARGET_SCAN_RATE    = 0.10
-const TARGET_CONE_RANGE   = 700.0
-const TARGET_CIRCLE_RANGE = 800.0
+const TARGET_CONE_RANGE   = 1400.0
+const TARGET_CIRCLE_RANGE = 1600.0
 const TARGET_CONE_ANGLE   = 60.0
 
 # ── SOUNDS ─────────────────────────────────────────────────────
@@ -113,7 +313,7 @@ var _snd_step_port  : AudioStreamPlayer = null
 var _snd_step_grass : AudioStreamPlayer = null
 var _snd_melee_hits : Array = []   # knife slash sound variants
 var _snd_rifle_shot : AudioStreamPlayer = null
-var _snd_hum        : AudioStreamPlayer = null   # vehicle engine hum
+var _snd_hum        : AudioStreamPlayer2D = null   # vehicle engine hum (positional)
 var _footstep_timer : float = 0.0
 const FOOTSTEP_INTERVAL : float = 0.31
 
@@ -129,14 +329,15 @@ func _give_starting_items() -> void:
 	if inventory.size() == 0:
 		inventory.append({
 			"id": "mount_speeder_mk1",
-			"name": "LandSpeeder MK1",
+			"name": "Starfighter MK1",
 			"rarity": "blue",
 			"type": "mount",
 			"cost": 10000,
 			"speed_mult": 5.0,
-			"mount_variant": "fighter",
+			"mount_variant": "texture_dir",
+			"mount_texture_dir": "res://Assets/Sprites/ships/ship1/",
 			"attr_str": 0, "attr_agi": 0, "attr_int": 0, "attr_spi": 0,
-			"desc": "Mount: 5x speed\nSleek fighter speeder",
+			"desc": "Mount: 5x speed\nStarfighter vessel",
 			"equipped": false,
 		})
 
@@ -164,6 +365,14 @@ func _spawn_chat() -> void:
 	add_child(chat)
 	chat.call("init", self)
 
+	# Combat queue HUD — shows during combat, hides when out of combat
+	var cq_script = load("res://Scripts/CombatQueueHUD.gd")
+	var cq_hud    = CanvasLayer.new()
+	cq_hud.name   = "CombatQueueHUD"
+	cq_hud.set_script(cq_script)
+	add_child(cq_hud)
+	cq_hud.call("init", self)
+
 	# Tooltip manager — watches inventory slots and action bar slots
 	var tip_script = load("res://Scripts/TooltipManager.gd")
 	var tip        = CanvasLayer.new()
@@ -182,10 +391,12 @@ func _setup_sounds() -> void:
 	_snd_rifle_shot = _make_sfx("res://Sounds/rifle_shot.mp3",     -22.0)
 	var _hum_stream = load("res://Sounds/hum.wav") as AudioStream
 	if _hum_stream != null:
-		_snd_hum = AudioStreamPlayer.new()
+		_snd_hum = AudioStreamPlayer2D.new()
 		_snd_hum.stream    = _hum_stream
 		_snd_hum.volume_db = -80.0
 		_snd_hum.bus       = "Master"
+		_snd_hum.max_distance = 400.0  # Audible within 400px
+		_snd_hum.attenuation = 1.5
 		add_child(_snd_hum)
 		_snd_hum.finished.connect(_on_hum_finished)
 		_snd_hum.play()
@@ -214,33 +425,81 @@ func _setup_stats() -> void:
 	match character_class:
 		"melee":
 			character_name = "Melee Fighter"
-			_base_max_hp   = 300.0
-			_base_max_mp   = 60.0
+			_base_ham_health = 400.0; _base_ham_action = 350.0; _base_ham_mind = 250.0
 		"ranged":
 			character_name = "Marksman"
-			_base_max_hp   = 180.0
-			_base_max_mp   = 100.0
+			_base_ham_health = 300.0; _base_ham_action = 400.0; _base_ham_mind = 300.0
 		"mage":
 			character_name = "Mage"
-			_base_max_hp   = 150.0
-			_base_max_mp   = 200.0
-		"brawler":
-			character_name = "Brawler"
-			_base_max_hp   = 350.0
-			_base_max_mp   = 60.0
+			_base_ham_health = 250.0; _base_ham_action = 300.0; _base_ham_mind = 450.0
+		"scrapper":
+			character_name = "Scrapper"
+			_base_ham_health = 500.0; _base_ham_action = 400.0; _base_ham_mind = 200.0
 		"medic":
 			character_name = "Medic"
-			_base_max_hp   = 220.0
-			_base_max_mp   = 150.0
+			_base_ham_health = 350.0; _base_ham_action = 300.0; _base_ham_mind = 350.0
+		"streetfighter":
+			character_name = "Street Fighter"
+			_base_ham_health = 600.0; _base_ham_action = 450.0; _base_ham_mind = 150.0
+		"robo":
+			character_name = "Robo"
+			_base_ham_health = 350.0; _base_ham_action = 300.0; _base_ham_mind = 350.0
 	_recalc_stats()
-	hp = max_hp
-	mp = max_mp
+	ham_health = get_effective_max_health()
+	ham_action = get_effective_max_action()
+	ham_mind   = get_effective_max_mind()
+
+var _mount_dir_textures : Dictionary = {}  # "n" -> AtlasTexture, "ne" -> AtlasTexture, etc.
+
+func _load_mount_dir_textures() -> void:
+	_mount_dir_textures.clear()
+	var base_path = _mount_item.get("mount_texture_dir", "")
+	if base_path == "": return
+	for dir in ["n", "ne", "e", "se", "s", "sw", "w", "nw"]:
+		var path = base_path + "idle_" + dir + ".png"
+		var tex = load(path) as Texture2D
+		if tex == null: continue
+		# These are 15360x512 strips — grab just the first 512x512 frame
+		var atlas = AtlasTexture.new()
+		atlas.atlas = tex
+		atlas.region = Rect2(0, 0, 512, 512)
+		_mount_dir_textures[dir] = atlas
 
 func _draw_mount_vehicle(alpha: float) -> void:
 	var variant = _mount_item.get("mount_variant", "fighter")
 	var t       = Time.get_ticks_msec() / 1000.0
 	var fwd     = Vector2(cos(_mount_angle), sin(_mount_angle))
 	var side    = Vector2(-sin(_mount_angle), cos(_mount_angle))
+
+	# ── 8-directional texture mount ──────────────────────────
+	if variant == "texture_dir":
+		if _mount_dir_textures.is_empty():
+			_load_mount_dir_textures()
+		var dir_tex = _mount_dir_textures.get(_mount_facing, null) as Texture2D
+		if dir_tex != null:
+			var tex_size = dir_tex.get_size()
+			var sc = 0.50
+			# Ground shadow — uses actual ship texture, squished flat like character shadow
+			var sh_scale_x = sc
+			var sh_scale_y = sc * 0.25
+			var sh_pos = Vector2(6, 60)
+			draw_set_transform(sh_pos, 0.0, Vector2(sh_scale_x, sh_scale_y))
+			draw_texture(dir_tex, -tex_size * 0.5, Color(0, 0, 0, 0.30 * alpha))
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+			var spd_pct = clampf(_mount_velocity.length() / (SPEED * 5.0), 0.0, 1.0)
+
+			# Draw ship sprite — hover bob when idle
+			var hover_y = sin(t * 2.0) * 4.0 * (1.0 - spd_pct)
+			var ship_origin = Vector2(0, -30 + hover_y)
+			draw_set_transform(ship_origin, 0.0, Vector2(sc, sc))
+			draw_texture(dir_tex, -tex_size * 0.5, Color(1, 1, 1, alpha))
+
+
+
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+		return
 
 	# Engine glow pulse
 	var eng_glow = Color(0.30, 0.65, 1.00, (0.55 + sin(t*8.0)*0.30) * alpha)
@@ -383,10 +642,13 @@ func _recalc_stats() -> void:
 			_item_agi += item.get("attr_agi", 0)
 			_item_int += item.get("attr_int", 0)
 			_item_spi += item.get("attr_spi", 0)
-	max_hp = _base_max_hp + (attr_str + _item_str) * 25.0
-	max_mp = _base_max_mp + (attr_spi + _item_spi) * 25.0
-	hp = minf(hp, max_hp)
-	mp = minf(mp, max_mp)
+	# HAM pool max = base + (secondary stats + item bonuses) * 10
+	ham_health_max = _base_ham_health + (stat_strength + stat_constitution + _item_str) * 10.0
+	ham_action_max = _base_ham_action + (stat_quickness + stat_stamina + _item_agi) * 10.0
+	ham_mind_max   = _base_ham_mind + (stat_focus + stat_willpower + _item_int + _item_spi) * 10.0
+	ham_health = minf(ham_health, get_effective_max_health())
+	ham_action = minf(ham_action, get_effective_max_action())
+	ham_mind   = minf(ham_mind, get_effective_max_mind())
 
 # ── CREDITS & PROGRESSION ─────────────────────────────────────
 func add_credits(amount: int) -> void:
@@ -394,11 +656,33 @@ func add_credits(amount: int) -> void:
 	_spawn_floating_text("+%d ¢" % amount, Color(1.0, 0.85, 0.20))
 
 func add_exp(amount: float) -> void:
-	exp_points += amount
-	_spawn_floating_text("+%d XP" % int(amount), Color(0.75, 0.25, 1.0))
-	while exp_points >= exp_needed:
-		exp_points -= exp_needed
-		_level_up()
+	# Route generic XP to weapon-specific pool AND legacy XP bar
+	var wt = _get_weapon_xp_type()
+	add_xp(wt, int(amount))
+
+func _spawn_hit_flash(world_pos: Vector2) -> void:
+	var flash = Node2D.new()
+	flash.position = world_pos
+	flash.z_index = 20
+	var src = """extends Node2D
+var _t:float=0.0
+func _process(d):
+	_t+=d
+	if _t>0.35: queue_free(); return
+	queue_redraw()
+func _draw():
+	var a=1.0-_t/0.35
+	var r=8.0+_t*40.0
+	draw_circle(Vector2.ZERO,r,Color(1.0,1.0,1.0,a*0.5))
+	draw_circle(Vector2.ZERO,r*0.5,Color(1.0,0.9,0.5,a*0.8))
+	for i in 6:
+		var ang=float(i)/6.0*TAU+_t*8.0
+		var p=Vector2(cos(ang),sin(ang))*r*0.7
+		draw_circle(p,2.0,Color(1.0,0.8,0.3,a*0.6))
+"""
+	var s = GDScript.new(); s.source_code = src; s.reload()
+	flash.set_script(s)
+	get_tree().current_scene.add_child(flash)
 
 func _spawn_floating_text(text: String, color: Color) -> void:
 	var script = load("res://Scripts/BossFloatingText.gd")
@@ -418,8 +702,9 @@ func _level_up() -> void:
 	unspent_points += 3
 	exp_needed     = 100.0 * level
 	_recalc_stats()
-	hp = max_hp   # full heal on level up
-	mp = max_mp
+	ham_health = get_effective_max_health()  # full heal on level up
+	ham_action = get_effective_max_action()
+	ham_mind   = get_effective_max_mind()
 	var arena = get_tree().get_first_node_in_group("boss_arena_scene")
 	if arena and arena.has_method("trigger_level_up"):
 		arena.call("trigger_level_up", level)
@@ -443,6 +728,19 @@ func _process(delta: float) -> void:
 		queue_redraw()
 		return
 
+	_tick_incap(delta)
+	if _incapped:
+		velocity = Vector2.ZERO
+		queue_redraw()
+		return
+
+	_tick_combat_states(delta)
+	# Stunned or knocked down = can't act
+	if state_stun > 0.0 or state_knockdown > 0.0:
+		velocity = Vector2.ZERO
+		queue_redraw()
+		return
+
 	_target_scan_timer -= delta
 	if _target_scan_timer <= 0.0:
 		_target_scan_timer = TARGET_SCAN_RATE
@@ -452,20 +750,17 @@ func _process(delta: float) -> void:
 		_move_lock_timer -= delta
 
 	_aura_t += delta
-	# ── Vehicle hum volume ────────────────────────────────────
+	# ── Vehicle hum volume (scales with speed) ──────────────
 	if _snd_hum != null:
 		if _mounted:
-			_snd_hum.volume_db = -9.5
-			if not _snd_hum.playing: _snd_hum.play()
-		elif _has_parked:
-			var _hd : float = global_position.distance_to(_parked_pos)
-			var _hv : float = clampf(1.0 - _hd / 360.0, 0.0, 1.0)
-			_snd_hum.volume_db = linear_to_db(maxf(_hv * 0.638, 0.0001))
+			var spd_ratio = clampf(_mount_velocity.length() / (SPEED * 5.0), 0.0, 1.0)
+			# Idle hum at -25db, max speed at -6db
+			_snd_hum.volume_db = lerpf(-25.0, -6.0, spd_ratio)
 			if not _snd_hum.playing: _snd_hum.play()
 		else:
 			_snd_hum.volume_db = -80.0
 	_tick_skills(delta)
-	_tick_auto_attack(delta)
+	_tick_combat_queue(delta)
 	_update_animation()
 	queue_redraw()
 
@@ -509,8 +804,9 @@ func _physics_process(_delta: float) -> void:
 	_moving = input != Vector2.ZERO
 	if _moving:
 		var _sprint_mult = 1.65 if _sprint_active else 1.0
-		velocity = input.normalized() * SPEED * _sprint_mult
-		if character_class == "melee" or character_class == "medic" or character_class == "brawler":
+		var _class_speed = 1.2 if character_class == "scrapper" else 1.0
+		velocity = input.normalized() * SPEED * _sprint_mult * _class_speed
+		if character_class in ["melee", "medic", "scrapper", "streetfighter", "robo"]:
 			_facing = _facing_8dir(input)
 		elif input.y < 0.0:
 			_facing = "n"
@@ -549,8 +845,8 @@ func _input(event: InputEvent) -> void:
 		if event.keycode == KEY_TAB:
 			_cycle_target()
 		elif event.keycode == KEY_ESCAPE:
-			# Close any open window first; if none, clear target
-			var window_names = ["ShopWindow", "InventoryWindow", "AttributeWindow", "MissionWindow", "SkillWindow"]
+			# Close any open window first; if none, clear target; if none, open settings
+			var window_names = ["ShopWindow", "InventoryWindow", "AttributeWindow", "MissionWindow", "SkillWindow", "SWGSkillWindow", "SWGStatsWindow"]
 			var closed = false
 			for wname in window_names:
 				var win = get_node_or_null(wname)
@@ -558,10 +854,19 @@ func _input(event: InputEvent) -> void:
 					win.queue_free()
 					closed = true
 					break
-			if not closed:
+			if not closed and _current_target != null:
 				_current_target = null
 				_target_idx     = -1
 				_cancel_attack()
+			elif not closed:
+				# No windows open, no target — open settings/cogwheel
+				var scene_root = get_tree().current_scene
+				if scene_root:
+					for child in scene_root.get_children():
+						var script_path = child.get_script().resource_path if child.get_script() else ""
+						if "SettingsWindow" in script_path:
+							child.call("_toggle")
+							break
 		elif event.keycode == KEY_G:
 			_one_shot_kill = true
 		elif event.keycode == KEY_J:
@@ -572,32 +877,29 @@ func _input(event: InputEvent) -> void:
 			_toggle_inventory()
 		elif event.keycode == KEY_C:
 			_toggle_attributes()
+		elif event.keycode == KEY_K:
+			_toggle_profession_tree()
+		elif event.keycode == KEY_U:
+			_toggle_stats_window()
+		elif event.keycode == KEY_SPACE:
+			_try_stand_up()
+		elif event.keycode == KEY_QUOTELEFT:  # Tilde/backtick key
+			_toggle_mount_hotkey()
 		elif event.keycode == KEY_F:
-			if _mounted and not _fading_out and not _fading_in:
-				# Exit vehicle — save it parked at current position
-				_parked_pos   = global_position
-				_parked_item  = _mount_item.duplicate()
-				_parked_angle = _mount_angle
-				_has_parked   = true
-				_mount_speed  = 0.0
-				_start_fade(false)
-				return
-			if not _mounted and _has_parked and global_position.distance_to(_parked_pos) < 130.0:
-				# Re-enter the parked vehicle
-				global_position = _parked_pos
-				_mount_item = _parked_item
-				# Mark it equipped in inventory
-				for _mi2 in inventory:
-					if _mi2.get("type", "") == "mount":
-						_mi2["equipped"] = (_mi2.get("name", "") == _parked_item.get("name", ""))
-				_has_parked = false
-				_start_fade(true)
-				return
+			if _mounted: return  # No F interaction while mounted
 			_try_open_shop()
 			_try_open_mission()
 			_try_open_loot()
 		elif event.keycode == KEY_H:
 			credits += 500   # debug: +500 credits
+		elif event.keycode == KEY_F11:
+			# Debug: reset all skills and grant large XP to all pools for testing
+			learned_boxes.clear()
+			skill_points_spent = 0
+			_recalc_box_modifiers()
+			for pool_key in xp_pools:
+				xp_pools[pool_key] = 50000
+			_spawn_floating_text("SKILLS RESET + XP GRANTED", Color(0.5, 1.0, 0.5))
 
 # ── WINDOW TOGGLES ────────────────────────────────────────────
 func _toggle_inventory() -> void:
@@ -624,10 +926,71 @@ func _toggle_attributes() -> void:
 	add_child(win)
 	win.call("init", self)
 
+func _toggle_profession_tree() -> void:
+	var existing = get_node_or_null("SWGSkillWindow")
+	if existing:
+		existing.queue_free()
+		return
+	var script = load("res://Scripts/SWGSkillWindow.gd")
+	var win    = CanvasLayer.new()
+	win.name   = "SWGSkillWindow"
+	win.set_script(script)
+	add_child(win)
+	win.call("init", self)
+
+func _toggle_stats_window() -> void:
+	var existing = get_node_or_null("SWGStatsWindow")
+	if existing:
+		existing.queue_free()
+		return
+	var script = load("res://Scripts/SWGStatsWindow.gd")
+	var win    = CanvasLayer.new()
+	win.name   = "SWGStatsWindow"
+	win.set_script(script)
+	add_child(win)
+	win.call("init", self)
+
+func _try_stand_up() -> void:
+	if state_knockdown <= 0.0:
+		return  # Not knocked down
+	if state_dizzy > 0.0:
+		# DIZZY FLOP: pressing space while dizzy = instant knockdown again
+		# Punishes spam, rewards waiting for dizzy to wear off
+		state_knockdown = 999.0  # Reset knockdown (infinite until stand)
+		_spawn_floating_text("DIZZY FLOPPED!", Color(1.0, 0.3, 0.2))
+		var bb_flop = get_node_or_null("BuffBar")
+		if bb_flop and bb_flop.has_method("update_buff"):
+			bb_flop.call("update_buff", "state_knockdown", 999.0)
+		return
+	# Not dizzy — successfully stand up
+	state_knockdown = 0.0
+	var bb = get_node_or_null("BuffBar")
+	if bb and bb.has_method("remove_buff"):
+		bb.call("remove_buff", "state_knockdown")
+	_spawn_floating_text("STOOD UP", Color(0.3, 1.0, 0.5))
+	# Restore sprite rotation
+	var sprite = get_node_or_null("Sprite") as AnimatedSprite2D
+	if sprite: sprite.rotation = 0.0
+
+func reset_skill_points() -> void:
+	learned_boxes.clear()
+	skill_points_spent = 0
+	_recalc_box_modifiers()
+	# Give max XP for testing
+	for xp_type in xp_pools:
+		xp_pools[xp_type] = 99999
+	_spawn_floating_text("SKILLS RESET + 99999 XP", Color(0.3, 1.0, 0.5))
+
+func _get_terminal_pos(t: Node) -> Vector2:
+	var spr = t.get_node_or_null("AnimatedSprite2D")
+	if spr:
+		return spr.global_position
+	return t.global_position
+
 func _try_open_shop() -> void:
 	var terminals = get_tree().get_nodes_in_group("shop_terminal")
 	for t in terminals:
-		if is_instance_valid(t) and global_position.distance_to(t.global_position) <= 58.0:
+		if is_instance_valid(t) and global_position.distance_to(_get_terminal_pos(t)) <= 100.0:
 			_toggle_shop()
 			return
 
@@ -646,7 +1009,7 @@ func _toggle_shop() -> void:
 func _try_open_mission() -> void:
 	var terminals = get_tree().get_nodes_in_group("mission_terminal")
 	for t in terminals:
-		if is_instance_valid(t) and global_position.distance_to(t.global_position) <= 58.0:
+		if is_instance_valid(t) and global_position.distance_to(_get_terminal_pos(t)) <= 100.0:
 			_toggle_mission()
 			return
 
@@ -705,6 +1068,28 @@ func toggle_equip(inv_index: int) -> void:
 	item["equipped"] = not item.get("equipped", false)
 	_recalc_stats()
 
+func _toggle_mount_hotkey() -> void:
+	if _fading_out or _fading_in: return  # Already transitioning
+	# If mounted, dismount (wait for speed to drop first)
+	if _mounted:
+		if _mount_velocity.length() > 20.0:
+			# Still moving — force slow down, don't dismount yet
+			_mount_velocity = _mount_velocity * 0.3
+			_spawn_floating_text("Slowing down...", Color(0.7, 0.8, 1.0))
+			return
+		# Speed is low enough — dismount
+		for i in inventory.size():
+			if inventory[i].get("type", "") == "mount" and inventory[i].get("equipped", false):
+				_toggle_mount(i)
+				return
+	else:
+		# Not mounted — find first mount in inventory and mount up
+		for i in inventory.size():
+			if inventory[i].get("type", "") == "mount":
+				_toggle_mount(i)
+				return
+		_spawn_floating_text("No vehicle in inventory", Color(1.0, 0.5, 0.3))
+
 func _toggle_mount(inv_index: int) -> void:
 	var item = inventory[inv_index]
 	var already_equipped = item.get("equipped", false)
@@ -749,33 +1134,47 @@ func _tick_fade(delta: float) -> void:
 			_fade_t    = 1.0
 			_fading_in = false
 
-# ── MOUNT PHYSICS ────────────────────────────────────────────
+# ── MOUNT MOVEMENT (WASD 8-dir with acceleration/deceleration) ─
+var _mount_facing : String = "s"
+var _mount_velocity : Vector2 = Vector2.ZERO  # Actual smoothed velocity
+var _mount_last_dir : Vector2 = Vector2.ZERO  # Last input direction (for coasting)
+
 func _tick_mount_physics(delta: float) -> void:
-	var max_speed = SPEED * _mount_item.get("speed_mult", 20.0)
-	var accel     = max_speed * 1.8   # 0→max in ~0.55s
-	var decel     = max_speed * 2.2
+	var max_speed = SPEED * _mount_item.get("speed_mult", 5.0)
+	var accel = max_speed * 1.2   # Ramp up over ~0.8s
+	var decel = max_speed * 0.6   # Coast to stop over ~1.6s
 
-	# Throttle W = accelerate, S = brake/reverse
-	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
-		_mount_speed = move_toward(_mount_speed, max_speed, accel * delta)
-	elif Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
-		_mount_speed = move_toward(_mount_speed, -max_speed * 0.35, decel * delta)
-	# No auto-decel — ship holds speed
+	# WASD input
+	var input_dir = Vector2.ZERO
+	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):    input_dir.y -= 1
+	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):  input_dir.y += 1
+	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):  input_dir.x -= 1
+	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT): input_dir.x += 1
 
-	# Nose tracks mouse cursor
-	var vp        = get_viewport()
-	var cam       = vp.get_camera_2d()
-	var mouse_scr = vp.get_mouse_position()
-	var mouse_world = mouse_scr
-	if cam:
-		var vp_size  = vp.get_visible_rect().size
-		mouse_world  = (mouse_scr - vp_size * 0.5) / cam.zoom + cam.global_position
-	var to_mouse  = mouse_world - global_position
-	if to_mouse.length() > 5.0:
-		_mount_angle = to_mouse.angle()
+	if input_dir != Vector2.ZERO:
+		input_dir = input_dir.normalized()
+		_mount_last_dir = input_dir
+		# Accelerate toward target velocity
+		var target_vel = input_dir * max_speed
+		_mount_velocity = _mount_velocity.move_toward(target_vel, accel * delta)
+		# Update facing from input direction
+		var angle = input_dir.angle()
+		var deg = fmod(rad_to_deg(angle) + 360.0 + 22.5, 360.0)
+		var sector = int(deg / 45.0)
+		match sector:
+			0: _mount_facing = "n"
+			1: _mount_facing = "ne"
+			2: _mount_facing = "e"
+			3: _mount_facing = "se"
+			4: _mount_facing = "s"
+			5: _mount_facing = "sw"
+			6: _mount_facing = "w"
+			7: _mount_facing = "nw"
+	else:
+		# No input — coast to a stop in the last direction
+		_mount_velocity = _mount_velocity.move_toward(Vector2.ZERO, decel * delta)
 
-	var fwd = Vector2(cos(_mount_angle), sin(_mount_angle))
-	velocity = fwd * _mount_speed
+	velocity = _mount_velocity
 	move_and_slide()
 	queue_redraw()
 
@@ -803,25 +1202,39 @@ func _update_animation() -> void:
 	if upper:
 		upper.visible = false
 		sprite.material = null
-	if character_class == "brawler":
+	if character_class == "streetfighter":
+		# Street Fighter: walk → run transition + attack alternation
+		# Movement ALWAYS overrides attack animation
 		var anim : String
 		if _moving:
-			anim = "run_" + _facing  # Run ALWAYS wins when moving
+			_sf_move_timer += get_process_delta_time()
+			if _sf_move_timer < SF_WALK_DURATION:
+				anim = "walk_" + _facing
+			else:
+				anim = "run_" + _facing
 		elif _is_attacking:
-			anim = "attack_" + _facing
+			anim = _blend_attack_anim if _blend_attack_anim != "" else "attack_" + _facing
 		else:
+			_sf_move_timer = 0.0  # Reset walk timer when stopped
 			anim = "idle_" + _facing
 		if sprite.sprite_frames.has_animation(anim):
-			if sprite.animation != anim:
-				sprite.play(anim)
+			var cur = sprite.animation
+			if cur != anim:
+				if cur.begins_with("attack") and anim.begins_with("idle_") and sprite.is_playing():
+					pass
+				else:
+					sprite.play(anim)
+		elif sprite.sprite_frames.has_animation("idle_" + _facing):
+			sprite.play("idle_" + _facing)
 	else:
 		# Standard single-sprite animation for all other classes
+		# Movement ALWAYS overrides attack animation
 		if upper: upper.visible = false
 		var anim : String
-		if _is_attacking:
-			anim = "attack_" + _facing
-		elif _moving:
+		if _moving:
 			anim = "run_" + _facing
+		elif _is_attacking:
+			anim = "attack_" + _facing
 		else:
 			anim = "idle_" + _facing
 
@@ -832,11 +1245,8 @@ func _update_animation() -> void:
 			if sprite.sprite_frames.has_animation("idle_s") and sprite.animation != "idle_s":
 				sprite.play("idle_s")
 
-	# Brawler lean — 10° forward tilt when running east/west
-	if (character_class == "brawler") and _moving and _facing in ["e", "w"]:
-		sprite.rotation = deg_to_rad(10.0) if _facing == "e" else deg_to_rad(-10.0)
-		if upper: upper.rotation = sprite.rotation
-	else:
+	# Reset rotation unless knocked down
+	if state_knockdown <= 0.0:
 		sprite.rotation = 0.0
 		if upper: upper.rotation = 0.0
 
@@ -856,7 +1266,7 @@ func _draw() -> void:
 	# ── Gold aura — PD2-style soft energy cloud around body ──────
 	for _aura_item in inventory:
 		if _aura_item.get("equipped", false) and _aura_item.get("rarity", "") == "gold":
-			var _body_cy = -20.0 if (character_class == "brawler") else -12.0
+			var _body_cy = -20.0 if (character_class == "scrapper") else -12.0
 			var _c       = Vector2(0.0, _body_cy)
 			# Two independent slow pulses for organic breathing feel
 			var _p1v = 0.55 + sin(_aura_t * 1.8) * 0.18
@@ -929,6 +1339,26 @@ func _draw() -> void:
 	if not _mounted:
 		_draw_character_shadow()
 
+	# ── Dizzy stars effect ───────────────────────────────────
+	if state_dizzy > 0.0 and not _mounted:
+		var t = _aura_t
+		var star_y = -60.0  # Above character head
+		for i in 5:
+			var angle = t * 3.0 + float(i) * TAU / 5.0
+			var r = 14.0
+			var sx = cos(angle) * r
+			var sy = sin(angle) * r * 0.4  # Flatten for isometric
+			var star_alpha = 0.6 + sin(t * 5.0 + i * 1.5) * 0.3
+			# Yellow star
+			draw_circle(Vector2(sx, star_y + sy), 2.5, Color(1.0, 0.9, 0.2, star_alpha))
+			# White sparkle core
+			draw_circle(Vector2(sx, star_y + sy), 1.0, Color(1.0, 1.0, 1.0, star_alpha * 0.7))
+
+	# ── Knockdown indicator ──────────────────────────────────
+	if state_knockdown > 0.0 and not _mounted:
+		var kd_alpha = 0.5 + sin(_aura_t * 3.0) * 0.3
+		draw_string(_roboto, Vector2(-20, -70), "KNOCKED DOWN", HORIZONTAL_ALIGNMENT_CENTER, 50, 8, Color(1.0, 0.3, 0.2, kd_alpha))
+
 	# Nameplate removed — name shown in target widget only
 
 	var sprite = get_node_or_null("Sprite") as AnimatedSprite2D
@@ -947,23 +1377,34 @@ func _draw() -> void:
 	draw_colored_polygon(shadow_pts, Color(0, 0, 0, 0.22))
 
 func _draw_character_shadow() -> void:
-	var sx : float = 6.75
-	var sy : float = 2.4
-	match character_class:
-		"brawler": sx = 7.65; sy = 2.85
-		"ranged": sx = 5.8; sy = 2.2
-	var pts = PackedVector2Array()
-	for i in 16:
-		var a = float(i) / 16.0 * TAU
-		pts.append(Vector2(cos(a) * sx, sin(a) * sy))
-	draw_colored_polygon(pts, Color(0, 0, 0, 0.25))
+	# Sprite-based shadow: draw current frame squished & darkened
+	var sprite : AnimatedSprite2D = get_node_or_null("Sprite")
+	if sprite == null or sprite.sprite_frames == null:
+		return
+	var anim = sprite.animation
+	var frame_idx = sprite.frame
+	if not sprite.sprite_frames.has_animation(anim):
+		return
+	var tex = sprite.sprite_frames.get_frame_texture(anim, frame_idx)
+	if tex == null:
+		return
+	var ts = tex.get_size()
+	var sc = sprite.scale
+	# Shadow transform: flatten vertically to 25%, shift SE (sun from NW)
+	var shadow_scale_x = sc.x * 1.0
+	var shadow_scale_y = sc.y * 0.25
+	var off = sprite.offset * Vector2(sc.x, shadow_scale_y)
+	var shadow_pos = Vector2(4, -2) + off  # SE offset
+	draw_set_transform(shadow_pos, 0.0, Vector2(shadow_scale_x, shadow_scale_y))
+	draw_texture(tex, -ts * 0.5, Color(0, 0, 0, 0.30))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func _get_class_color() -> Color:
 	match character_class:
 		"melee":   return Color(0.9,  0.35, 0.20)
 		"ranged":  return Color(0.35, 0.75, 0.90)
 		"mage":    return Color(0.70, 0.40, 1.00)
-		"brawler": return Color(0.40, 0.85, 0.30)
+		"scrapper": return Color(0.40, 0.85, 0.30)
 	return Color.WHITE
 
 func _facing_8dir(v: Vector2) -> String:
@@ -1011,10 +1452,16 @@ func _tick_auto_attack(delta: float) -> void:
 		"mage":
 			attack_interval = 4.0
 			attack_range    = 700.0
-		"brawler":
+		"scrapper":
 			attack_interval = 2.0
 			attack_range    = 130.0
 		"medic":
+			attack_interval = 3.0
+			attack_range    = 500.0
+		"streetfighter":
+			attack_interval = 2.5
+			attack_range    = 130.0
+		"robo":
 			attack_interval = 3.0
 			attack_range    = 500.0
 		_:
@@ -1042,11 +1489,11 @@ func _do_attack() -> void:
 		"melee":   _move_lock_timer = 0.0
 		"ranged":  _move_lock_timer = 0.0
 		"mage":    _move_lock_timer = 0.0
-		"brawler": _move_lock_timer = 0.0
+		"scrapper": _move_lock_timer = 0.0
 		"medic":   _move_lock_timer = 0.0
 
 	var to_target = _current_target.global_position - global_position
-	if character_class == "melee" or character_class == "medic" or character_class == "brawler":
+	if character_class in ["melee", "medic", "scrapper", "streetfighter", "robo"]:
 		_facing = _facing_8dir(to_target)
 	elif absf(to_target.x) >= absf(to_target.y):
 		_facing = "e" if to_target.x > 0.0 else "w"
@@ -1055,21 +1502,20 @@ func _do_attack() -> void:
 
 	var sprite = get_node_or_null("Sprite") as AnimatedSprite2D
 	var anim_name = "attack_" + _facing
+	# Street Fighter alternates between attack and attack2
+	if character_class == "streetfighter":
+		if _sf_attack_alt:
+			anim_name = "attack2_" + _facing
+		_sf_attack_alt = not _sf_attack_alt
 	_is_attacking = true
 	_blend_attack_anim = anim_name
 
-	# Brawlernew while moving: run animation wins, don't play attack visually
-	if character_class == "brawler" and _moving:
-		# Damage is dealt below, but visually keep running
-		# Clear _is_attacking immediately since no animation_finished will fire
-		_is_attacking = false
-	else:
-		# All other classes / standing still: play attack on main sprite
-		if sprite and sprite.sprite_frames and sprite.sprite_frames.has_animation(anim_name):
-			sprite.play(anim_name)
-			if sprite.animation_finished.is_connected(_on_attack_anim_done):
-				sprite.animation_finished.disconnect(_on_attack_anim_done)
-			sprite.animation_finished.connect(_on_attack_anim_done, CONNECT_ONE_SHOT)
+	# Play attack animation
+	if sprite and sprite.sprite_frames and sprite.sprite_frames.has_animation(anim_name):
+		sprite.play(anim_name)
+		if sprite.animation_finished.is_connected(_on_attack_anim_done):
+			sprite.animation_finished.disconnect(_on_attack_anim_done)
+		sprite.animation_finished.connect(_on_attack_anim_done, CONNECT_ONE_SHOT)
 
 	var dmg : float
 	if _one_shot_kill:
@@ -1080,10 +1526,38 @@ func _do_attack() -> void:
 		dmg = _get_attack_damage()
 
 	var arena = get_tree().get_first_node_in_group("boss_arena_scene")
+	var is_ranged_atk = character_class in ["ranged", "mage", "medic"]
+	var dmg_type = CombatEngine.get_weapon_damage_type(character_class)
+	var target_pool = CombatEngine.get_weapon_target_pool(character_class)
+
+	# ── SWG Hit Roll ─────────────────────────────────────────
+	var attack_data = {"is_ranged": is_ranged_atk, "accuracy_bonus": 0}
+	var hit_result = CombatEngine.roll_to_hit(self, _current_target, attack_data)
+	match hit_result.get("result", "hit"):
+		"miss":
+			if arena and arena.has_method("spawn_damage_number"):
+				arena.spawn_damage_number(_current_target.global_position, 0, Color(0.6, 0.6, 0.6), "MISS")
+			return
+		"dodge":
+			if arena and arena.has_method("spawn_damage_number"):
+				arena.spawn_damage_number(_current_target.global_position, 0, Color(0.4, 0.9, 1.0), "DODGE")
+			return
+		"block":
+			dmg *= (1.0 - hit_result.get("reduction", 0.75))
+			if arena and arena.has_method("spawn_damage_number"):
+				arena.spawn_damage_number(_current_target.global_position, 0, Color(0.8, 0.8, 0.2), "BLOCK")
+		"counterattack":
+			if arena and arena.has_method("spawn_damage_number"):
+				arena.spawn_damage_number(global_position, 0, Color(1.0, 0.5, 0.2), "COUNTER")
+			# Target gets a free hit back
+			if _current_target.has_method("_do_attack"):
+				pass  # Mobs don't have counter yet, handled in mob AI later
+
+	# Apply armor resistance via CombatEngine
+	dmg = CombatEngine.calc_damage(dmg, dmg_type, _current_target, attack_data)
 
 	if character_class == "medic":
 		var spawn_pos = global_position + _facing_to_vec() * 18.0
-		# Determine if target is friendly (party member / remote player) or enemy
 		var is_heal = _current_target.is_in_group("party_member") or _current_target.is_in_group("friendly")
 		if arena and arena.has_method("spawn_canister"):
 			arena.spawn_canister(spawn_pos, _current_target, dmg, is_heal)
@@ -1093,8 +1567,6 @@ func _do_attack() -> void:
 			arena.spawn_fireball(spawn_pos, _current_target, dmg)
 	elif character_class == "ranged":
 		var spawn_pos = global_position + _facing_to_vec() * 18.0
-		# Check for equipped rifle — passes glow flag and spawns shoot visual
-		# Pick glow color from equipped rifle rarity (zero alpha = no glow)
 		var rifle_glow_col = Color(0, 0, 0, 0)
 		for item in inventory:
 			if item.get("equipped", false) and item.get("type", "") == "rifle":
@@ -1111,7 +1583,11 @@ func _do_attack() -> void:
 		_try_spawn_weapon_swing()
 	else:
 		if _current_target.has_method("take_damage"):
-			_current_target.take_damage(dmg)
+			# Mobs only accept 1 arg; players accept 2 (with pool)
+			if _current_target.get("ham_health") != null:
+				_current_target.take_damage(dmg, target_pool)
+			else:
+				_current_target.take_damage(dmg)
 		if arena and arena.has_method("spawn_damage_number"):
 			arena.spawn_damage_number(_current_target.global_position, dmg, _get_dmg_color())
 		if arena and arena.has_method("spawn_melee_hit"):
@@ -1171,6 +1647,7 @@ func _tick_skills(delta: float) -> void:
 				_bb_st.call("remove_buff", "sensu_bean")
 
 func activate_skill(skill_id: String) -> void:
+	# Instant utility skills bypass the queue
 	match skill_id:
 		"sprint":
 			_sprint_active = true
@@ -1182,6 +1659,7 @@ func activate_skill(skill_id: String) -> void:
 					"label": "Sprint", "duration": SPRINT_DURATION,
 					"color": Color(0.35, 0.80, 1.00)
 				})
+			return
 		"sensu_bean":
 			_sensu_active = true
 			_sensu_timer  = SENSU_DURATION
@@ -1192,11 +1670,255 @@ func activate_skill(skill_id: String) -> void:
 					"label": "Sensu Bean", "duration": SENSU_DURATION,
 					"color": Color(0.25, 0.85, 0.40)
 				})
-		"triple_strike":
-			if _current_target != null and is_instance_valid(_current_target):
-				_triple_active    = true
-				_triple_hits_left = 3
-				_fire_triple_strike()
+			return
+
+	# Everything else goes into the combat queue
+	_queue_ability(skill_id)
+
+# ── COMBAT QUEUE ─────────────────────────────────────────────
+func _queue_ability(skill_id: String) -> void:
+	if _combat_queue.size() >= MAX_QUEUE_SIZE:
+		_spawn_floating_text("Queue full!", Color(1.0, 0.5, 0.3))
+		return
+	_combat_queue.append(skill_id)
+	_notify_queue_display()
+
+func dequeue_ability(skill_id: String) -> void:
+	var idx = _combat_queue.find(skill_id)
+	if idx >= 0:
+		_combat_queue.remove_at(idx)
+		_notify_queue_display()
+
+func _notify_queue_display() -> void:
+	var bar = get_node_or_null("ActionBar")
+	if bar and bar.has_method("update_queue_display"):
+		bar.call("update_queue_display", _combat_queue)
+
+func _tick_combat_queue(delta: float) -> void:
+	if _current_target == null or not is_instance_valid(_current_target):
+		_combat_queue.clear()
+		_is_attacking = false
+		return
+	if not _current_target.is_in_group("targetable"):
+		_current_target = null
+		_combat_queue.clear()
+		_is_attacking = false
+		return
+	# Check if target is dying
+	var tgt_dying = _current_target.get("_dying")
+	if tgt_dying == true:
+		_current_target = null
+		_combat_queue.clear()
+		_is_attacking = false
+		return
+	if state_stun > 0.0 or state_knockdown > 0.0 or _incapped:
+		return
+
+	# Range check
+	var attack_range : float = 130.0
+	match character_class:
+		"ranged", "mage": attack_range = 700.0
+		"medic", "robo": attack_range = 500.0
+	var dist = global_position.distance_to(_current_target.global_position)
+	if dist > attack_range:
+		_cancel_attack()
+		return
+
+	_queue_timer -= delta
+	if _queue_timer > 0.0:
+		return
+
+	# Calculate attack speed (base interval modified by skills)
+	var base_interval = _queue_speed
+	match character_class:
+		"melee", "scrapper": base_interval = 2.0
+		"ranged": base_interval = 2.5
+		"mage": base_interval = 3.5
+		"streetfighter": base_interval = 2.5
+		"medic", "robo": base_interval = 3.0
+	# Faster with AGI
+	base_interval /= (1.0 + (attr_agi + _item_agi) * 0.05)
+	# End-game minimum: 1 second
+	base_interval = maxf(base_interval, 1.0)
+	_queue_timer = base_interval
+
+	if _combat_queue.size() > 0:
+		# Pop next ability from queue and execute
+		var next_skill = _combat_queue.pop_front()
+		_notify_queue_display()
+
+		if next_skill == "triple_strike":
+			_triple_active = true
+			_triple_hits_left = 3
+			_fire_triple_strike()
+		else:
+			_execute_profession_ability(next_skill)
+	else:
+		# Queue empty — auto-attack (basic attack)
+		_do_attack()
+
+# ── PROFESSION ABILITIES ─────────────────────────────────────
+# Ability definitions: damage mult, action/mind cost, state applied, etc.
+const ABILITY_DATA : Dictionary = {
+	"dizzy_punch":    {"dmg_mult": 1.2, "action_cost": 40, "state": "dizzy", "state_dur": 8.0, "cooldown": 12.0},
+	"knockout_blow":  {"dmg_mult": 1.8, "action_cost": 60, "state": "knockdown", "state_dur": 5.0, "cooldown": 20.0},
+	"riposte":        {"dmg_mult": 1.3, "action_cost": 35, "state": "", "state_dur": 0.0, "cooldown": 8.0},
+	"blade_flurry":   {"dmg_mult": 0.6, "action_cost": 50, "state": "", "state_dur": 0.0, "cooldown": 10.0, "hits": 3},
+	"power_attack":   {"dmg_mult": 2.0, "action_cost": 70, "state": "", "state_dur": 0.0, "cooldown": 15.0},
+	"cleave":         {"dmg_mult": 1.5, "action_cost": 60, "state": "knockdown", "state_dur": 4.0, "cooldown": 18.0},
+	"leg_sweep":      {"dmg_mult": 0.8, "action_cost": 40, "state": "dizzy", "state_dur": 10.0, "cooldown": 14.0},
+	"impale":         {"dmg_mult": 2.2, "action_cost": 80, "state": "", "state_dur": 0.0, "cooldown": 22.0},
+	"spinning_kick":  {"dmg_mult": 1.4, "action_cost": 45, "state": "dizzy", "state_dur": 6.0, "cooldown": 10.0},
+	"intimidate":     {"dmg_mult": 0.5, "action_cost": 30, "state": "intimidate", "state_dur": 15.0, "cooldown": 25.0},
+	"warcry":         {"dmg_mult": 0.3, "action_cost": 50, "state": "intimidate", "state_dur": 20.0, "cooldown": 30.0},
+	"berserk":        {"dmg_mult": 2.5, "action_cost": 100, "state": "", "state_dur": 0.0, "cooldown": 30.0},
+	"body_shot":      {"dmg_mult": 1.3, "action_cost": 35, "state": "", "state_dur": 0.0, "cooldown": 8.0, "pool": "health"},
+	"fan_shot":       {"dmg_mult": 0.7, "action_cost": 50, "state": "", "state_dur": 0.0, "cooldown": 12.0, "hits": 3},
+	"aimed_shot":     {"dmg_mult": 1.8, "action_cost": 60, "state": "", "state_dur": 0.0, "cooldown": 15.0},
+	"headshot":       {"dmg_mult": 2.5, "action_cost": 90, "state": "stun", "state_dur": 4.0, "cooldown": 25.0},
+	"scatter_shot":   {"dmg_mult": 1.0, "action_cost": 40, "state": "dizzy", "state_dur": 6.0, "cooldown": 10.0},
+	"rapid_fire":     {"dmg_mult": 0.5, "action_cost": 55, "state": "", "state_dur": 0.0, "cooldown": 10.0, "hits": 4},
+	"leg_shot":       {"dmg_mult": 0.9, "action_cost": 35, "state": "dizzy", "state_dur": 8.0, "cooldown": 12.0},
+	"flash_grenade":  {"dmg_mult": 0.3, "action_cost": 60, "state": "blind", "state_dur": 10.0, "cooldown": 30.0},
+	"called_shot":    {"dmg_mult": 2.0, "action_cost": 80, "state": "stun", "state_dur": 5.0, "cooldown": 20.0},
+	"stim_health":    {"dmg_mult": 0.0, "action_cost": 30, "state": "", "state_dur": 0.0, "cooldown": 8.0, "heal": "health", "heal_amt": 100},
+	"stim_action":    {"dmg_mult": 0.0, "action_cost": 30, "state": "", "state_dur": 0.0, "cooldown": 8.0, "heal": "action", "heal_amt": 100},
+	"stim_mind":      {"dmg_mult": 0.0, "action_cost": 30, "state": "", "state_dur": 0.0, "cooldown": 8.0, "heal": "mind", "heal_amt": 100},
+	"bacta_infusion": {"dmg_mult": 0.0, "action_cost": 80, "state": "", "state_dur": 0.0, "cooldown": 20.0, "heal": "health", "heal_amt": 300},
+	"poison_dart":    {"dmg_mult": 0.8, "action_cost": 40, "state": "", "state_dur": 0.0, "cooldown": 12.0, "pool": "action"},
+	"neurotoxin":     {"dmg_mult": 1.0, "action_cost": 60, "state": "stun", "state_dur": 3.0, "cooldown": 18.0, "pool": "mind"},
+	"cure_state":     {"dmg_mult": 0.0, "action_cost": 40, "state": "", "state_dur": 0.0, "cooldown": 15.0, "cure": true},
+	"revive":         {"dmg_mult": 0.0, "action_cost": 100, "state": "", "state_dur": 0.0, "cooldown": 60.0, "heal": "health", "heal_amt": 200},
+	"full_heal":      {"dmg_mult": 0.0, "action_cost": 150, "state": "", "state_dur": 0.0, "cooldown": 45.0, "heal": "all", "heal_amt": 500},
+	"force_lightning": {"dmg_mult": 1.8, "mind_cost": 60, "state": "", "state_dur": 0.0, "cooldown": 10.0, "pool": "mind"},
+	"force_choke":    {"dmg_mult": 1.2, "mind_cost": 80, "state": "stun", "state_dur": 5.0, "cooldown": 20.0, "pool": "mind"},
+	"force_shield":   {"dmg_mult": 0.0, "mind_cost": 50, "state": "", "state_dur": 0.0, "cooldown": 25.0, "self_buff": "shield"},
+	"force_absorb":   {"dmg_mult": 0.0, "mind_cost": 70, "state": "", "state_dur": 0.0, "cooldown": 30.0, "self_buff": "absorb"},
+	"force_heal":     {"dmg_mult": 0.0, "mind_cost": 40, "state": "", "state_dur": 0.0, "cooldown": 10.0, "heal": "health", "heal_amt": 150},
+	"force_revive":   {"dmg_mult": 0.0, "mind_cost": 100, "state": "", "state_dur": 0.0, "cooldown": 45.0, "heal": "all", "heal_amt": 400},
+	"mind_trick":     {"dmg_mult": 0.5, "mind_cost": 90, "state": "blind", "state_dur": 12.0, "cooldown": 30.0, "pool": "mind"},
+	"saber_throw":    {"dmg_mult": 1.5, "mind_cost": 50, "state": "", "state_dur": 0.0, "cooldown": 12.0},
+	"saber_flurry":   {"dmg_mult": 0.6, "mind_cost": 60, "state": "", "state_dur": 0.0, "cooldown": 10.0, "hits": 3},
+}
+
+func _execute_profession_ability(skill_id: String) -> void:
+	print("[ABILITY] Executing: ", skill_id)
+	var data = ABILITY_DATA.get(skill_id, {})
+	if data.is_empty():
+		print("[ABILITY] Not found in ABILITY_DATA!")
+		_spawn_floating_text("Unknown ability: " + skill_id, Color(1.0, 0.3, 0.3))
+		return
+
+	# Check cost
+	var action_cost = data.get("action_cost", 0)
+	var mind_cost = data.get("mind_cost", 0)
+	if action_cost > 0 and ham_action < action_cost:
+		_spawn_floating_text("Not enough Action", Color(1.0, 0.7, 0.2))
+		return
+	if mind_cost > 0 and ham_mind < mind_cost:
+		_spawn_floating_text("Not enough Mind", Color(0.4, 0.6, 1.0))
+		return
+
+	# Pay cost
+	if action_cost > 0: ham_action -= action_cost
+	if mind_cost > 0: ham_mind -= mind_cost
+
+	var arena = get_tree().get_first_node_in_group("boss_arena_scene")
+
+	# Self-heal abilities
+	var heal_type = data.get("heal", "")
+	if heal_type != "":
+		var amt = data.get("heal_amt", 100)
+		match heal_type:
+			"health": ham_health = minf(ham_health + amt, get_effective_max_health())
+			"action": ham_action = minf(ham_action + amt, get_effective_max_action())
+			"mind":   ham_mind = minf(ham_mind + amt, get_effective_max_mind())
+			"all":
+				ham_health = minf(ham_health + amt, get_effective_max_health())
+				ham_action = minf(ham_action + amt, get_effective_max_action())
+				ham_mind = minf(ham_mind + amt, get_effective_max_mind())
+		_spawn_floating_text("+%d %s" % [amt, heal_type.to_upper()], Color(0.3, 1.0, 0.5))
+		return
+
+	# Cure state ability
+	if data.get("cure", false):
+		state_dizzy = 0.0; state_knockdown = 0.0; state_stun = 0.0
+		state_blind = 0.0; state_intimidate = 0.0
+		_spawn_floating_text("STATES CURED", Color(0.3, 1.0, 0.5))
+		return
+
+	# Self-buff
+	var self_buff = data.get("self_buff", "")
+	if self_buff != "":
+		var bb = get_node_or_null("BuffBar")
+		if bb and bb.has_method("add_buff"):
+			bb.call("add_buff", {"id": self_buff, "icon": skill_id, "label": skill_id.replace("_"," ").capitalize(), "duration": 30.0, "color": Color(0.4, 0.7, 1.0)})
+		_spawn_floating_text(self_buff.to_upper(), Color(0.4, 0.8, 1.0))
+		return
+
+	# Combat abilities — need a target
+	if _current_target == null or not is_instance_valid(_current_target):
+		_spawn_floating_text("No target", Color(1.0, 0.5, 0.3))
+		return
+
+	# Hit roll
+	var is_ranged = character_class in ["ranged", "mage", "medic"]
+	var attack_data = {"is_ranged": is_ranged, "accuracy_bonus": 10}
+	var hit_result = CombatEngine.roll_to_hit(self, _current_target, attack_data)
+	match hit_result.get("result", "hit"):
+		"miss":
+			if arena and arena.has_method("spawn_damage_number"):
+				arena.spawn_damage_number(_current_target.global_position, 0, Color(0.6, 0.6, 0.6), "MISS")
+			return
+		"dodge":
+			if arena and arena.has_method("spawn_damage_number"):
+				arena.spawn_damage_number(_current_target.global_position, 0, Color(0.4, 0.9, 1.0), "DODGE")
+			return
+		"block":
+			pass  # Reduced damage below
+
+	# Calculate damage
+	var base_dmg = _get_attack_damage()
+	var dmg = base_dmg * data.get("dmg_mult", 1.0)
+	if hit_result.get("result") == "block":
+		dmg *= 0.25
+
+	var target_pool = data.get("pool", CombatEngine.get_weapon_target_pool(character_class))
+	var dmg_type = CombatEngine.get_weapon_damage_type(character_class)
+	dmg = CombatEngine.calc_damage(dmg, dmg_type, _current_target)
+
+	# Apply damage (multi-hit or single)
+	var hits = data.get("hits", 1)
+	for _h in hits:
+		if _current_target.has_method("take_damage"):
+			if _current_target.get("ham_health") != null:
+				_current_target.take_damage(dmg / hits, target_pool)
+			else:
+				_current_target.take_damage(dmg / hits)
+		if arena and arena.has_method("spawn_damage_number"):
+			var offset = Vector2(randf_range(-15, 15), randf_range(-15, 15))
+			arena.spawn_damage_number(_current_target.global_position + offset, dmg / hits, Color(1.0, 0.8, 0.2))
+
+	# Hit flash effect on target
+	if is_instance_valid(_current_target):
+		_spawn_hit_flash(_current_target.global_position)
+
+	# Apply state
+	var state_name = data.get("state", "")
+	if state_name != "" and data.get("state_dur", 0.0) > 0.0:
+		CombatEngine.try_apply_state(self, _current_target, state_name, data.get("state_dur", 5.0))
+
+	# Play attack animation
+	var sprite = get_node_or_null("Sprite") as AnimatedSprite2D
+	var to_target = _current_target.global_position - global_position
+	_facing = _facing_8dir(to_target)
+	var anim_name = "attack_" + _facing
+	_is_attacking = true
+	if sprite and sprite.sprite_frames and sprite.sprite_frames.has_animation(anim_name):
+		sprite.play(anim_name)
+		if sprite.animation_finished.is_connected(_on_attack_anim_done):
+			sprite.animation_finished.disconnect(_on_attack_anim_done)
+		sprite.animation_finished.connect(_on_attack_anim_done, CONNECT_ONE_SHOT)
 
 func _fire_triple_strike() -> void:
 	if not _triple_active or _triple_hits_left <= 0:
@@ -1283,8 +2005,12 @@ func _get_attack_damage() -> float:
 			base = randf_range(22.0, 35.0)
 			base *= (1.0 + eff_int * 0.05)
 			base += eff_spi * 5.0
-		"brawler":
+		"scrapper":
 			base = randf_range(20.0, 32.0) + eff_str * 5.0
+		"streetfighter":
+			base = randf_range(28.0, 42.0) + eff_str * 6.0
+		"robo":
+			base = 25.0 + eff_spi * 3.0  # Same as medic
 		"medic":
 			base = 25.0 + eff_spi * 3.0
 		_:
@@ -1301,12 +2027,15 @@ func _get_dmg_color() -> Color:
 		"melee":   return Color(1.0, 0.55, 0.1)
 		"ranged":  return Color(0.4, 0.95, 1.0)
 		"mage":    return Color(0.9, 0.5,  1.0)
-		"brawler": return Color(1.0, 0.55, 0.1)
+		"scrapper": return Color(1.0, 0.55, 0.1)
 		"medic":   return Color(0.30, 0.85, 0.95)
 	return Color.WHITE
 
+var _post_attack_hold : float = 0.0
+
 func _on_attack_anim_done() -> void:
 	_is_attacking = false
+	_post_attack_hold = 0.15  # Hold last attack frame briefly before switching to idle
 
 var _lower_clip_mat : ShaderMaterial = null
 func _get_lower_clip_material() -> ShaderMaterial:
@@ -1390,15 +2119,46 @@ func is_targeted(node: Node) -> bool:
 	return node == _current_target
 
 # ── DAMAGE / DEATH ────────────────────────────────────────────
-func take_damage(amount: float) -> void:
-	if _dying:
+func take_damage(amount: float, target_pool: String = "health") -> void:
+	if _dying or _incapped:
 		return
 	# STR (+ item STR): +5% damage reduction per point
-	var reduction = (attr_str + _item_str) * 0.05
+	var reduction = (stat_strength + _item_str) * 0.05
 	amount *= maxf(0.0, 1.0 - reduction)
-	hp = maxf(0.0, hp - amount)
-	if hp <= 0.0:
+	match target_pool:
+		"health": ham_health = maxf(0.0, ham_health - amount)
+		"action": ham_action = maxf(0.0, ham_action - amount)
+		"mind":   ham_mind   = maxf(0.0, ham_mind - amount)
+		_:        ham_health = maxf(0.0, ham_health - amount)
+	# Any pool hitting 0 → incapacitation
+	if ham_health <= 0.0 or ham_action <= 0.0 or ham_mind <= 0.0:
+		_incapacitate()
+
+func _incapacitate() -> void:
+	incap_count += 1
+	# Each incap adds wounds — reduces max pools until healed at a terminal
+	var w_amt = randf_range(10.0, 25.0)
+	wound_health = minf(wound_health + w_amt, _base_ham_health * 0.5)
+	wound_action = minf(wound_action + randf_range(8.0, 20.0), _base_ham_action * 0.5)
+	wound_mind   = minf(wound_mind   + randf_range(8.0, 20.0), _base_ham_mind * 0.5)
+	if incap_count >= MAX_INCAPS:
 		_die()
+		return
+	_incapped = true
+	_incap_timer = INCAP_DURATION
+	# Restore to 25% of each pool
+	ham_health = get_effective_max_health() * 0.25
+	ham_action = get_effective_max_action() * 0.25
+	ham_mind   = get_effective_max_mind() * 0.25
+	_current_target = null
+	_spawn_floating_text("INCAPACITATED (%d/%d)" % [incap_count, MAX_INCAPS], Color(1.0, 0.2, 0.2))
+
+func _tick_incap(delta: float) -> void:
+	if not _incapped: return
+	_incap_timer -= delta
+	if _incap_timer <= 0.0:
+		_incapped = false
+		_spawn_floating_text("RECOVERED", Color(0.3, 1.0, 0.4))
 
 func _die() -> void:
 	_dying = true
