@@ -15,11 +15,12 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="miniSWG"
-run/main_scene="uid://chdacdh2a80em"
+run/main_scene="uid://bsst4rt5cr33n"
 config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]
 
+Nakama="*res://addons/com.heroiclabs.nakama/Nakama.gd"
 Relay="*res://Scripts/Relay.gd"
 PlayerData="*res://Scripts/PlayerData.gd"
 

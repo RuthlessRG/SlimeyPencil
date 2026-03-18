@@ -25,30 +25,56 @@ var credits      : int    = 0
 var level        : int    = 1
 var exp_points   : float  = 0.0
 var is_logged_in : bool   = false
+var last_error   : String = ""   # human-readable error from last auth attempt
 
 # ── Auth ──────────────────────────────────────────────────────────────
 
-## Returns true on success, false on wrong credentials or server error.
+## Returns true on success. Check last_error on failure.
 func login(uname: String, password: String) -> bool:
+	last_error = ""
+	var client : NakamaClient = Relay.get_client()
+	if client == null:
+		last_error = "Not connected to server."
+		return false
 	var email   = uname.to_lower().strip_edges() + EMAIL_DOMAIN
-	var client  : NakamaClient = Relay.get_client()
 	var session : NakamaSession = await client.authenticate_email_async(
 		email, password, uname, false
 	)
 	if session.is_exception():
+		var msg : String = session.get_exception().message
+		print("[PlayerData] login error: ", msg)
+		if "credentials" in msg.to_lower() or "401" in msg:
+			last_error = "Wrong username or password."
+		elif "connect" in msg.to_lower() or "refused" in msg.to_lower():
+			last_error = "Cannot reach server. Is it running?"
+		else:
+			last_error = "Login failed: " + msg
 		return false
 	await _apply_session(uname, session)
 	return true
 
-## Returns true if account created, false if username already taken.
+## Returns true on success. Check last_error on failure.
 func register(uname: String, password: String) -> bool:
+	last_error = ""
+	var client : NakamaClient = Relay.get_client()
+	if client == null:
+		last_error = "Not connected to server."
+		return false
 	var email   = uname.to_lower().strip_edges() + EMAIL_DOMAIN
-	var client  : NakamaClient = Relay.get_client()
-	# create=true → register new account; fails if email already exists
 	var session : NakamaSession = await client.authenticate_email_async(
 		email, password, uname, true
 	)
 	if session.is_exception():
+		var msg : String = session.get_exception().message
+		print("[PlayerData] register error: ", msg)
+		if "username" in msg.to_lower() or "already" in msg.to_lower() or "409" in msg:
+			last_error = "Username already taken."
+		elif "connect" in msg.to_lower() or "refused" in msg.to_lower():
+			last_error = "Cannot reach server. Is it running?"
+		elif "password" in msg.to_lower():
+			last_error = "Password too weak."
+		else:
+			last_error = "Registration failed: " + msg
 		return false
 	await _apply_session(uname, session)
 	return true
