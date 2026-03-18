@@ -20,6 +20,7 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]
 
+Nakama="*res://addons/com.heroiclabs.nakama/Nakama.gd"
 Relay="*res://Scripts/Relay.gd"
 PlayerData="*res://Scripts/PlayerData.gd"
 

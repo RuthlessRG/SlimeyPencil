@@ -429,10 +429,10 @@ func _show_character_select() -> void:
 	_select_layer.add_child(hint)
 
 	var classes = [
-		{ "key":"brawler",  "label":"BRAWLER",  "color":Color(0.40,0.85,0.30), "desc":"Heavyweight bruiser.\nAbsorbs punishment\nand hits harder.\n\nHP: 350\nAtk every: 2s\nRange: 130px", "locked":false },
+		{ "key":"scrapper",  "label":"BRAWLER",  "color":Color(0.40,0.85,0.30), "desc":"Heavyweight bruiser.\nAbsorbs punishment\nand hits harder.\n\nHP: 350\nAtk every: 2s\nRange: 130px", "locked":false },
 		{ "key":"ranged",   "label":"MARKSMAN", "color":Color(0.35,0.80,0.95), "desc":"Long-range marksman.\nKeep your distance\nand chip away.\n\nHP: 180\nAtk every: 2.5s\nRange: 700px", "locked":false },
 		{ "key":"medic",    "label":"MEDIC",    "color":Color(0.30,0.85,0.90), "desc":"Combat medic.\nHeals allies with\ncanisters, poisons\nenemies.\n\nHP: 220\nAtk every: 3s\nRange: 500px", "locked":false },
-		{ "key":"brawler","label":"BRAWLER II","color":Color(0.45,0.90,0.35), "desc":"Heavyweight bruiser.\nAbsorbs punishment\nand hits harder.\n\nHP: 350\nAtk every: 2s\nRange: 130px", "locked":false },
+		{ "key":"scrapper","label":"BRAWLER II","color":Color(0.45,0.90,0.35), "desc":"Heavyweight bruiser.\nAbsorbs punishment\nand hits harder.\n\nHP: 350\nAtk every: 2s\nRange: 130px", "locked":false },
 		{ "key":"future2",  "label":"?",        "color":Color(0.40,0.40,0.50), "desc":"Coming soon...", "locked":true },
 	]
 
@@ -659,8 +659,8 @@ func _spawn_player(cls: String) -> void:
 	if cls == "melee":
 		sprite.scale  = Vector2(44.0 / 160.0, 44.0 / 160.0)
 		sprite.offset = Vector2(0, -80)
-	elif cls == "brawler":
-		sprite.scale  = Vector2(0.088, 0.088)
+	elif cls == "scrapper":
+		sprite.scale  = Vector2(0.38, 0.38)
 		sprite.offset = Vector2(0, -121)
 	elif cls == "medic":
 		sprite.scale  = Vector2(44.0 / 144.0, 44.0 / 144.0)
@@ -673,7 +673,7 @@ func _spawn_player(cls: String) -> void:
 		sprite.offset = Vector2(0, -12)
 	_player.add_child(sprite)
 
-	if cls == "brawler":
+	if cls == "scrapper":
 		_attach_split_body_shaders(sprite, _build_frames(cls))
 
 	var col   = CollisionShape2D.new()
@@ -733,7 +733,7 @@ func _build_frames(cls: String) -> SpriteFrames:
 				_add_strip(frames,"idle_"+dir,   base+"idle/idle_"+dir+".png",   144,144,8,8.0)
 				_add_strip(frames,"run_"+dir,    base+"run/run_"+dir+".png",     144,144,8,10.0)
 				_add_strip(frames,"attack_"+dir, base+"toss/toss_"+dir+".png",   144,144,7,12.0,false)
-		"brawler":
+		"scrapper":
 			var bnbase = "res://Characters/NEWFOUNDMETHOD/Brawler/"
 			var cw = 768; var ch = 448
 			for dir in ["n","e","w","se","sw","nw"]:
@@ -1393,7 +1393,7 @@ func _handle_remote_move(data: Dictionary, from_peer: int) -> void:
 				sprite.play(idle_anim)
 
 func _angle_to_dir(angle: float, cls: String) -> String:
-	var has_8dir = (cls == "melee" or cls == "brawler" or cls == "medic")
+	var has_8dir = (cls == "melee" or cls == "scrapper" or cls == "medic")
 	var deg = rad_to_deg(angle)
 	if deg < 0: deg += 360.0
 	if has_8dir:
@@ -1428,8 +1428,8 @@ func _add_remote_player(peer_id: int, cls: String, nick: String, pos: Vector2) -
 	if cls == "melee":
 		sprite.scale  = Vector2(44.0 / 160.0, 44.0 / 160.0)
 		sprite.offset = Vector2(0, -80)
-	elif cls == "brawler":
-		sprite.scale  = Vector2(0.088, 0.088)
+	elif cls == "scrapper":
+		sprite.scale  = Vector2(0.38, 0.38)
 		sprite.offset = Vector2(0, -121)
 	elif cls == "medic":
 		sprite.scale  = Vector2(44.0 / 144.0, 44.0 / 144.0)
