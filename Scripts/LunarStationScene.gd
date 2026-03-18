@@ -1215,7 +1215,7 @@ func _on_server_list(servers: Array) -> void:
 			return
 	Relay.host_server("MINISWG-LUNAR", 64)
 
-func _on_relay_data(data: Dictionary, from_peer: int) -> void:
+func _on_relay_data(from_peer: int, data: Dictionary) -> void:
 	if from_peer == Relay.my_peer_id: return
 	var cmd = data.get("cmd", "")
 	match cmd:
