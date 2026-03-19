@@ -2,16 +2,26 @@
 
 importer="texture"
 type="CompressedTexture2D"
+<<<<<<<< HEAD:Assets/Backgrounds/bush1.png.import
 uid="uid://bl3j7gvvv86q1"
 path="res://.godot/imported/bush1.png-e60fa6cf95587c003988a66ef8828e0b.ctex"
+========
+uid="uid://cu48fm4w1casi"
+path="res://.godot/imported/bush3.png-bb6d8f13640823b3ea74a8a47afc54d7.ctex"
+>>>>>>>> 8bb975d37dd11c6c623b123eb8001af49d3b0c20:Assets/Backgrounds/bush3.png.import
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
+<<<<<<<< HEAD:Assets/Backgrounds/bush1.png.import
 source_file="res://Assets/Backgrounds/bush1.png"
 dest_files=["res://.godot/imported/bush1.png-e60fa6cf95587c003988a66ef8828e0b.ctex"]
+========
+source_file="res://Assets/Backgrounds/bush3.png"
+dest_files=["res://.godot/imported/bush3.png-bb6d8f13640823b3ea74a8a47afc54d7.ctex"]
+>>>>>>>> 8bb975d37dd11c6c623b123eb8001af49d3b0c20:Assets/Backgrounds/bush3.png.import
 
 [params]
 
