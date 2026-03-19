@@ -2,16 +2,26 @@
 
 importer="texture"
 type="CompressedTexture2D"
+<<<<<<<< HEAD:Assets/Sprites/ships/ship2.png.import
 uid="uid://sxvl7niagy3t"
 path="res://.godot/imported/ship2.png-ed4a9b6332e974428bb20b08cb50b9f6.ctex"
+========
+uid="uid://cu48fm4w1casi"
+path="res://.godot/imported/bush3.png-bb6d8f13640823b3ea74a8a47afc54d7.ctex"
+>>>>>>>> origin/main:Assets/Backgrounds/bush3.png.import
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
+<<<<<<<< HEAD:Assets/Sprites/ships/ship2.png.import
 source_file="res://Assets/Sprites/ships/ship2.png"
 dest_files=["res://.godot/imported/ship2.png-ed4a9b6332e974428bb20b08cb50b9f6.ctex"]
+========
+source_file="res://Assets/Backgrounds/bush3.png"
+dest_files=["res://.godot/imported/bush3.png-bb6d8f13640823b3ea74a8a47afc54d7.ctex"]
+>>>>>>>> origin/main:Assets/Backgrounds/bush3.png.import
 
 [params]
 
