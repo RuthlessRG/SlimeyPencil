@@ -25,13 +25,18 @@ var _state            : State = State.CHASE
 var _reposition_timer : float = 0.0
 
 var character_name : String = "Armored Thug"
-var hp     : float = MAX_HP
-var max_hp : float = MAX_HP
+var hp         : float = MAX_HP
+var max_hp     : float = MAX_HP
+var ham_action : float = MAX_HP
+var max_action : float = MAX_HP
+var ham_mind   : float = MAX_HP
+var max_mind   : float = MAX_HP
 
 var _facing       : String = "s"
 var _is_attacking : bool   = false
 var _attack_anim_timer : float = 0.0
 var _attack_timer : float  = 1.0
+var _special_timer : float = randf_range(10.0, 16.0)  # Dizzy punch cooldown
 var _target       : Node   = null
 var _spawn_pos    : Vector2 = Vector2.ZERO  # Where this mob was spawned
 const LEASH_RANGE : float = 500.0  # Max distance from spawn before resetting
@@ -40,7 +45,6 @@ var _dying       : bool  = false
 var _death_timer : float = 0.0
 
 var _pulse_t     : float = 0.0
-var _has_aggroed : bool  = false
 
 func _ready() -> void:
 	add_to_group("targetable")
@@ -60,6 +64,7 @@ func _process(delta: float) -> void:
 		return
 	_find_target()
 	_attack_timer -= delta
+	_special_timer -= delta
 	# Safety: clear stuck attack state
 	if _is_attacking:
 		_attack_anim_timer -= delta
@@ -164,7 +169,7 @@ func _update_facing(to_target: Vector2) -> void:
 func _do_attack() -> void:
 	_attack_timer = ATTACK_INTERVAL
 	_is_attacking = true
-	_attack_anim_timer = 2.0  # max attack anim duration safety
+	_attack_anim_timer = 2.0
 	var sprite = get_node_or_null("Sprite") as AnimatedSprite2D
 	if sprite and sprite.sprite_frames:
 		var anim = "attack_" + _facing
@@ -174,11 +179,21 @@ func _do_attack() -> void:
 				sprite.animation_finished.connect(_on_attack_done, CONNECT_ONE_SHOT)
 	if _target != null and is_instance_valid(_target):
 		var dmg = randf_range(ATTACK_DAMAGE_MIN, ATTACK_DAMAGE_MAX)
+		# Special: dizzy punch on cooldown
+		var is_special = _special_timer <= 0.0
+		if is_special:
+			_special_timer = randf_range(12.0, 18.0)
+			dmg *= 1.3  # Bonus damage on special
 		if _target.has_method("take_damage"):
 			_target.take_damage(dmg)
 		var arena = get_tree().get_first_node_in_group("boss_arena_scene")
 		if arena and arena.has_method("spawn_damage_number"):
 			arena.spawn_damage_number(_target.global_position, dmg, Color(1.0, 0.6, 0.15))
+		if is_special:
+			if _target.has_method("apply_combat_state"):
+				_target.apply_combat_state("dizzy", 2.5)
+			if arena and arena.has_method("spawn_damage_number"):
+				arena.spawn_damage_number(_target.global_position + Vector2(0, -20), 0, Color(1.0, 0.85, 0.1), "DIZZY!")
 
 func _on_attack_done() -> void:
 	_is_attacking = false
@@ -246,7 +261,33 @@ func take_damage(amount: float) -> void:
 	if hp <= 0.0:
 		_die()
 
+func _award_kill_reward() -> void:
+	var players = get_tree().get_nodes_in_group("player")
+	var killer : Node = null
+	for p in players:
+		if not is_instance_valid(p): continue
+		if p.get("_current_target") == self:
+			killer = p; break
+		if killer == null or global_position.distance_to(p.global_position) < global_position.distance_to(killer.global_position):
+			killer = p
+	if killer != null and killer.has_method("add_exp"):
+		killer.call("add_exp", 30.0)
+	var cred = randi_range(12, 28)
+	var loot_script = load("res://Scripts/GroundLoot.gd")
+	if loot_script:
+		var loot = Node2D.new(); loot.set_script(loot_script)
+		get_tree().current_scene.add_child(loot)
+		loot.global_position = global_position
+		loot.call("init", cred, 0.0)
+	# Gear drop
+	var item_script = load("res://Scripts/LootTable.gd")
+	if item_script and killer != null and killer.has_method("add_item_to_inventory"):
+		var item = item_script.roll_drop("armored_thug")
+		if not item.is_empty():
+			killer.call("add_item_to_inventory", item)
+
 func _die() -> void:
+	_award_kill_reward()
 	_dying = true
 	remove_from_group("targetable")
 	remove_from_group("mob")

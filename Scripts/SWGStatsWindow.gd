@@ -108,40 +108,68 @@ func _refresh() -> void:
 
 	# ── OFFENSE ──────────────────────────────────────────────
 	_section("OFFENSE", y); y += 22
-	var stats = _player._combat_stats as Dictionary
-	_stat_row("Accuracy", str(stats.get("accuracy", 0)), Color(0.7, 0.9, 0.5), y); y += 17
-	_stat_row("Unarmed Damage", "+%d" % stats.get("unarmed_damage", 0), Color(0.9, 0.7, 0.4), y); y += 17
-	_stat_row("One Hand Damage", "+%d" % stats.get("onehand_damage", 0), Color(0.9, 0.7, 0.4), y); y += 17
-	_stat_row("Two Hand Damage", "+%d" % stats.get("twohand_damage", 0), Color(0.9, 0.7, 0.4), y); y += 17
-	_stat_row("Polearm Damage", "+%d" % stats.get("polearm_damage", 0), Color(0.9, 0.7, 0.4), y); y += 17
+	var cs = _player._combat_stats as Dictionary
+	_stat_row("Accuracy",       str(int(_player.get_stat("accuracy"))),           Color(0.7, 0.9, 0.5), y); y += 17
+	_stat_row("Unarmed Damage", "+%d" % cs.get("unarmed_damage", 0),              Color(0.9, 0.7, 0.4), y); y += 17
+	_stat_row("One Hand Damage", "+%d" % cs.get("onehand_damage", 0),  Color(0.9, 0.7, 0.4), y); y += 17
+	_stat_row("Two Hand Damage", "+%d" % cs.get("twohand_damage", 0), Color(0.9, 0.7, 0.4), y); y += 17
+	_stat_row("Polearm Damage", "+%d" % cs.get("polearm_damage", 0),              Color(0.9, 0.7, 0.4), y); y += 17
 
 	y += 4; _divider(y); y += 8
 
 	# ── DEFENSE ──────────────────────────────────────────────
 	_section("DEFENSE", y); y += 22
-	_stat_row("Defense", str(stats.get("defense", 0)), Color(0.5, 0.8, 1.0), y); y += 17
-	_stat_row("Dodge", str(stats.get("dodge", 0)), Color(0.5, 0.8, 1.0), y); y += 17
-	_stat_row("Block", str(stats.get("block", 0)), Color(0.5, 0.8, 1.0), y); y += 17
-	_stat_row("Counterattack", str(stats.get("counterattack", 0)), Color(0.5, 0.8, 1.0), y); y += 17
+	_stat_row("Defense",       str(int(_player.get_stat("defense"))),       Color(0.5, 0.8, 1.0), y); y += 17
+	_stat_row("Dodge",         str(int(_player.get_stat("dodge"))),         Color(0.5, 0.8, 1.0), y); y += 17
+	_stat_row("Block",         str(int(_player.get_stat("block"))),         Color(0.5, 0.8, 1.0), y); y += 17
+	_stat_row("Counterattack", str(int(_player.get_stat("counterattack"))), Color(0.5, 0.8, 1.0), y); y += 17
 
 	y += 4; _divider(y); y += 8
 
 	# ── STATE DEFENSE ────────────────────────────────────────
 	_section("STATE DEFENSE", y); y += 22
-	_stat_row("Def vs Dizzy", str(stats.get("defense_vs_dizzy", 0)), Color(0.8, 0.7, 0.5), y); y += 17
-	_stat_row("Def vs Knockdown", str(stats.get("defense_vs_knockdown", 0)), Color(0.8, 0.7, 0.5), y); y += 17
-	_stat_row("Def vs Stun", str(stats.get("defense_vs_stun", 0)), Color(0.8, 0.7, 0.5), y); y += 17
-	_stat_row("Def vs Blind", str(stats.get("defense_vs_blind", 0)), Color(0.8, 0.7, 0.5), y); y += 17
-	_stat_row("Def vs Intimidate", str(stats.get("defense_vs_intimidate", 0)), Color(0.8, 0.7, 0.5), y); y += 17
+	_stat_row("Def vs Dizzy",      str(int(_player.get_stat("defense_vs_dizzy"))),      Color(0.8, 0.7, 0.5), y); y += 17
+	_stat_row("Def vs Knockdown",  str(int(_player.get_stat("defense_vs_knockdown"))),  Color(0.8, 0.7, 0.5), y); y += 17
+	_stat_row("Def vs Stun",       str(int(_player.get_stat("defense_vs_stun"))),       Color(0.8, 0.7, 0.5), y); y += 17
+	_stat_row("Def vs Blind",      str(int(_player.get_stat("defense_vs_blind"))),      Color(0.8, 0.7, 0.5), y); y += 17
+	_stat_row("Def vs Intimidate", str(int(_player.get_stat("defense_vs_intimidate"))), Color(0.8, 0.7, 0.5), y); y += 17
 
 	y += 4; _divider(y); y += 8
 
 	# ── ARMOR RESISTANCE ─────────────────────────────────────
 	_section("ARMOR RESISTANCE", y); y += 22
 	for dtype in ["kinetic", "energy", "heat", "cold", "acid", "electricity", "blast", "stun"]:
-		var val = stats.get("resist_" + dtype, 0)
+		var val = int(_player.get_stat("resist_" + dtype))
 		var col = Color(0.6, 0.7, 0.8) if val == 0 else Color(0.4, 0.9, 0.6)
 		_stat_row(dtype.capitalize(), "%d%%" % val, col, y); y += 17
+
+	# ── GEAR BONUSES ─────────────────────────────────────────
+	var dmg_bonus = _player.get("_item_dmg_bonus")
+	var gear_defense = _player.get("_item_combat_stats")
+	var has_gear = (dmg_bonus != null and dmg_bonus > 0.0) or (gear_defense != null and not gear_defense.is_empty())
+	if has_gear:
+		y += 4; _divider(y); y += 8
+		_section("GEAR BONUSES", y); y += 22
+		if dmg_bonus != null and dmg_bonus > 0.0:
+			_stat_row("Damage Bonus", "+%d" % int(dmg_bonus), Color(1.0, 0.75, 0.30), y); y += 17
+		if gear_defense != null:
+			for gkey in ["defense", "resist_kinetic", "resist_energy"]:
+				var gv = int(gear_defense.get(gkey, 0))
+				if gv > 0:
+					_stat_row(gkey.replace("resist_", "").capitalize() + " (gear)",
+						"+%d" % gv, Color(0.45, 0.95, 0.65), y); y += 17
+		# Show equipped item names
+		var inv = _player.get("inventory")
+		if inv != null:
+			for itm in inv:
+				if itm.get("equipped", false) and itm.get("type","") in ["weapon","armor"]:
+					var rc : Color
+					match itm.get("rarity","white"):
+						"blue": rc = Color(0.40, 0.72, 1.00)
+						"gold": rc = Color(1.00, 0.82, 0.15)
+						_:      rc = Color(0.88, 0.88, 0.88)
+					_stat_row("[" + itm.get("type","").capitalize() + "]",
+						itm.get("name",""), rc, y); y += 17
 
 func _section(text: String, _y: float) -> void:
 	var row = HBoxContainer.new()

@@ -25,6 +25,7 @@ var _camera        : Camera2D     = null
 var _player        : Node         = null
 var _select_layer  : CanvasLayer  = null
 var _hud           : CanvasLayer  = null
+var _spawn_window  : CanvasLayer  = null
 var _cam_zoom_base : float        = 2.5
 var _cam_zoom_target : float      = 3.2
 var _zoom_locked   : bool         = true
@@ -36,7 +37,6 @@ var _player_name_lbl : Label        = null
 var _hp_bar          : ProgressBar  = null  # Health (red)
 var _action_hud_bar  : ProgressBar  = null  # Action (yellow)
 var _mind_bar        : ProgressBar  = null  # Mind (blue)
-var _xp_bar          : ProgressBar  = null
 var _hp_bar_lbl      : Label        = null
 var _action_bar_lbl  : Label        = null
 var _mind_bar_lbl    : Label        = null
@@ -44,20 +44,23 @@ var _mind_bar_lbl    : Label        = null
 var _hp_wound_ov     : ColorRect    = null
 var _action_wound_ov : ColorRect    = null
 var _mind_wound_ov   : ColorRect    = null
-var _xp_bar_lbl      : Label        = null
 var _hp_pct_lbl      : Label        = null  # unused, kept for compat
 var _level_lbl       : Label        = null  # unused, kept for compat
 var _tgt_panel       : Panel        = null
 var _tgt_name_lbl    : Label        = null
 var _tgt_hp_bar      : ProgressBar  = null
 var _tgt_hp_lbl      : Label        = null
+var _tgt_action_bar  : ProgressBar  = null
 var _tgt_mp_bar      : ProgressBar  = null
+var _xp_panel        : Panel        = null
+var _xp_bar          : ProgressBar  = null
+var _xp_bar_lbl      : Label        = null
 var _minimap_panel   : Panel        = null
+const UI_LAYOUT_PATH : String       = "user://ui_layout.cfg"
 var _minimap_draw    : Control      = null
 var _mm_location_lbl : Label        = null
 var _mm_channel_lbl  : Label        = null
 var _frame_drag      : bool         = false
-var _portrait_rect   : TextureRect  = null
 
 # Audio
 var _music_city      : AudioStreamPlayer = null
@@ -261,7 +264,9 @@ func _unhandled_input(event: InputEvent) -> void:
 							break
 		if is_instance_valid(_player):
 			match event.keycode:
-				KEY_F1: _spawn_dummy()
+				KEY_F1:
+					if _spawn_window:
+						_spawn_window.call("toggle")
 				KEY_F2: _spawn_boss()
 				KEY_F3: _spawn_cyberlord()
 				KEY_F4: _spawn_zerg_mob()
@@ -284,6 +289,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			# Block camera zoom when mouse is over the minimap
+			if _minimap_panel != null:
+				var mp = get_viewport().get_mouse_position()
+				var mm_rect = Rect2(_minimap_panel.global_position, _minimap_panel.size)
+				if mm_rect.has_point(mp):
+					get_viewport().set_input_as_handled()
+					return
 		if not _zoom_locked and event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_cam_zoom_target = clampf(_cam_zoom_target + 0.08, 0.5, 3.2)
 		elif not _zoom_locked and event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
@@ -393,10 +406,10 @@ func _show_character_select() -> void:
 	var classes = [
 		# Old brawler removed
 		{ "key":"ranged",   "label":"MARKSMAN", "color":Color(0.35,0.80,0.95), "desc":"Long-range marksman.\nKeep your distance\nand chip away.\n\nHP: 180\nAtk every: 2.5s\nRange: 700px", "locked":false },
+		{ "key":"smuggler", "label":"SMUGGLER", "color":Color(0.85,0.65,0.25), "desc":"Cunning gunfighter.\nSame range as Marksman.\nStarts with Novice\nMarksman skills.\n\nHP: 300\nAtk every: 2.5s\nRange: 700px", "locked":false },
 		{ "key":"medic",    "label":"MEDIC",    "color":Color(0.30,0.85,0.90), "desc":"Combat medic.\nHeals allies with\ncanisters, poisons\nenemies.\n\nHP: 220\nAtk every: 3s\nRange: 500px", "locked":false },
 		{ "key":"scrapper","label":"SCRAPPER","color":Color(0.45,0.90,0.35), "desc":"Tough close-range\nfighter. Takes a\nbeating and hits back.\n\nHP: 500\nAtk every: 2s\nRange: 130px", "locked":false },
 		{ "key":"streetfighter","label":"STREET FIGHTER","color":Color(0.90,0.45,0.25), "desc":"Slow but devastating.\nWalk before you run.\nTwo attack styles.\n\nHP: 600\nAtk every: 2.5s\nRange: 130px", "locked":false },
-		{ "key":"robo","label":"ROBO","color":Color(0.50,0.70,0.90), "desc":"Combat medic robot.\nHeals allies, poisons\nenemies from range.\n\nHP: 350\nAtk every: 3s\nRange: 500px", "locked":false },
 	]
 
 	var card_w  = 180.0; var card_h  = 300.0; var gap = 28.0
@@ -524,18 +537,16 @@ func _spawn_player(cls: String) -> void:
 	elif cls == "medic":
 		sprite.scale  = Vector2(0.38, 0.38)
 		sprite.offset = Vector2(0, -121)
-	elif cls == "ranged":
-		sprite.scale  = Vector2(0.38, 0.38)
-		sprite.offset = Vector2(0, -121)
+	elif cls in ["ranged", "smuggler"]:
+		sprite.scale  = Vector2(0.228, 0.228)
+		sprite.offset = Vector2(0, -73)
 	elif cls == "streetfighter":
-		sprite.scale  = Vector2(0.28, 0.28)
-		sprite.offset = Vector2(0, -160)
-	elif cls == "robo":
 		sprite.scale  = Vector2(0.28, 0.28)
 		sprite.offset = Vector2(0, -160)
 	else:
 		sprite.scale  = Vector2(1.0, 1.0)
 		sprite.offset = Vector2(0, -12)
+	sprite.play("idle_s")
 	_player.add_child(sprite)
 
 	var col   = CollisionShape2D.new()
@@ -807,63 +818,148 @@ func _build_frames(cls: String) -> SpriteFrames:
 		"melee":
 			var base = "res://Characters/minimmo/meleenew/"
 			for dir in ["s","n","e","w","se","sw","ne","nw"]:
-				_add_strip(frames,"idle_"+dir,  base+"idle/idle_"+dir+".png",   160,160,8,8.0)
-				_add_strip(frames,"run_"+dir,   base+"run/run_"+dir+".png",    160,160,8,10.0)
-				_add_strip(frames,"attack_"+dir,base+"attack/attack_"+dir+".png",160,160,6,12.0,false)
+				_add_strip(frames,"idle_"+dir,  base+"idle/idle_"+dir+".png",   160,160,8,24.0)
+				_add_strip(frames,"run_"+dir,   base+"run/run_"+dir+".png",    160,160,8,24.0)
+				_add_strip(frames,"attack_"+dir,base+"attack/attack_"+dir+".png",160,160,6,24.0,false)
 		"mage":
 			var base = "res://Characters/minimmo/mage/"
 			for dir in ["s","n","e","w"]:
-				_add_strip(frames,"idle_"+dir,  base+"idle/idle_"+dir+".png",   24,24,8,8.0)
-				_add_strip(frames,"run_"+dir,   base+"run/run_"+dir+".png",    24,24,4,10.0)
-				_add_strip(frames,"attack_"+dir,base+"attack/attack_"+dir+".png",24,24,6,12.0,false)
+				_add_strip(frames,"idle_"+dir,  base+"idle/idle_"+dir+".png",   24,24,8,24.0)
+				_add_strip(frames,"run_"+dir,   base+"run/run_"+dir+".png",    24,24,4,24.0)
+				_add_strip(frames,"attack_"+dir,base+"attack/attack_"+dir+".png",24,24,6,24.0,false)
 		"ranged":
-			var rbase = "res://Characters/NEWFOUNDMETHOD/marksman2/"
-			for dir in ["s","n","e","w","se","sw","ne","nw"]:
-				# Idle: 3 parts played in sequence (idle1->idle2->idle3)
+			var ncbase = "res://Characters/NEWFOUNDMETHOD/marksman2/"
+			# Idle:   3 real dirs (e/ne/se); n→ne, s→se, w/nw/sw mirror via flip_h
+			# Run:    5 real dirs (e/n/ne/s/se); w/nw/sw mirror via flip_h
+			# Attack: 5 real dirs (e/n/ne/s/se), 2 parts (attack1/attack2); w/nw/sw mirror via flip_h
+			var idle_src := {"s":"se","n":"ne","e":"e","ne":"ne","se":"se","w":"e","nw":"ne","sw":"se"}
+			var run_src  := {"s":"s","n":"n","e":"e","ne":"ne","se":"se","w":"e","nw":"ne","sw":"se"}
+			var atk_src  := {"s":"s","n":"n","e":"e","ne":"ne","se":"se","w":"e","nw":"ne","sw":"se"}
+			for dir in ["s","n","e","ne","se","w","nw","sw"]:
+				# ── Idle: 6 parts ─────────────────────────────────────
+				var idir : String = idle_src[dir]
 				var idle_anim = "idle_" + dir
 				frames.add_animation(idle_anim)
-				frames.set_animation_speed(idle_anim, 20.0)
+				frames.set_animation_speed(idle_anim, 24.0)
 				frames.set_animation_loop(idle_anim, true)
-				for part in ["idle1", "idle2", "idle3"]:
-					var path = rbase + "idle/" + part + "/" + part + "_" + dir + ".png"
+				for part in ["idle1", "idle2", "idle3", "idle4", "idle5", "idle6"]:
+					var path = ncbase + "idle/" + part + "/" + part + "_" + idir + ".png"
 					if not ResourceLoader.exists(path): continue
 					var tex = load(path) as Texture2D
 					if tex == null: continue
-					var fw = 512
-					var fc = int(tex.get_width() / fw)
+					var fc = int(tex.get_width() / 512.0)
 					for fi in fc:
 						var atlas = AtlasTexture.new()
 						atlas.atlas = tex
-						atlas.region = Rect2(fi * fw, 0, fw, tex.get_height())
+						atlas.region = Rect2(fi * 512, 0, 512, tex.get_height())
 						frames.add_frame(idle_anim, atlas)
-				# Run
-				var run_path = rbase + "run/run_" + dir + ".png"
+				# ── Run: 5 real dirs, mirror w/nw/sw ─────────────────
+				var rdir : String = run_src[dir]
+				var run_path = ncbase + "run/run_" + rdir + ".png"
+				if ResourceLoader.exists(run_path):
+					var rtex = load(run_path) as Texture2D
+					var rfc = int(rtex.get_width() / 512.0) if rtex else 0
+					if rfc > 0:
+						_add_strip(frames, "run_" + dir, run_path, 512, 512, rfc, 24.0)
+				# ── Attack: 2 parts, 5 real dirs, mirror w/nw/sw ─────
+				var adir : String = atk_src[dir]
+				var atk_anim = "attack_" + dir
+				frames.add_animation(atk_anim)
+				frames.set_animation_speed(atk_anim, 30.0)
+				frames.set_animation_loop(atk_anim, false)
+				for part in ["attack1", "attack2"]:
+					var atk_path = ncbase + "attack/" + part + "/" + part + "_" + adir + ".png"
+					if not ResourceLoader.exists(atk_path): continue
+					var atex = load(atk_path) as Texture2D
+					if atex == null: continue
+					var afc = int(atex.get_width() / 512.0)
+					for fi in afc:
+						var atlas = AtlasTexture.new()
+						atlas.atlas = atex
+						atlas.region = Rect2(fi * 512, 0, 512, atex.get_height())
+						frames.add_frame(atk_anim, atlas)
+		"smuggler":
+			var smbase = "res://Characters/NEWFOUNDMETHOD/smuggler/"
+			# idle: 3 parts, all 8 real dirs; run: 5 dirs (flip_h for w/nw/sw); attack: all 8 dirs
+			var run_src_sm := {"s":"s","n":"n","e":"e","ne":"ne","se":"se","w":"e","nw":"ne","sw":"se"}
+			for dir in ["s","n","e","ne","se","w","nw","sw"]:
+				# Idle: 3 parts, all 8 dirs available
+				var idle_anim = "idle_" + dir
+				frames.add_animation(idle_anim)
+				frames.set_animation_speed(idle_anim, 24.0)
+				frames.set_animation_loop(idle_anim, true)
+				for pn in range(1, 4):
+					var path = smbase + "idle/idle" + str(pn) + "/idle" + str(pn) + "_" + dir + ".png"
+					if not ResourceLoader.exists(path): continue
+					var tex = load(path) as Texture2D
+					if tex == null: continue
+					var fc = int(tex.get_width() / 512.0)
+					for fi in fc:
+						var atlas = AtlasTexture.new()
+						atlas.atlas = tex; atlas.region = Rect2(fi * 512, 0, 512, tex.get_height())
+						frames.add_frame(idle_anim, atlas)
+				# Run: 5 real dirs; w/nw/sw load from mirrored dir (flip_h applied at runtime)
+				var rdir_sm : String = run_src_sm[dir]
+				var run_path = smbase + "run/run_" + rdir_sm + ".png"
 				var rtex = load(run_path) as Texture2D
-				var rfc = int(rtex.get_width() / 512) if rtex else 21
+				var rfc = int(rtex.get_width() / 512.0) if rtex else 20
 				_add_strip(frames, "run_" + dir, run_path, 512, 512, rfc, 24.0)
-				# Attack
-				var atk_path = rbase + "attack/attack_" + dir + ".png"
+				# Attack: all 8 dirs available
+				var atk_path = smbase + "attack/attack_" + dir + ".png"
 				var atex = load(atk_path) as Texture2D
-				var afc = int(atex.get_width() / 512) if atex else 30
+				var afc = int(atex.get_width() / 512.0) if atex else 30
 				_add_strip(frames, "attack_" + dir, atk_path, 512, 512, afc, 24.0, false)
 		"medic":
-			var mbase = "res://Characters/NEWFOUNDMETHOD/TechnoNun/"
-			var mcw = 768; var mch = 448
-			# Idle — per direction, 21 frames (6 rows)
-			for dir in ["s","n","e","w","se","sw","ne","nw"]:
-				_add_grid(frames,"idle_"+dir, mbase+"idle/idle_"+dir+".png", mcw,mch,4,21,10.0)
-			# Run — per direction, 29 frames
-			for dir in ["s","n","e","ne","se","sw"]:
-				_add_grid(frames,"run_"+dir, mbase+"run/run_"+dir+".png", mcw,mch,4,29,18.0)
-			for dir in ["w","nw"]:
-				_add_grid(frames,"run_"+dir, mbase+"run/run_"+dir+".png", mcw,mch,4,29,18.0,true,true)
-			# Attack — per direction, 29 frames (no attack_s, alias to attack_se)
-			for dir in ["n","e","ne","se"]:
-				_add_grid(frames,"attack_"+dir, mbase+"attack/attack_"+dir+".png", mcw,mch,4,29,24.0,false)
-			for dir in ["w","nw"]:
-				_add_grid(frames,"attack_"+dir, mbase+"attack/attack_"+dir+".png", mcw,mch,4,29,24.0,false,true)
-			_add_grid(frames,"attack_sw", mbase+"attack/attack_sw.png", mcw,mch,4,29,24.0,false)
-			_add_grid(frames,"attack_s", mbase+"attack/attack_se.png", mcw,mch,4,29,24.0,false)
+			var mbase = "res://Characters/NEWFOUNDMETHOD/medic/"
+			# All anims have 5 dirs (e/n/ne/s/se); w/nw/sw mirror via flip_h at runtime
+			var dir_src_m := {"s":"s","n":"n","e":"e","ne":"ne","se":"se","w":"e","nw":"ne","sw":"se"}
+			for dir in ["s","n","e","ne","se","w","nw","sw"]:
+				var sdir : String = dir_src_m[dir]
+				# Idle: 7 parts
+				var idle_anim = "idle_" + dir
+				frames.add_animation(idle_anim)
+				frames.set_animation_speed(idle_anim, 24.0)
+				frames.set_animation_loop(idle_anim, true)
+				for pn in range(1, 8):
+					var path = mbase + "idle/idle" + str(pn) + "/idle" + str(pn) + "_" + sdir + ".png"
+					if not ResourceLoader.exists(path): continue
+					var tex = load(path) as Texture2D
+					if tex == null: continue
+					var fc = int(tex.get_width() / 512.0)
+					for fi in fc:
+						var atlas = AtlasTexture.new()
+						atlas.atlas = tex; atlas.region = Rect2(fi * 512, 0, 512, tex.get_height())
+						frames.add_frame(idle_anim, atlas)
+				# Run: 7 parts
+				var run_anim = "run_" + dir
+				frames.add_animation(run_anim)
+				frames.set_animation_speed(run_anim, 24.0)
+				frames.set_animation_loop(run_anim, true)
+				for pn in range(1, 8):
+					var path = mbase + "run/run" + str(pn) + "/run" + str(pn) + "_" + sdir + ".png"
+					if not ResourceLoader.exists(path): continue
+					var tex = load(path) as Texture2D
+					if tex == null: continue
+					var fc = int(tex.get_width() / 512.0)
+					for fi in fc:
+						var atlas = AtlasTexture.new()
+						atlas.atlas = tex; atlas.region = Rect2(fi * 512, 0, 512, tex.get_height())
+						frames.add_frame(run_anim, atlas)
+				# Attack: 7 parts, no loop
+				var atk_anim = "attack_" + dir
+				frames.add_animation(atk_anim)
+				frames.set_animation_speed(atk_anim, 24.0)
+				frames.set_animation_loop(atk_anim, false)
+				for pn in range(1, 8):
+					var path = mbase + "attack/attack" + str(pn) + "/attack" + str(pn) + "_" + sdir + ".png"
+					if not ResourceLoader.exists(path): continue
+					var tex = load(path) as Texture2D
+					if tex == null: continue
+					var fc = int(tex.get_width() / 512.0)
+					for fi in fc:
+						var atlas = AtlasTexture.new()
+						atlas.atlas = tex; atlas.region = Rect2(fi * 512, 0, 512, tex.get_height())
+						frames.add_frame(atk_anim, atlas)
 		"scrapper":
 			var scbase = "res://Characters/NEWFOUNDMETHOD/Brawler3/"
 			for dir in ["s","n","e","w","se","sw","ne","nw"]:
@@ -878,29 +974,24 @@ func _build_frames(cls: String) -> SpriteFrames:
 					if not ResourceLoader.exists(path): continue
 					var tex = load(path) as Texture2D
 					if tex == null: continue
-					var fw = 512
-					var fc = int(tex.get_width() / fw)
+					var fc = int(tex.get_width() / 512.0)
 					for fi in fc:
 						var atlas = AtlasTexture.new()
 						atlas.atlas = tex
-						atlas.region = Rect2(fi * fw, 0, fw, tex.get_height())
+						atlas.region = Rect2(fi * 512, 0, 512, tex.get_height())
 						frames.add_frame(idle_anim, atlas)
-				_add_strip(frames, "run_"+dir, scbase+"run/run_"+dir+".png", 512, 512, 20, 24.0)
-				_add_strip(frames, "attack_"+dir, scbase+"attack/attack_"+dir+".png", 512, 512, 30, 24.0, false)
+			var run_tex_sc = load(scbase+"run/run_"+dir+".png") as Texture2D
+			var run_fc_sc = int(run_tex_sc.get_width() / 512.0) if run_tex_sc else 20
+			_add_strip(frames, "run_"+dir, scbase+"run/run_"+dir+".png", 512, 512, run_fc_sc, 24.0)
+			_add_strip(frames, "attack_"+dir, scbase+"attack/attack_"+dir+".png", 512, 512, 30, 24.0, false)
 		"streetfighter":
 			var sfbase = "res://Characters/NEWFOUNDMETHOD/Brawler2/"
 			for dir in ["s","n","e","w","se","sw","ne","nw"]:
-				_add_strip(frames, "idle_"+dir, sfbase+"idle/idle_"+dir+".png", 512, 512, 30, 10.0)
-				_add_strip(frames, "walk_"+dir, sfbase+"walk/walk_"+dir+".png", 512, 512, 30, 12.0)
-				_add_strip(frames, "run_"+dir, sfbase+"run/run_"+dir+".png", 512, 512, 30, 16.0)
-				_add_strip(frames, "attack_"+dir, sfbase+"attack/attack_"+dir+".png", 512, 512, 30, 18.0, false)
-				_add_strip(frames, "attack2_"+dir, sfbase+"attack2/attack2_"+dir+".png", 512, 512, 30, 18.0, false)
-		"robo":
-			var rbase2 = "res://Characters/NEWFOUNDMETHOD/DeadpoolRobot/"
-			for dir in ["s","n","e","w","se","sw","ne","nw"]:
-				_add_strip(frames, "idle_"+dir, rbase2+"idle/idle_"+dir+".png", 512, 512, 30, 10.0)
-				_add_strip(frames, "run_"+dir, rbase2+"run/run_"+dir+".png", 512, 512, 30, 14.0)
-				_add_strip(frames, "attack_"+dir, rbase2+"attack/attack_"+dir+".png", 512, 512, 30, 18.0, false)
+				_add_strip(frames, "idle_"+dir, sfbase+"idle/idle_"+dir+".png", 512, 512, 30, 24.0)
+				_add_strip(frames, "walk_"+dir, sfbase+"walk/walk_"+dir+".png", 512, 512, 30, 24.0)
+				_add_strip(frames, "run_"+dir, sfbase+"run/run_"+dir+".png", 512, 512, 30, 24.0)
+				_add_strip(frames, "attack_"+dir, sfbase+"attack/attack_"+dir+".png", 512, 512, 30, 24.0, false)
+				_add_strip(frames, "attack2_"+dir, sfbase+"attack2/attack2_"+dir+".png", 512, 512, 30, 24.0, false)
 	return frames
 
 func _add_grid(frames: SpriteFrames, anim_name: String, path: String,
@@ -915,7 +1006,7 @@ func _add_grid(frames: SpriteFrames, anim_name: String, path: String,
 	frames.set_animation_loop(anim_name, loop)
 	for i in total_frames:
 		var col = i % cols
-		var row = i / cols
+		var row = int(i / float(cols))
 		if hflip:
 			col = (cols - 1) - col
 		var atlas = AtlasTexture.new()
@@ -955,7 +1046,7 @@ func _setup_hud(_cls: String) -> void:
 
 	_player_frame          = Panel.new()
 	_player_frame.size     = Vector2(PF_W, PF_H)
-	_player_frame.position = Vector2(10, 10)
+	_player_frame.position = Vector2(10, 6)
 	var pf_sty             = StyleBoxFlat.new()
 	pf_sty.bg_color        = Color(0.03, 0.06, 0.12, 0.92)
 	pf_sty.border_color    = Color(0.12, 0.40, 0.55, 0.85)
@@ -1003,29 +1094,28 @@ func _setup_hud(_cls: String) -> void:
 	_mind_wound_ov = _make_wound_overlay(Vector2(BAR_X + BAR_W, 50), 14)
 	_player_frame.add_child(_mind_wound_ov)
 
-	# ── XP Bar (positioned at bottom center, under action bar) ──
-	var vp2 = get_viewport().get_visible_rect().size
-	var xp_w = 380.0
-	var xp_panel = Panel.new()
-	xp_panel.name = "XPBarPanel"
-	xp_panel.size = Vector2(xp_w + 8, 16)
-	xp_panel.position = Vector2(vp2.x * 0.5 - (xp_w + 8) * 0.5, vp2.y - 26)
+	# ── XP bar — sibling panel just below _player_frame ──────
 	var xp_sty = StyleBoxFlat.new()
-	xp_sty.bg_color = Color(0.03, 0.03, 0.05, 0.75)
-	xp_sty.set_border_width_all(0); xp_sty.set_corner_radius_all(2)
-	xp_panel.add_theme_stylebox_override("panel", xp_sty)
-	xp_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_hud.add_child(xp_panel)
-
-	_xp_bar = _make_bar(Color(0.60, 0.50, 0.12), Vector2(4, 2), Vector2(xp_w, 12))
-	xp_panel.add_child(_xp_bar)
-	_xp_bar_lbl = _make_bar_label(Vector2(4, 2), Vector2(xp_w, 12))
+	xp_sty.bg_color = Color(0.03, 0.03, 0.02, 0.88)
+	xp_sty.border_color = Color(0.12, 0.40, 0.55, 0.85)
+	xp_sty.set_border_width_all(1); xp_sty.set_corner_radius_all(2)
+	_xp_panel = Panel.new()
+	_xp_panel.size = Vector2(PF_W, 14)
+	_xp_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_xp_panel.add_theme_stylebox_override("panel", xp_sty)
+	_hud.add_child(_xp_panel)
+	_xp_bar = _make_bar(Color(0.60, 0.50, 0.12), Vector2(3, 2), Vector2(PF_W - 6, 10))
+	_xp_panel.add_child(_xp_bar)
+	_xp_bar_lbl = _make_bar_label(Vector2(3, 2), Vector2(PF_W - 6, 10))
 	_xp_bar_lbl.add_theme_font_size_override("font_size", 8)
-	xp_panel.add_child(_xp_bar_lbl)
+	_xp_panel.add_child(_xp_bar_lbl)
+
+	# Load saved positions (must happen after all panels are sized)
+	_load_ui_layout()
 
 	# Target panel
 	const TGT_W : float = 280.0
-	const TGT_H : float = 72.0
+	const TGT_H : float = 82.0
 	_tgt_panel          = Panel.new()
 	_tgt_panel.size     = Vector2(TGT_W, TGT_H)
 	_tgt_panel.position = Vector2(vp.x * 0.5 - TGT_W * 0.5, 10)
@@ -1050,12 +1140,15 @@ func _setup_hud(_cls: String) -> void:
 	_tgt_name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_tgt_panel.add_child(_tgt_name_lbl)
 
-	_tgt_hp_bar = _make_bar(Color(0.72, 0.14, 0.10), Vector2(10, 28), Vector2(TGT_W - 20, 16))
+	_tgt_hp_bar = _make_bar(Color(0.72, 0.14, 0.10), Vector2(10, 26), Vector2(TGT_W - 20, 12))
 	_tgt_panel.add_child(_tgt_hp_bar)
-	_tgt_hp_lbl = _make_bar_label(Vector2(10, 28), Vector2(TGT_W - 20, 16))
+	_tgt_hp_lbl = _make_bar_label(Vector2(10, 26), Vector2(TGT_W - 20, 12))
 	_tgt_panel.add_child(_tgt_hp_lbl)
 
-	_tgt_mp_bar = _make_bar(Color(0.15, 0.30, 0.72), Vector2(10, 48), Vector2(TGT_W - 20, 12))
+	_tgt_action_bar = _make_bar(Color(0.80, 0.68, 0.10), Vector2(10, 42), Vector2(TGT_W - 20, 12))
+	_tgt_panel.add_child(_tgt_action_bar)
+
+	_tgt_mp_bar = _make_bar(Color(0.15, 0.30, 0.72), Vector2(10, 58), Vector2(TGT_W - 20, 12))
 	_tgt_panel.add_child(_tgt_mp_bar)
 
 	# Minimap
@@ -1132,9 +1225,20 @@ func _setup_hud(_cls: String) -> void:
 		settings_win.call("set_fps_pos", Vector2(vp.x + MMAP_X, btn_y + 28))
 		settings_win.get("_btn").size = Vector2(btn_half, 24)
 
+	# Spawn menu (F1)
+	var spawn_script = load("res://Scripts/SpawnWindow.gd")
+	if spawn_script:
+		_spawn_window = CanvasLayer.new()
+		_spawn_window.set_script(spawn_script)
+		add_child(_spawn_window)
+		_spawn_window.call("init", self, _player)
+
 func _make_bar(col: Color, pos: Vector2, sz: Vector2) -> ProgressBar:
 	var bar = ProgressBar.new()
+	bar.custom_minimum_size = sz
 	bar.size = sz; bar.position = pos
+	bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	bar.size_flags_vertical   = Control.SIZE_SHRINK_BEGIN
 	bar.min_value = 0.0; bar.max_value = 100.0; bar.value = 100.0
 	bar.show_percentage = false
 	var fill = StyleBoxFlat.new()
@@ -1189,8 +1293,6 @@ func _update_hud() -> void:
 	var a_max = _player.call("get_effective_max_action") as float
 	var m_cur = _player.get("ham_mind") as float
 	var m_max = _player.call("get_effective_max_mind") as float
-	var xp  = _player.get("exp_points") as float
-	var mxp = _player.get("exp_needed") as float
 
 	_hp_bar.max_value = h_max; _hp_bar.value = h_cur
 	if _action_hud_bar: _action_hud_bar.max_value = a_max; _action_hud_bar.value = a_cur
@@ -1208,22 +1310,36 @@ func _update_hud() -> void:
 	_apply_wound_overlay(_hp_wound_ov,     w_h, raw_h, _BAR_X, _BAR_W)
 	_apply_wound_overlay(_action_wound_ov, w_a, raw_a, _BAR_X, _BAR_W)
 	_apply_wound_overlay(_mind_wound_ov,   w_m, raw_m, _BAR_X, _BAR_W)
-	_xp_bar.max_value = mxp; _xp_bar.value = xp
+
+	if _xp_bar:
+		var xp  = _player.get("exp_points") as float
+		var mxp = _player.get("exp_needed")  as float
+		_xp_bar.max_value = mxp; _xp_bar.value = xp
+		if _xp_bar_lbl: _xp_bar_lbl.text = "XP  %d / %d" % [int(xp), int(mxp)]
 
 	var hp_pct = int(h_cur / maxf(h_max, 1.0) * 100.0)
 	_hp_bar_lbl.text = "%d / %d" % [int(h_cur), int(h_max)]
 	if _action_bar_lbl: _action_bar_lbl.text = "%d / %d" % [int(a_cur), int(a_max)]
 	if _mind_bar_lbl: _mind_bar_lbl.text = "%d / %d" % [int(m_cur), int(m_max)]
-	_xp_bar_lbl.text = "%d / %d" % [int(xp), int(mxp)]
 	if _hp_pct_lbl: _hp_pct_lbl.text = "%d%%" % hp_pct
 	var tgt = _player.get("_current_target")
 	if tgt != null and is_instance_valid(tgt):
 		_tgt_panel.visible = true
 		_tgt_name_lbl.text = tgt.get("enemy_name") if tgt.get("enemy_name") != null else "Target"
-		var ehp = tgt.get("hp") as float; var emhp = tgt.get("max_hp") as float
+		var ehp  = tgt.get("hp")         if tgt.get("hp")         != null else 0.0
+		var emhp = tgt.get("max_hp")     if tgt.get("max_hp")     != null else 100.0
+		var eact = tgt.get("ham_action") if tgt.get("ham_action") != null else emhp
+		var eamx = tgt.get("max_action") if tgt.get("max_action") != null else emhp
+		var emnd = tgt.get("ham_mind")   if tgt.get("ham_mind")   != null else emhp
+		var emmx = tgt.get("max_mind")   if tgt.get("max_mind")   != null else emhp
 		_tgt_hp_bar.max_value = emhp; _tgt_hp_bar.value = ehp
 		if _tgt_hp_lbl: _tgt_hp_lbl.text = "%d / %d" % [int(ehp), int(emhp)]
-		if _tgt_mp_bar: _tgt_mp_bar.value = 0; _tgt_mp_bar.visible = false
+		if _tgt_action_bar:
+			_tgt_action_bar.max_value = eamx; _tgt_action_bar.value = eact
+			_tgt_action_bar.visible = true
+		if _tgt_mp_bar:
+			_tgt_mp_bar.max_value = emmx; _tgt_mp_bar.value = emnd
+			_tgt_mp_bar.visible = true
 	elif _player_target_peer != -1 and _remote_players.has(_player_target_peer):
 		var ptgt = _remote_players[_player_target_peer]
 		if is_instance_valid(ptgt):
@@ -1242,12 +1358,36 @@ func _update_hud() -> void:
 func _on_frame_drag(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		_frame_drag = event.pressed
+		if not event.pressed:
+			_save_ui_layout()
 	elif event is InputEventMouseMotion and _frame_drag:
 		var np = _player_frame.position + event.relative
 		var vp2 = get_viewport().get_visible_rect().size
 		np.x = clampf(np.x, 0.0, vp2.x - _player_frame.size.x)
 		np.y = clampf(np.y, 0.0, vp2.y - _player_frame.size.y)
 		_player_frame.position = np
+		if _xp_panel:
+			_xp_panel.position = np + Vector2(0.0, _player_frame.size.y + 2.0)
+
+func _save_ui_layout() -> void:
+	var cfg = ConfigFile.new()
+	cfg.set_value("player_frame", "x", _player_frame.position.x)
+	cfg.set_value("player_frame", "y", _player_frame.position.y)
+	cfg.save(UI_LAYOUT_PATH)
+
+func _load_ui_layout() -> void:
+	var cfg = ConfigFile.new()
+	var default_x := 10.0
+	var default_y := 6.0
+	if cfg.load(UI_LAYOUT_PATH) == OK:
+		default_x = cfg.get_value("player_frame", "x", default_x)
+		default_y = cfg.get_value("player_frame", "y", default_y)
+	var vp2 = get_viewport().get_visible_rect().size
+	var px = clampf(default_x, 0.0, vp2.x - _player_frame.size.x)
+	var py = clampf(default_y, 0.0, vp2.y - _player_frame.size.y)
+	_player_frame.position = Vector2(px, py)
+	if _xp_panel:
+		_xp_panel.position = Vector2(px, py + _player_frame.size.y + 2.0)
 
 # ── SOCIAL SYSTEMS ───────────────────────────────────────────
 func _init_social_systems() -> void:
@@ -1406,9 +1546,9 @@ func _add_remote_player(peer_id: int, cls: String, nick: String, pos: Vector2) -
 	elif cls == "medic":
 		sprite.scale  = Vector2(0.38, 0.38)
 		sprite.offset = Vector2(0, -121)
-	elif cls == "ranged":
-		sprite.scale  = Vector2(0.38, 0.38)
-		sprite.offset = Vector2(0, -121)
+	elif cls in ["ranged", "smuggler"]:
+		sprite.scale  = Vector2(0.228, 0.228)
+		sprite.offset = Vector2(0, -73)
 	else:
 		sprite.scale  = Vector2(1.0, 1.0)
 		sprite.offset = Vector2(0, -12)
@@ -1437,8 +1577,8 @@ func is_targeted(node: Node) -> bool:
 func spawn_damage_number(world_pos: Vector2, amount: float, col: Color, text_override: String = "") -> void:
 	var script = load("res://Scripts/DamageNumber.gd")
 	if script == null: return
-	var dn = Node2D.new(); dn.set_script(script); dn.position = world_pos
-	add_child(dn)
+	var dn = Node2D.new(); dn.set_script(script)
+	add_child(dn); dn.global_position = world_pos + Vector2(0.0, -60.0)
 	if text_override != "" and dn.has_method("init_text"):
 		dn.call("init_text", text_override, col)
 	else:
@@ -1447,16 +1587,16 @@ func spawn_damage_number(world_pos: Vector2, amount: float, col: Color, text_ove
 func spawn_fireball(spawn_pos: Vector2, target: Node, dmg: float, _broadcast: bool = true) -> void:
 	var script = load("res://Scripts/Fireball.gd")
 	if script == null: return
-	var fb = Node2D.new(); fb.set_script(script); fb.position = spawn_pos
-	add_child(fb); fb.call("init", target, dmg)
+	var fb = Node2D.new(); fb.set_script(script)
+	add_child(fb); fb.global_position = spawn_pos; fb.call("init", target, dmg)
 	if _broadcast and Relay.connected and is_instance_valid(target):
 		Relay.send_game_data({"cmd": "fireball", "sx": spawn_pos.x, "sy": spawn_pos.y, "tx": target.global_position.x, "ty": target.global_position.y})
 
 func spawn_bullet(spawn_pos: Vector2, target: Node, dmg: float, _broadcast: bool = true) -> Node:
 	var script = load("res://Scripts/Bullet.gd")
 	if script == null: return null
-	var b = Node2D.new(); b.set_script(script); b.position = spawn_pos
-	add_child(b); b.call("init", target, dmg)
+	var b = Node2D.new(); b.set_script(script)
+	add_child(b); b.global_position = spawn_pos; b.call("init", target, dmg)
 	if _broadcast and Relay.connected and is_instance_valid(target):
 		Relay.send_game_data({"cmd": "bullet", "sx": spawn_pos.x, "sy": spawn_pos.y, "tx": target.global_position.x, "ty": target.global_position.y})
 	return b
@@ -1464,16 +1604,16 @@ func spawn_bullet(spawn_pos: Vector2, target: Node, dmg: float, _broadcast: bool
 func spawn_canister(spawn_pos: Vector2, target: Node, dmg: float, is_heal: bool, _broadcast: bool = true) -> void:
 	var script = load("res://Scripts/MedicCanister.gd")
 	if script == null: return
-	var c = Node2D.new(); c.set_script(script); c.position = spawn_pos
-	add_child(c); c.call("init", target, dmg, is_heal)
+	var c = Node2D.new(); c.set_script(script)
+	add_child(c); c.global_position = spawn_pos; c.call("init", target, dmg, is_heal)
 	if _broadcast and Relay.connected and is_instance_valid(target):
 		Relay.send_game_data({"cmd": "canister", "sx": spawn_pos.x, "sy": spawn_pos.y, "tx": target.global_position.x, "ty": target.global_position.y, "heal": is_heal})
 
 func spawn_melee_hit(world_pos: Vector2, col: Color, _broadcast: bool = true) -> void:
 	var script = load("res://Scripts/MeleeHit.gd")
 	if script == null: return
-	var hit = Node2D.new(); hit.set_script(script); hit.position = world_pos
-	add_child(hit); hit.call("init", col)
+	var hit = Node2D.new(); hit.set_script(script)
+	add_child(hit); hit.global_position = world_pos; hit.call("init", col)
 	if _broadcast and Relay.connected:
 		Relay.send_game_data({"cmd": "melee_hit", "x": world_pos.x, "y": world_pos.y, "r": col.r, "g": col.g, "b": col.b})
 
@@ -1547,6 +1687,7 @@ func _spawn_boss(at_pos: Vector2 = Vector2.ZERO, broadcast: bool = true) -> void
 	var sprite = AnimatedSprite2D.new()
 	sprite.name = "Sprite"; sprite.sprite_frames = _build_boss_frames()
 	sprite.scale = Vector2(2.0, 2.0); sprite.offset = Vector2(0, -33)
+	sprite.play("idle_s")
 	boss.add_child(sprite)
 	var col = CollisionShape2D.new(); var shape = CapsuleShape2D.new()
 	shape.radius = 52.0; shape.height = 90.0; col.shape = shape; boss.add_child(col)
@@ -1567,6 +1708,7 @@ func _spawn_cyberlord(at_pos: Vector2 = Vector2.ZERO, broadcast: bool = true) ->
 	var sprite = AnimatedSprite2D.new()
 	sprite.name = "Sprite"; sprite.sprite_frames = _build_cyberlord_frames()
 	sprite.scale = Vector2(264.0 / 144.0, 264.0 / 144.0); sprite.offset = Vector2(0, -72)
+	sprite.play("idle_s")
 	boss.add_child(sprite)
 	var col = CollisionShape2D.new(); var shape = CapsuleShape2D.new()
 	shape.radius = 52.0; shape.height = 90.0; col.shape = shape; boss.add_child(col)
@@ -1617,6 +1759,7 @@ func _spawn_vampire(at_pos: Vector2 = Vector2.ZERO, broadcast: bool = true) -> v
 	var sprite = AnimatedSprite2D.new()
 	sprite.name = "Sprite"; sprite.sprite_frames = _build_vampire_frames()
 	sprite.scale = Vector2(0.25, 0.25); sprite.offset = Vector2(0, -180)
+	sprite.play("idle_s")
 	boss.add_child(sprite)
 	var col = CollisionShape2D.new(); var shape = CapsuleShape2D.new()
 	shape.radius = 20.0; shape.height = 40.0; col.shape = shape; boss.add_child(col)
@@ -1647,6 +1790,7 @@ func _spawn_armored_thug(at_pos: Vector2 = Vector2.ZERO, broadcast: bool = true)
 	var sprite = AnimatedSprite2D.new()
 	sprite.name = "Sprite"; sprite.sprite_frames = _build_thug_frames()
 	sprite.scale = Vector2(0.32, 0.32); sprite.offset = Vector2(0, -140)
+	sprite.play("idle_s")
 	mob.add_child(sprite)
 	var col = CollisionShape2D.new(); var shape = CapsuleShape2D.new()
 	shape.radius = 18.0; shape.height = 36.0; col.shape = shape; mob.add_child(col)
@@ -1666,6 +1810,7 @@ func _spawn_zerg_mob(at_pos: Vector2 = Vector2.ZERO, broadcast: bool = true) -> 
 	var sprite = AnimatedSprite2D.new()
 	sprite.name = "Sprite"; sprite.sprite_frames = _build_boss_frames()
 	sprite.scale = Vector2(1.0, 1.0); sprite.offset = Vector2(0, -33)
+	sprite.play("idle_s")
 	mob.add_child(sprite)
 	var col = CollisionShape2D.new(); var shape = CapsuleShape2D.new()
 	shape.radius = 26.0; shape.height = 45.0; col.shape = shape; mob.add_child(col)
@@ -1685,6 +1830,7 @@ func _spawn_cyber_mob(at_pos: Vector2 = Vector2.ZERO, broadcast: bool = true) ->
 	var sprite = AnimatedSprite2D.new()
 	sprite.name = "Sprite"; sprite.sprite_frames = _build_cyberlord_frames()
 	sprite.scale = Vector2(264.0 / 144.0 * 0.5, 264.0 / 144.0 * 0.5); sprite.offset = Vector2(0, -72)
+	sprite.play("idle_s")
 	mob.add_child(sprite)
 	var col = CollisionShape2D.new(); var shape = CapsuleShape2D.new()
 	shape.radius = 26.0; shape.height = 45.0; col.shape = shape; mob.add_child(col)
@@ -1696,3 +1842,68 @@ func _spawn_cyber_mob(at_pos: Vector2 = Vector2.ZERO, broadcast: bool = true) ->
 	_world_layer.add_child(mob); mob.tree_exiting.connect(_on_targetable_removed.bind(mob))
 	if broadcast:
 		Relay.send_game_data({"cmd": "spawn_creature", "type": "cyber_mob", "x": at_pos.x, "y": at_pos.y})
+
+func _build_robowalker_frames() -> SpriteFrames:
+	var frames = SpriteFrames.new()
+	if frames.has_animation("default"): frames.remove_animation("default")
+	var base = "res://Characters/newtoadd/robowalker/"
+	# Only 5 source dirs rendered; w/nw/sw mirror via flip_h at runtime
+	var dir_src := {"s":"s","n":"n","e":"e","ne":"ne","se":"se","w":"e","nw":"ne","sw":"se"}
+	for dir in ["s","n","e","ne","se","w","nw","sw"]:
+		var sdir : String = dir_src[dir]
+		# Idle: 7 chunked parts
+		var idle_anim = "idle_" + dir
+		frames.add_animation(idle_anim)
+		frames.set_animation_speed(idle_anim, 24.0)
+		frames.set_animation_loop(idle_anim, true)
+		for pn in range(1, 8):
+			var path = base + "idle/idle" + str(pn) + "/idle" + str(pn) + "_" + sdir + ".png"
+			if not ResourceLoader.exists(path): continue
+			var tex = load(path) as Texture2D
+			if tex == null: continue
+			var fc = int(tex.get_width() / 512.0)
+			for fi in fc:
+				var atlas = AtlasTexture.new()
+				atlas.atlas = tex; atlas.region = Rect2(fi * 512, 0, 512, 512)
+				frames.add_frame(idle_anim, atlas)
+		# Run: single strip
+		var run_path = base + "run/run_" + sdir + ".png"
+		var rtex = load(run_path) as Texture2D
+		var rfc = int(rtex.get_width() / 512.0) if rtex else 20
+		_add_strip(frames, "run_" + dir, run_path, 512, 512, rfc, 24.0)
+		# Attack: 7 chunked parts, no loop
+		var atk_anim = "attack_" + dir
+		frames.add_animation(atk_anim)
+		frames.set_animation_speed(atk_anim, 24.0)
+		frames.set_animation_loop(atk_anim, false)
+		for pn in range(1, 8):
+			var path = base + "attack/attack" + str(pn) + "/attack" + str(pn) + "_" + sdir + ".png"
+			if not ResourceLoader.exists(path): continue
+			var tex = load(path) as Texture2D
+			if tex == null: continue
+			var fc = int(tex.get_width() / 512.0)
+			for fi in fc:
+				var atlas = AtlasTexture.new()
+				atlas.atlas = tex; atlas.region = Rect2(fi * 512, 0, 512, 512)
+				frames.add_frame(atk_anim, atlas)
+	return frames
+
+func _spawn_robowalker(at_pos: Vector2 = Vector2.ZERO, broadcast: bool = true) -> void:
+	var script = load("res://Scripts/RoboWalker.gd")
+	if script == null: return
+	var mob = CharacterBody2D.new(); mob.set_script(script)
+	var sprite = AnimatedSprite2D.new()
+	sprite.name = "Sprite"; sprite.sprite_frames = _build_robowalker_frames()
+	sprite.scale = Vector2(0.30, 0.30); sprite.offset = Vector2(0, -170)
+	sprite.play("idle_s")
+	mob.add_child(sprite)
+	var col = CollisionShape2D.new(); var shape = CapsuleShape2D.new()
+	shape.radius = 20.0; shape.height = 40.0; col.shape = shape; mob.add_child(col)
+	if at_pos == Vector2.ZERO:
+		var n = get_tree().get_nodes_in_group("mob").size()
+		var angle = TAU * (float(n) / 8.0); var dist = 180.0 + n * 30.0
+		at_pos = _player.global_position + Vector2(cos(angle), sin(angle)) * dist
+	mob.position = at_pos; mob.collision_layer = 2; mob.collision_mask = 2
+	_world_layer.add_child(mob); mob.tree_exiting.connect(_on_targetable_removed.bind(mob))
+	if broadcast:
+		Relay.send_game_data({"cmd": "spawn_creature", "type": "robowalker", "x": at_pos.x, "y": at_pos.y})

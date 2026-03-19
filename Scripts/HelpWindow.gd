@@ -117,11 +117,16 @@ func _open_window() -> void:
 	_row(vbox,   "ESC",                "Clear target / close window")
 	_row(vbox,   "TAB",                "Cycle targets")
 
+	_section(vbox, "WINDOWS")
+	_row(vbox,   "K",    "Profession Skills Tree")
+	_row(vbox,   "U",    "Character Stats")
+
 	_section(vbox, "DEBUG HOTKEYS")
 	_row(vbox,   "G",    "Instantly kill current target")
 	_row(vbox,   "H",    "+5000 Credits")
 	_row(vbox,   "J",    "Level up")
 	_row(vbox,   "L",    "Spawn Teleporter at player")
+	_row(vbox,   "F11",  "Reset Skills + Give XP")
 
 	_section(vbox, "SPAWN (DEBUG)")
 	_row(vbox,   "F1",   "Spawn Training Dummy")
@@ -129,6 +134,8 @@ func _open_window() -> void:
 	_row(vbox,   "F3",   "Spawn Cyber Lord")
 	_row(vbox,   "F4",   "Spawn Zerg Mob")
 	_row(vbox,   "F5",   "Spawn Cyber Mob")
+	_row(vbox,   "F9",   "Spawn Vampire")
+	_row(vbox,   "F10",  "Spawn Armored Thug")
 
 	_section(vbox, "HUD")
 	_row(vbox,   "Drag player frame",   "Move the HP/MP/XP widget anywhere")

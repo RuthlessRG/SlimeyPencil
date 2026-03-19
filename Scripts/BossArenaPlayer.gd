@@ -92,6 +92,8 @@ var _item_str : int = 0
 var _item_agi : int = 0
 var _item_int : int = 0
 var _item_spi : int = 0
+var _item_dmg_bonus   : float      = 0.0
+var _item_combat_stats : Dictionary = {}  # defense, resist_* bonuses from gear
 
 # ── BANK STORAGE ─────────────────────────────────────────────
 var bank_credits  : int = 0
@@ -165,10 +167,16 @@ func _recalc_box_modifiers() -> void:
 func _get_weapon_xp_type() -> String:
 	match character_class:
 		"scrapper", "melee", "streetfighter": return "unarmed"
-		"ranged":           return "ranged"
+		"ranged", "smuggler": return "ranged"
 		"mage":             return "force"
-		"medic", "robo":    return "medical"
+		"medic":           return "medical"
 	return "unarmed"
+
+# ── OUT-OF-COMBAT REGEN ──────────────────────────────────────
+# Resets to COMBAT_LINGER on every hit; counts down to 0.
+# At 0 → out of combat; pools regen at full rate.
+const COMBAT_LINGER : float = 8.0
+var _combat_timer   : float = 0.0
 
 # ── COMBAT STATES (SWG Pre-CU) ──────────────────────────────
 var state_dizzy      : float = 0.0
@@ -194,9 +202,7 @@ var _combat_stats : Dictionary = {
 }
 
 func get_stat(stat_name: String) -> float:
-	if _combat_stats.has(stat_name):
-		return float(_combat_stats[stat_name])
-	return 0.0
+	return float(_combat_stats.get(stat_name, 0)) + float(_item_combat_stats.get(stat_name, 0))
 
 const STATE_COLORS : Dictionary = {
 	"dizzy": Color(1.0, 0.85, 0.2),
@@ -260,9 +266,10 @@ var _queue_timer : float = 0.0
 var _queue_speed : float = 1.5  # Base seconds between queue pops (gets faster with skills)
 
 # ── AUTO-ATTACK ───────────────────────────────────────────────
-var _attack_timer   : float = 0.0
-var _move_lock_timer: float = 0.0
-var _one_shot_kill  : bool  = false
+var _attack_timer        : float = 0.0
+var _move_lock_timer     : float = 0.0
+var _one_shot_kill       : bool  = false
+var _ranged_first_attack : bool  = true   # longer bullet delay on first shot from idle
 
 # ── DEATH ─────────────────────────────────────────────────────
 const DEATH_DURATION : float = 2.0
@@ -285,6 +292,7 @@ var _has_parked       : bool    = false
 var _parked_pos       : Vector2 = Vector2.ZERO
 var _parked_item      : Dictionary = {}
 var _parked_angle     : float   = 0.0
+var _dismounting      : bool    = false   # true while slowing to a halt before exit
 var _fade_t           : float   = 1.0      # 0=invisible 1=fully visible
 var _fading_in        : bool    = false
 var _fading_out       : bool    = false
@@ -312,7 +320,8 @@ const TARGET_CONE_ANGLE   = 60.0
 var _snd_step_port  : AudioStreamPlayer = null
 var _snd_step_grass : AudioStreamPlayer = null
 var _snd_melee_hits : Array = []   # knife slash sound variants
-var _snd_rifle_shot : AudioStreamPlayer = null
+var _snd_rifle_shot   : AudioStreamPlayer = null
+var _snd_medic_attack : AudioStreamPlayer = null
 var _snd_hum        : AudioStreamPlayer2D = null   # vehicle engine hum (positional)
 var _footstep_timer : float = 0.0
 const FOOTSTEP_INTERVAL : float = 0.31
@@ -322,8 +331,23 @@ func _ready() -> void:
 	add_to_group("player")
 	_setup_stats()
 	_give_starting_items()
+	_give_starting_skills()
 	_spawn_chat()
 	_setup_sounds()
+
+func _give_starting_skills() -> void:
+	var novice_id: String
+	match character_class:
+		"scrapper", "melee":  novice_id = "brawler_novice"
+		"smuggler":           novice_id = "marksman_novice"
+		"medic":              novice_id = "medic_novice"
+		_:                    return
+	if novice_id in learned_boxes: return
+	var box = ProfessionData.find_box(novice_id)
+	if box.is_empty(): return
+	skill_points_spent += box.get("cost_sp", 0)
+	learned_boxes.append(novice_id)
+	_recalc_box_modifiers()
 
 func _give_starting_items() -> void:
 	if inventory.size() == 0:
@@ -388,7 +412,8 @@ func _setup_sounds() -> void:
 			"res://Sounds/knife_slash2.mp3", "res://Sounds/knife_slash3.mp3"]:
 		var _kp = _make_sfx(_ks, -4.0)
 		if _kp != null: _snd_melee_hits.append(_kp)
-	_snd_rifle_shot = _make_sfx("res://Sounds/rifle_shot.mp3",     -22.0)
+	_snd_rifle_shot   = _make_sfx("res://Sounds/rifle_shot.mp3",          -22.0)
+	_snd_medic_attack = _make_sfx("res://Sounds/technunbufftest.wav",     -10.0)
 	var _hum_stream = load("res://Sounds/hum.wav") as AudioStream
 	if _hum_stream != null:
 		_snd_hum = AudioStreamPlayer2D.new()
@@ -429,6 +454,9 @@ func _setup_stats() -> void:
 		"ranged":
 			character_name = "Marksman"
 			_base_ham_health = 300.0; _base_ham_action = 400.0; _base_ham_mind = 300.0
+		"smuggler":
+			character_name = "Smuggler"
+			_base_ham_health = 300.0; _base_ham_action = 400.0; _base_ham_mind = 300.0
 		"mage":
 			character_name = "Mage"
 			_base_ham_health = 250.0; _base_ham_action = 300.0; _base_ham_mind = 450.0
@@ -441,9 +469,6 @@ func _setup_stats() -> void:
 		"streetfighter":
 			character_name = "Street Fighter"
 			_base_ham_health = 600.0; _base_ham_action = 450.0; _base_ham_mind = 150.0
-		"robo":
-			character_name = "Robo"
-			_base_ham_health = 350.0; _base_ham_action = 300.0; _base_ham_mind = 350.0
 	_recalc_stats()
 	ham_health = get_effective_max_health()
 	ham_action = get_effective_max_action()
@@ -482,7 +507,7 @@ func _draw_mount_vehicle(alpha: float) -> void:
 			# Ground shadow — uses actual ship texture, squished flat like character shadow
 			var sh_scale_x = sc
 			var sh_scale_y = sc * 0.25
-			var sh_pos = Vector2(6, 60)
+			var sh_pos = Vector2(6, 90)
 			draw_set_transform(sh_pos, 0.0, Vector2(sh_scale_x, sh_scale_y))
 			draw_texture(dir_tex, -tex_size * 0.5, Color(0, 0, 0, 0.30 * alpha))
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
@@ -508,7 +533,7 @@ func _draw_mount_vehicle(alpha: float) -> void:
 		# ── Fighter speeder (LandSpeeder MK1) ────────────────
 		# Shadow
 		draw_colored_polygon(
-			_mount_ellipse(Vector2(6,8), 55, 14, _mount_angle, 16),
+			_mount_ellipse(Vector2(6,68), 55, 14, _mount_angle, 16),
 			Color(0,0,0, 0.22 * alpha))
 		# Hull
 		var hull = PackedVector2Array()
@@ -552,7 +577,7 @@ func _draw_mount_vehicle(alpha: float) -> void:
 		# ── Transport speeder (LandSpeeder MK2) ──────────────
 		# Shadow
 		draw_colored_polygon(
-			_mount_ellipse(Vector2(8,10), 48, 24, _mount_angle, 16),
+			_mount_ellipse(Vector2(8,72), 48, 24, _mount_angle, 16),
 			Color(0,0,0, 0.22 * alpha))
 		# Wide hull
 		var hull = PackedVector2Array([
@@ -636,12 +661,20 @@ func _mount_ellipse(center: Vector2, rx: float, ry: float, rot: float, n: int) -
 func _recalc_stats() -> void:
 	# Recompute item bonuses from currently equipped items
 	_item_str = 0; _item_agi = 0; _item_int = 0; _item_spi = 0
+	_item_dmg_bonus = 0.0
+	_item_combat_stats.clear()
 	for item in inventory:
 		if item.get("equipped", false):
 			_item_str += item.get("attr_str", 0)
 			_item_agi += item.get("attr_agi", 0)
 			_item_int += item.get("attr_int", 0)
 			_item_spi += item.get("attr_spi", 0)
+			_item_dmg_bonus += float(item.get("damage_bonus", 0))
+			for key in ["defense", "resist_kinetic", "resist_energy", "resist_heat",
+						"resist_cold", "resist_acid", "resist_electricity",
+						"resist_blast", "resist_stun", "accuracy"]:
+				if item.has(key):
+					_item_combat_stats[key] = _item_combat_stats.get(key, 0) + int(item[key])
 	# HAM pool max = base + (secondary stats + item bonuses) * 10
 	ham_health_max = _base_ham_health + (stat_strength + stat_constitution + _item_str) * 10.0
 	ham_action_max = _base_ham_action + (stat_quickness + stat_stamina + _item_agi) * 10.0
@@ -660,9 +693,14 @@ func add_exp(amount: float) -> void:
 	var wt = _get_weapon_xp_type()
 	add_xp(wt, int(amount))
 
+func _target_hit_pos() -> Vector2:
+	if not is_instance_valid(_current_target): return global_position
+	if _current_target.has_method("get_target_position"):
+		return _current_target.get_target_position()
+	return _current_target.global_position
+
 func _spawn_hit_flash(world_pos: Vector2) -> void:
 	var flash = Node2D.new()
-	flash.position = world_pos
 	flash.z_index = 20
 	var src = """extends Node2D
 var _t:float=0.0
@@ -683,6 +721,7 @@ func _draw():
 	var s = GDScript.new(); s.source_code = src; s.reload()
 	flash.set_script(s)
 	get_tree().current_scene.add_child(flash)
+	flash.global_position = world_pos
 
 func _spawn_floating_text(text: String, color: Color) -> void:
 	var script = load("res://Scripts/BossFloatingText.gd")
@@ -691,9 +730,9 @@ func _spawn_floating_text(text: String, color: Color) -> void:
 	var scene  = get_tree().current_scene
 	if scene == null:
 		return
-	node.global_position = global_position + Vector2(randf_range(-8, 8), -40 - _float_stack * 20)
-	_float_stack += 1
 	scene.add_child(node)
+	node.global_position = global_position + Vector2(randf_range(-8, 8), -80 - _float_stack * 20)
+	_float_stack += 1
 	node.call("init", text, color)
 	get_tree().create_timer(1.4).timeout.connect(func(): _float_stack = max(0, _float_stack - 1))
 
@@ -759,6 +798,7 @@ func _process(delta: float) -> void:
 			if not _snd_hum.playing: _snd_hum.play()
 		else:
 			_snd_hum.volume_db = -80.0
+	_tick_ham_regen(delta)
 	_tick_skills(delta)
 	_tick_combat_queue(delta)
 	_update_animation()
@@ -804,9 +844,9 @@ func _physics_process(_delta: float) -> void:
 	_moving = input != Vector2.ZERO
 	if _moving:
 		var _sprint_mult = 1.65 if _sprint_active else 1.0
-		var _class_speed = 1.2 if character_class == "scrapper" else 1.0
+		var _class_speed = 1.32 if character_class == "scrapper" else (1.2 if character_class == "ranged" else 1.0)
 		velocity = input.normalized() * SPEED * _sprint_mult * _class_speed
-		if character_class in ["melee", "medic", "scrapper", "streetfighter", "robo"]:
+		if character_class in ["melee", "medic", "scrapper", "streetfighter", "ranged"]:
 			_facing = _facing_8dir(input)
 		elif input.y < 0.0:
 			_facing = "n"
@@ -1057,6 +1097,12 @@ func add_item_to_inventory(item: Dictionary) -> void:
 	var copy          = item.duplicate()
 	copy["equipped"]  = false
 	inventory.append(copy)
+	var _rc : Color
+	match item.get("rarity", "white"):
+		"blue": _rc = Color(0.40, 0.72, 1.00)
+		"gold": _rc = Color(1.00, 0.82, 0.15)
+		_:      _rc = Color(0.88, 0.88, 0.88)
+	_spawn_floating_text("LOOT: " + item.get("name", "Item"), _rc)
 
 func toggle_equip(inv_index: int) -> void:
 	if inv_index < 0 or inv_index >= inventory.size():
@@ -1065,23 +1111,27 @@ func toggle_equip(inv_index: int) -> void:
 	if item.get("type","") == "mount":
 		_toggle_mount(inv_index)
 		return
-	item["equipped"] = not item.get("equipped", false)
+	var already_equipped = item.get("equipped", false)
+	if not already_equipped:
+		# Un-equip any other item occupying the same slot
+		var itype = item.get("type", "")
+		for i in inventory.size():
+			if i != inv_index and inventory[i].get("type","") == itype:
+				inventory[i]["equipped"] = false
+	item["equipped"] = not already_equipped
 	_recalc_stats()
 
 func _toggle_mount_hotkey() -> void:
-	if _fading_out or _fading_in: return  # Already transitioning
-	# If mounted, dismount (wait for speed to drop first)
+	if _fading_out or _fading_in: return
+	if _dismounting: return  # Already exiting — wait for halt
 	if _mounted:
 		if _mount_velocity.length() > 20.0:
-			# Still moving — force slow down, don't dismount yet
-			_mount_velocity = _mount_velocity * 0.3
+			# Start slowing — block all other actions until fully stopped
+			_dismounting = true
 			_spawn_floating_text("Slowing down...", Color(0.7, 0.8, 1.0))
 			return
-		# Speed is low enough — dismount
-		for i in inventory.size():
-			if inventory[i].get("type", "") == "mount" and inventory[i].get("equipped", false):
-				_toggle_mount(i)
-				return
+		# Already stopped — dismount immediately
+		_do_dismount()
 	else:
 		# Not mounted — find first mount in inventory and mount up
 		for i in inventory.size():
@@ -1089,6 +1139,13 @@ func _toggle_mount_hotkey() -> void:
 				_toggle_mount(i)
 				return
 		_spawn_floating_text("No vehicle in inventory", Color(1.0, 0.5, 0.3))
+
+func _do_dismount() -> void:
+	_dismounting = false
+	for i in inventory.size():
+		if inventory[i].get("type", "") == "mount" and inventory[i].get("equipped", false):
+			_toggle_mount(i)
+			return
 
 func _toggle_mount(inv_index: int) -> void:
 	var item = inventory[inv_index]
@@ -1141,8 +1198,18 @@ var _mount_last_dir : Vector2 = Vector2.ZERO  # Last input direction (for coasti
 
 func _tick_mount_physics(delta: float) -> void:
 	var max_speed = SPEED * _mount_item.get("speed_mult", 5.0)
-	var accel = max_speed * 1.2   # Ramp up over ~0.8s
-	var decel = max_speed * 0.6   # Coast to stop over ~1.6s
+	var accel = max_speed * 1.2
+	var decel = max_speed * 0.6
+
+	# Dismounting — block all input, brake hard, auto-exit when stopped
+	if _dismounting:
+		_mount_velocity = _mount_velocity.move_toward(Vector2.ZERO, decel * 2.5 * delta)
+		velocity = _mount_velocity
+		move_and_slide()
+		queue_redraw()
+		if _mount_velocity.length() < 5.0:
+			_do_dismount()
+		return
 
 	# WASD input
 	var input_dir = Vector2.ZERO
@@ -1195,7 +1262,7 @@ func _update_animation() -> void:
 		return
 
 	# Kiting: moving after firing cancels attack animation for projectile classes
-	if _is_attacking and _moving and (character_class == "ranged" or character_class == "mage" or character_class == "medic"):
+	if _is_attacking and _moving and character_class in ["ranged", "smuggler", "mage", "medic"]:
 		_cancel_attack()
 
 	# Brawlernew: run always wins over attack when moving
@@ -1213,6 +1280,7 @@ func _update_animation() -> void:
 			else:
 				anim = "run_" + _facing
 		elif _is_attacking:
+			_sf_move_timer = 0.0
 			anim = _blend_attack_anim if _blend_attack_anim != "" else "attack_" + _facing
 		else:
 			_sf_move_timer = 0.0  # Reset walk timer when stopped
@@ -1244,6 +1312,15 @@ func _update_animation() -> void:
 		else:
 			if sprite.sprite_frames.has_animation("idle_s") and sprite.animation != "idle_s":
 				sprite.play("idle_s")
+		# ranged: all anims are 5-dir (run/attack) or 3-dir (idle); always flip for w/nw/sw
+		if character_class == "ranged":
+			sprite.flip_h = _facing in ["w", "nw", "sw"]
+		# smuggler: idle+attack are 8-dir, no flip; run is 5-dir, flip when running west
+		elif character_class == "smuggler":
+			sprite.flip_h = _moving and _facing in ["w", "nw", "sw"]
+		# medic all anims are 5-dir only; flip for all west-facing states
+		elif character_class == "medic":
+			sprite.flip_h = _facing in ["w", "nw", "sw"]
 
 	# Reset rotation unless knocked down
 	if state_knockdown <= 0.0:
@@ -1402,8 +1479,9 @@ func _draw_character_shadow() -> void:
 func _get_class_color() -> Color:
 	match character_class:
 		"melee":   return Color(0.9,  0.35, 0.20)
-		"ranged":  return Color(0.35, 0.75, 0.90)
-		"mage":    return Color(0.70, 0.40, 1.00)
+		"ranged":   return Color(0.35, 0.75, 0.90)
+		"smuggler": return Color(0.85, 0.65, 0.25)
+		"mage":     return Color(0.70, 0.40, 1.00)
 		"scrapper": return Color(0.40, 0.85, 0.30)
 	return Color.WHITE
 
@@ -1425,11 +1503,15 @@ func _facing_8dir(v: Vector2) -> String:
 
 func _facing_to_vec() -> Vector2:
 	match _facing:
-		"n": return Vector2(0, -1)
-		"s": return Vector2(0,  1)
-		"e": return Vector2(1,  0)
-		"w": return Vector2(-1, 0)
-	return Vector2(0, 1)
+		"n":  return Vector2(0, -1)
+		"s":  return Vector2(0,  1)
+		"e":  return Vector2(1,  0)
+		"w":  return Vector2(-1, 0)
+		"ne": return Vector2(1, -1).normalized()
+		"nw": return Vector2(-1, -1).normalized()
+		"se": return Vector2(1,  1).normalized()
+		"sw": return Vector2(-1,  1).normalized()
+	return Vector2(0, -1)  # fallback north rather than south
 
 # ── AUTO-ATTACK ───────────────────────────────────────────────
 func _tick_auto_attack(delta: float) -> void:
@@ -1445,8 +1527,8 @@ func _tick_auto_attack(delta: float) -> void:
 	match character_class:
 		"melee":
 			attack_interval = 2.0
-			attack_range    = 130.0
-		"ranged":
+			attack_range    = 220.0
+		"ranged", "smuggler":
 			attack_interval = 2.5
 			attack_range    = 700.0
 		"mage":
@@ -1461,9 +1543,6 @@ func _tick_auto_attack(delta: float) -> void:
 		"streetfighter":
 			attack_interval = 2.5
 			attack_range    = 130.0
-		"robo":
-			attack_interval = 3.0
-			attack_range    = 500.0
 		_:
 			attack_interval = 2.0
 			attack_range    = 130.0
@@ -1486,14 +1565,14 @@ func _do_attack() -> void:
 		return
 
 	match character_class:
-		"melee":   _move_lock_timer = 0.0
-		"ranged":  _move_lock_timer = 0.0
-		"mage":    _move_lock_timer = 0.0
-		"scrapper": _move_lock_timer = 0.0
-		"medic":   _move_lock_timer = 0.0
+		"melee":             _move_lock_timer = 0.0
+		"ranged", "smuggler": _move_lock_timer = 0.0
+		"mage":              _move_lock_timer = 0.0
+		"scrapper":          _move_lock_timer = 0.0
+		"medic":             _move_lock_timer = 0.0
 
 	var to_target = _current_target.global_position - global_position
-	if character_class in ["melee", "medic", "scrapper", "streetfighter", "robo"]:
+	if character_class in ["melee", "medic", "scrapper", "streetfighter", "ranged"]:
 		_facing = _facing_8dir(to_target)
 	elif absf(to_target.x) >= absf(to_target.y):
 		_facing = "e" if to_target.x > 0.0 else "w"
@@ -1526,7 +1605,7 @@ func _do_attack() -> void:
 		dmg = _get_attack_damage()
 
 	var arena = get_tree().get_first_node_in_group("boss_arena_scene")
-	var is_ranged_atk = character_class in ["ranged", "mage", "medic"]
+	var is_ranged_atk = character_class in ["ranged", "smuggler", "mage", "medic"]
 	var dmg_type = CombatEngine.get_weapon_damage_type(character_class)
 	var target_pool = CombatEngine.get_weapon_target_pool(character_class)
 
@@ -1536,16 +1615,16 @@ func _do_attack() -> void:
 	match hit_result.get("result", "hit"):
 		"miss":
 			if arena and arena.has_method("spawn_damage_number"):
-				arena.spawn_damage_number(_current_target.global_position, 0, Color(0.6, 0.6, 0.6), "MISS")
+				arena.spawn_damage_number(_target_hit_pos(), 0, Color(0.6, 0.6, 0.6), "MISS")
 			return
 		"dodge":
 			if arena and arena.has_method("spawn_damage_number"):
-				arena.spawn_damage_number(_current_target.global_position, 0, Color(0.4, 0.9, 1.0), "DODGE")
+				arena.spawn_damage_number(_target_hit_pos(), 0, Color(0.4, 0.9, 1.0), "DODGE")
 			return
 		"block":
 			dmg *= (1.0 - hit_result.get("reduction", 0.75))
 			if arena and arena.has_method("spawn_damage_number"):
-				arena.spawn_damage_number(_current_target.global_position, 0, Color(0.8, 0.8, 0.2), "BLOCK")
+				arena.spawn_damage_number(_target_hit_pos(), 0, Color(0.8, 0.8, 0.2), "BLOCK")
 		"counterattack":
 			if arena and arena.has_method("spawn_damage_number"):
 				arena.spawn_damage_number(global_position, 0, Color(1.0, 0.5, 0.2), "COUNTER")
@@ -1557,16 +1636,28 @@ func _do_attack() -> void:
 	dmg = CombatEngine.calc_damage(dmg, dmg_type, _current_target, attack_data)
 
 	if character_class == "medic":
-		var spawn_pos = global_position + _facing_to_vec() * 18.0
-		var is_heal = _current_target.is_in_group("party_member") or _current_target.is_in_group("friendly")
-		if arena and arena.has_method("spawn_canister"):
-			arena.spawn_canister(spawn_pos, _current_target, dmg, is_heal)
+		var cap_arena  = arena
+		var cap_dmg    = dmg
+		var cap_target = _current_target
+		var cap_heal   = _current_target.is_in_group("party_member") or _current_target.is_in_group("friendly")
+		get_tree().create_timer(0.3).timeout.connect(func():
+			if not is_instance_valid(cap_target): return
+			var sp = global_position + _facing_to_vec() * 18.0
+			if cap_arena and cap_arena.has_method("spawn_canister"):
+				cap_arena.spawn_canister(sp, cap_target, cap_dmg, cap_heal)
+			if _snd_medic_attack != null: _snd_medic_attack.play()
+		)
 	elif character_class == "mage":
-		var spawn_pos = global_position + _facing_to_vec() * 18.0
-		if arena and arena.has_method("spawn_fireball"):
-			arena.spawn_fireball(spawn_pos, _current_target, dmg)
-	elif character_class == "ranged":
-		var spawn_pos = global_position + _facing_to_vec() * 18.0
+		var cap_arena  = arena
+		var cap_dmg    = dmg
+		var cap_target = _current_target
+		get_tree().create_timer(0.3).timeout.connect(func():
+			if not is_instance_valid(cap_target): return
+			var sp = global_position + _facing_to_vec() * 18.0
+			if cap_arena and cap_arena.has_method("spawn_fireball"):
+				cap_arena.spawn_fireball(sp, cap_target, cap_dmg)
+		)
+	elif character_class in ["ranged", "smuggler"]:
 		var rifle_glow_col = Color(0, 0, 0, 0)
 		for item in inventory:
 			if item.get("equipped", false) and item.get("type", "") == "rifle":
@@ -1575,12 +1666,22 @@ func _do_attack() -> void:
 					"blue":  rifle_glow_col = Color(0.35, 0.72, 1.00)
 					"gold":  rifle_glow_col = Color(1.00, 0.82, 0.15)
 				break
-		if arena and arena.has_method("spawn_bullet"):
-			var bullet = arena.spawn_bullet(spawn_pos, _current_target, dmg)
-			if bullet != null and rifle_glow_col.a > 0.0:
-				bullet.set("rifle_glow", rifle_glow_col)
-		if _snd_rifle_shot != null: _snd_rifle_shot.play()
-		_try_spawn_weapon_swing()
+		var cap_arena  = arena
+		var cap_dmg    = dmg
+		var cap_target = _current_target
+		var cap_glow   = rifle_glow_col
+		var fire_delay = 0.75 if _ranged_first_attack else 0.5
+		_ranged_first_attack = false
+		get_tree().create_timer(fire_delay).timeout.connect(func():
+			if not is_instance_valid(cap_target): return
+			var sp = global_position + _facing_to_vec() * 18.0
+			if cap_arena and cap_arena.has_method("spawn_bullet"):
+				var bullet = cap_arena.spawn_bullet(sp, cap_target, cap_dmg)
+				if bullet != null and cap_glow.a > 0.0:
+					bullet.set("rifle_glow", cap_glow)
+			if _snd_rifle_shot != null: _snd_rifle_shot.play()
+			_try_spawn_weapon_swing()
+		)
 	else:
 		if _current_target.has_method("take_damage"):
 			# Mobs only accept 1 arg; players accept 2 (with pool)
@@ -1589,10 +1690,9 @@ func _do_attack() -> void:
 			else:
 				_current_target.take_damage(dmg)
 		if arena and arena.has_method("spawn_damage_number"):
-			arena.spawn_damage_number(_current_target.global_position, dmg, _get_dmg_color())
+			arena.spawn_damage_number(_target_hit_pos(), dmg, _get_dmg_color())
 		if arena and arena.has_method("spawn_melee_hit"):
-			var aim = _current_target.get_target_position() if _current_target.has_method("get_target_position") else _current_target.global_position
-			var hit_pos = aim + Vector2(randf_range(-12.0, 12.0), randf_range(-18.0, 18.0))
+			var hit_pos = _target_hit_pos() + Vector2(randf_range(-12.0, 12.0), randf_range(-18.0, 18.0))
 			arena.spawn_melee_hit(hit_pos, _get_dmg_color())
 		if _snd_melee_hits.size() > 0:
 			_snd_melee_hits[randi() % _snd_melee_hits.size()].play()
@@ -1647,6 +1747,8 @@ func _tick_skills(delta: float) -> void:
 				_bb_st.call("remove_buff", "sensu_bean")
 
 func activate_skill(skill_id: String) -> void:
+	if state_knockdown > 0.0:
+		return  # KD: only stand up (space bar) allowed
 	# Instant utility skills bypass the queue
 	match skill_id:
 		"sprint":
@@ -1717,8 +1819,9 @@ func _tick_combat_queue(delta: float) -> void:
 	# Range check
 	var attack_range : float = 130.0
 	match character_class:
-		"ranged", "mage": attack_range = 700.0
-		"medic", "robo": attack_range = 500.0
+		"ranged", "smuggler", "mage": attack_range = 700.0
+		"medic": attack_range = 500.0
+		"melee", "scrapper": attack_range = 220.0
 	var dist = global_position.distance_to(_current_target.global_position)
 	if dist > attack_range:
 		_cancel_attack()
@@ -1732,10 +1835,10 @@ func _tick_combat_queue(delta: float) -> void:
 	var base_interval = _queue_speed
 	match character_class:
 		"melee", "scrapper": base_interval = 2.0
-		"ranged": base_interval = 2.5
+		"ranged", "smuggler": base_interval = 2.5
 		"mage": base_interval = 3.5
 		"streetfighter": base_interval = 2.5
-		"medic", "robo": base_interval = 3.0
+		"medic": base_interval = 3.0
 	# Faster with AGI
 	base_interval /= (1.0 + (attr_agi + _item_agi) * 0.05)
 	# End-game minimum: 1 second
@@ -1760,8 +1863,8 @@ func _tick_combat_queue(delta: float) -> void:
 # ── PROFESSION ABILITIES ─────────────────────────────────────
 # Ability definitions: damage mult, action/mind cost, state applied, etc.
 const ABILITY_DATA : Dictionary = {
-	"dizzy_punch":    {"dmg_mult": 1.2, "action_cost": 40, "state": "dizzy", "state_dur": 8.0, "cooldown": 12.0},
-	"knockout_blow":  {"dmg_mult": 1.8, "action_cost": 60, "state": "knockdown", "state_dur": 5.0, "cooldown": 20.0},
+	"dizzy_punch":    {"dmg_mult": 1.2, "action_cost": 40, "state": "dizzy", "state_dur": 8.0, "cooldown": 0.0},
+	"knockout_blow":  {"dmg_mult": 1.8, "action_cost": 60, "state": "knockdown", "state_dur": 5.0, "cooldown": 0.0},
 	"riposte":        {"dmg_mult": 1.3, "action_cost": 35, "state": "", "state_dur": 0.0, "cooldown": 8.0},
 	"blade_flurry":   {"dmg_mult": 0.6, "action_cost": 50, "state": "", "state_dur": 0.0, "cooldown": 10.0, "hits": 3},
 	"power_attack":   {"dmg_mult": 2.0, "action_cost": 70, "state": "", "state_dur": 0.0, "cooldown": 15.0},
@@ -1862,17 +1965,17 @@ func _execute_profession_ability(skill_id: String) -> void:
 		return
 
 	# Hit roll
-	var is_ranged = character_class in ["ranged", "mage", "medic"]
+	var is_ranged = character_class in ["ranged", "smuggler", "mage", "medic"]
 	var attack_data = {"is_ranged": is_ranged, "accuracy_bonus": 10}
 	var hit_result = CombatEngine.roll_to_hit(self, _current_target, attack_data)
 	match hit_result.get("result", "hit"):
 		"miss":
 			if arena and arena.has_method("spawn_damage_number"):
-				arena.spawn_damage_number(_current_target.global_position, 0, Color(0.6, 0.6, 0.6), "MISS")
+				arena.spawn_damage_number(_target_hit_pos(), 0, Color(0.6, 0.6, 0.6), "MISS")
 			return
 		"dodge":
 			if arena and arena.has_method("spawn_damage_number"):
-				arena.spawn_damage_number(_current_target.global_position, 0, Color(0.4, 0.9, 1.0), "DODGE")
+				arena.spawn_damage_number(_target_hit_pos(), 0, Color(0.4, 0.9, 1.0), "DODGE")
 			return
 		"block":
 			pass  # Reduced damage below
@@ -1897,11 +2000,11 @@ func _execute_profession_ability(skill_id: String) -> void:
 				_current_target.take_damage(dmg / hits)
 		if arena and arena.has_method("spawn_damage_number"):
 			var offset = Vector2(randf_range(-15, 15), randf_range(-15, 15))
-			arena.spawn_damage_number(_current_target.global_position + offset, dmg / hits, Color(1.0, 0.8, 0.2))
+			arena.spawn_damage_number(_target_hit_pos() + offset, dmg / hits, Color(1.0, 0.8, 0.2))
 
 	# Hit flash effect on target
 	if is_instance_valid(_current_target):
-		_spawn_hit_flash(_current_target.global_position)
+		_spawn_hit_flash(_target_hit_pos())
 
 	# Apply state
 	var state_name = data.get("state", "")
@@ -1955,7 +2058,7 @@ func _fire_triple_strike() -> void:
 		var spawn_pos = global_position + _facing_to_vec() * 18.0
 		if arena and arena.has_method("spawn_fireball"):
 			arena.spawn_fireball(spawn_pos, _current_target, dmg)
-	elif character_class == "ranged":
+	elif character_class in ["ranged", "smuggler"]:
 		var spawn_pos = global_position + _facing_to_vec() * 18.0
 		if arena and arena.has_method("spawn_bullet"):
 			var bullet = arena.spawn_bullet(spawn_pos, _current_target, dmg)
@@ -1974,10 +2077,9 @@ func _fire_triple_strike() -> void:
 		if _current_target.has_method("take_damage"):
 			_current_target.take_damage(dmg)
 		if arena and arena.has_method("spawn_damage_number"):
-			arena.spawn_damage_number(_current_target.global_position, dmg, _get_dmg_color())
+			arena.spawn_damage_number(_target_hit_pos(), dmg, _get_dmg_color())
 		if arena and arena.has_method("spawn_melee_hit"):
-			var aim = _current_target.get_target_position() if _current_target.has_method("get_target_position") else _current_target.global_position
-			var hit_pos = aim + Vector2(randf_range(-12.0,12.0), randf_range(-18.0,18.0))
+			var hit_pos = _target_hit_pos() + Vector2(randf_range(-12.0,12.0), randf_range(-18.0,18.0))
 			arena.spawn_melee_hit(hit_pos, _get_dmg_color())
 		if _snd_melee_hits.size() > 0:
 			_snd_melee_hits[randi() % _snd_melee_hits.size()].play()
@@ -1999,7 +2101,7 @@ func _get_attack_damage() -> float:
 	match character_class:
 		"melee":
 			base = randf_range(18.0, 28.0) + eff_str * 5.0
-		"ranged":
+		"ranged", "smuggler":
 			base = randf_range(12.0, 20.0)
 		"mage":
 			base = randf_range(22.0, 35.0)
@@ -2009,8 +2111,6 @@ func _get_attack_damage() -> float:
 			base = randf_range(20.0, 32.0) + eff_str * 5.0
 		"streetfighter":
 			base = randf_range(28.0, 42.0) + eff_str * 6.0
-		"robo":
-			base = 25.0 + eff_spi * 3.0  # Same as medic
 		"medic":
 			base = 25.0 + eff_spi * 3.0
 		_:
@@ -2020,13 +2120,13 @@ func _get_attack_damage() -> float:
 	if randf() < eff_agi * 0.02:
 		base *= 1.5
 
-	return base
+	return base + _item_dmg_bonus
 
 func _get_dmg_color() -> Color:
 	match character_class:
 		"melee":   return Color(1.0, 0.55, 0.1)
-		"ranged":  return Color(0.4, 0.95, 1.0)
-		"mage":    return Color(0.9, 0.5,  1.0)
+		"ranged", "smuggler": return Color(0.4, 0.95, 1.0)
+		"mage":               return Color(0.9, 0.5,  1.0)
 		"scrapper": return Color(1.0, 0.55, 0.1)
 		"medic":   return Color(0.30, 0.85, 0.95)
 	return Color.WHITE
@@ -2109,7 +2209,9 @@ func _cycle_target() -> void:
 		return
 	_target_idx = (_target_idx + 1) % _target_candidates.size()
 	_current_target = _target_candidates[_target_idx]
-	_attack_timer = 0.5
+	_attack_timer        = 0.5
+	_queue_timer         = 0.5  # short pre-combat delay, clears any leftover timer from prev fight
+	_ranged_first_attack = true
 
 # ── PUBLIC INTERFACE ──────────────────────────────────────────
 func get_current_target() -> Node:
@@ -2119,9 +2221,31 @@ func is_targeted(node: Node) -> bool:
 	return node == _current_target
 
 # ── DAMAGE / DEATH ────────────────────────────────────────────
+func _tick_ham_regen(delta: float) -> void:
+	if _dying or _incapped:
+		return
+	if _combat_timer > 0.0:
+		_combat_timer -= delta
+	var in_combat = _combat_timer > 0.0
+	var h_rate : float
+	var a_rate : float
+	var m_rate : float
+	if in_combat:
+		# Very slow trickle during combat — ~0.25 HP/s
+		h_rate = 0.25; a_rate = 0.25; m_rate = 0.25
+	else:
+		# Out of combat: 2 base + secondary stat bonus per second
+		h_rate = 2.0 + stat_constitution * 1.5
+		a_rate = 2.0 + stat_stamina      * 1.5
+		m_rate = 2.0 + stat_willpower    * 1.5
+	ham_health = minf(ham_health + h_rate * delta, get_effective_max_health())
+	ham_action = minf(ham_action + a_rate * delta, get_effective_max_action())
+	ham_mind   = minf(ham_mind   + m_rate * delta, get_effective_max_mind())
+
 func take_damage(amount: float, target_pool: String = "health") -> void:
 	if _dying or _incapped:
 		return
+	_combat_timer = COMBAT_LINGER  # Enter/extend combat window
 	# STR (+ item STR): +5% damage reduction per point
 	var reduction = (stat_strength + _item_str) * 0.05
 	amount *= maxf(0.0, 1.0 - reduction)

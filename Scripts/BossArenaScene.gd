@@ -314,7 +314,7 @@ func _show_character_select() -> void:
 			"desc":  "Arcane spellcaster.\nHigh damage, low HP.\nStay far back.\n\nHP: 150\nAtk every: 4s\nRange: 400px",
 		},
 		{
-			"key":   "brawler",
+			"key":   "scrapper",
 			"label": "BRAWLER",
 			"color": Color(0.40, 0.85, 0.30),
 			"desc":  "Heavyweight bruiser.\nAbsorbs punishment\nand hits harder.\n\nHP: 350\nAtk every: 2s\nRange: 130px",
@@ -495,8 +495,8 @@ func _spawn_player(cls: String) -> void:
 	var sprite = AnimatedSprite2D.new()
 	sprite.name = "Sprite"
 	sprite.sprite_frames = _build_frames(cls)
-	if cls == "brawler":
-		sprite.scale  = Vector2(0.088, 0.088)
+	if cls == "scrapper":
+		sprite.scale  = Vector2(0.38, 0.38)
 		sprite.offset = Vector2(0, -121)
 	elif cls == "medic":
 		sprite.scale  = Vector2(44.0 / 144.0, 44.0 / 144.0)
@@ -507,7 +507,7 @@ func _spawn_player(cls: String) -> void:
 	_player.add_child(sprite)
 
 	# Split-body blend sprites for brawlernew
-	if cls == "brawler":
+	if cls == "scrapper":
 		_attach_split_body_shaders(sprite, _build_frames(cls))
 
 	# Collision
@@ -598,7 +598,7 @@ func _build_frames(cls: String) -> SpriteFrames:
 				_add_strip(frames, "run_"  + dir,   mbase + "run/run_"   + dir + ".png",   144, 144, 8, 10.0)
 				_add_strip(frames, "attack_" + dir, mbase + "toss/toss_" + dir + ".png",   144, 144, 7, 12.0, false)
 
-		"brawler":
+		"scrapper":
 			var bnbase = "res://Characters/NEWFOUNDMETHOD/Brawler/"
 			var cw = 768; var ch = 448
 			for dir in ["n","e","w","se","sw","nw"]:
@@ -1118,7 +1118,7 @@ func _update_hud() -> void:
 	if range_lbl and target != null and is_instance_valid(target):
 		var dist = _player.global_position.distance_to(target.global_position)
 		var cls  = _player.get("character_class") as String
-		var rng  = 130.0 if (cls == "melee" or cls == "brawler") else 700.0
+		var rng  = 130.0 if (cls == "melee" or cls == "scrapper") else 700.0
 		if dist <= rng:
 			range_lbl.text = "IN RANGE — auto-attacking"
 			range_lbl.add_theme_color_override("font_color", Color(0.4, 0.9, 0.4, 0.9))
@@ -1145,8 +1145,8 @@ func spawn_bullet(from_pos: Vector2, target: Node, damage: float) -> Node:
 	var script = load("res://Scripts/Bullet.gd")
 	var bullet  = Node2D.new()
 	bullet.set_script(script)
-	bullet.global_position = from_pos
 	add_child(bullet)
+	bullet.global_position = from_pos
 	bullet.call("init", target, damage)
 	return bullet
 
@@ -1154,31 +1154,26 @@ func spawn_fireball(from_pos: Vector2, target: Node, damage: float) -> void:
 	var script = load("res://Scripts/Fireball.gd")
 	var fb     = Node2D.new()
 	fb.set_script(script)
-	fb.global_position = from_pos
 	add_child(fb)
+	fb.global_position = from_pos
 	fb.call("init", target, damage)
 
 func spawn_canister(spawn_pos: Vector2, target: Node, dmg: float, is_heal: bool) -> void:
 	var script = load("res://Scripts/MedicCanister.gd")
 	var c      = Node2D.new()
 	c.set_script(script)
-	c.position = spawn_pos
 	add_child(c)
+	c.global_position = spawn_pos
 	c.call("init", target, dmg, is_heal)
 
 func spawn_melee_hit(world_pos: Vector2, col: Color) -> void:
 	var script = load("res://Scripts/MeleeHit.gd")
 	var node   = Node2D.new()
 	node.set_script(script)
-	# Wrap in a CanvasLayer so the hit renders above all world objects
-	var cl = CanvasLayer.new()
-	cl.layer = 5
-	add_child(cl)
-	cl.add_child(node)
+	node.z_index = 100
+	add_child(node)
 	node.global_position = world_pos
 	node.call("init", col)
-	# Free the CanvasLayer when the hit node frees itself
-	node.tree_exiting.connect(cl.queue_free)
 
 func trigger_boss_cinematic(boss_name: String) -> void:
 	if _cinematic_t >= 0.0:
@@ -1379,8 +1374,8 @@ func spawn_hp_potion(world_pos: Vector2) -> void:
 	var script = load("res://Scripts/HpPotion.gd")
 	var node   = Node2D.new()
 	node.set_script(script)
-	node.global_position = world_pos
 	add_child(node)
+	node.global_position = world_pos
 
 func trigger_level_up(new_level: int) -> void:
 	var script = load("res://Scripts/BossLevelUpEffect.gd")
@@ -1399,7 +1394,7 @@ func spawn_damage_number(world_pos: Vector2, amount: float, col: Color) -> void:
 	var script = load("res://Scripts/DamageNumber.gd")
 	var node   = Node2D.new()
 	node.set_script(script)
-	# Slight horizontal scatter so stacked hits don't overlap exactly
-	node.position = world_pos + Vector2(randf_range(-10.0, 10.0), -28.0)
 	add_child(node)
+	# Slight horizontal scatter so stacked hits don't overlap exactly
+	node.global_position = world_pos + Vector2(randf_range(-10.0, 10.0), -28.0)
 	node.call("init", amount, col)
