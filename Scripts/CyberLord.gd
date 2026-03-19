@@ -28,8 +28,12 @@ var _state            : State = State.CHASE
 var _reposition_timer : float = 0.0
 
 var character_name : String = "Cyber Lord"
-var hp     : float = MAX_HP
-var max_hp : float = MAX_HP
+var hp         : float = MAX_HP
+var max_hp     : float = MAX_HP
+var ham_action : float = MAX_HP
+var max_action : float = MAX_HP
+var ham_mind   : float = MAX_HP
+var max_mind   : float = MAX_HP
 
 var _facing       : String = "s"
 var _is_attacking : bool   = false
@@ -198,7 +202,33 @@ func take_damage(amount: float) -> void:
 	if hp <= 0.0:
 		_die()
 
+func _award_kill_reward() -> void:
+	var players = get_tree().get_nodes_in_group("player")
+	var killer : Node = null
+	for p in players:
+		if not is_instance_valid(p): continue
+		if p.get("_current_target") == self:
+			killer = p; break
+		if killer == null or global_position.distance_to(p.global_position) < global_position.distance_to(killer.global_position):
+			killer = p
+	if killer != null and killer.has_method("add_exp"):
+		killer.call("add_exp", 250.0)
+	var cred = randi_range(150, 220)
+	var loot_script = load("res://Scripts/GroundLoot.gd")
+	if loot_script:
+		var loot = Node2D.new(); loot.set_script(loot_script)
+		get_tree().current_scene.add_child(loot)
+		loot.global_position = global_position
+		loot.call("init", cred, 0.0)
+	# Gear drop
+	var item_script = load("res://Scripts/LootTable.gd")
+	if item_script and killer != null and killer.has_method("add_item_to_inventory"):
+		var item = item_script.roll_drop("boss_strong")
+		if not item.is_empty():
+			killer.call("add_item_to_inventory", item)
+
 func _die() -> void:
+	_award_kill_reward()
 	_dying = true
 	remove_from_group("targetable")
 	remove_from_group("boss")
@@ -206,7 +236,7 @@ func _die() -> void:
 	if arena and arena.has_method("on_boss_died"):
 		arena.call("on_boss_died")
 
-# ── DRAW — world-space HP bar above sprite (hidden while dying) ──
+# ── DRAW — world-space HAM bars above sprite (hidden while dying) ──
 func _draw() -> void:
 	if _dying:
 		return

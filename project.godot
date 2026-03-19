@@ -15,7 +15,6 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="miniSWG"
-run/main_scene="uid://bsst4rt5cr33n"
 config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]

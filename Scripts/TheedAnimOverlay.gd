@@ -31,14 +31,12 @@ var CITY_Y : float = 0.0
 const MAP_EXTENT : float = 6000.0
 
 func _ready() -> void:
-	_ship_tex = load("res://Characters/NEWFOUNDMETHOD/NPC/sickshipsalphafinal.png") as Texture2D
-	_ship_tex_flip = load("res://Characters/NEWFOUNDMETHOD/NPC/sickshipsalphafinal_flipped.png") as Texture2D
+	# Ship textures removed — ambient ships disabled for now
 	z_index = 50
 
 func set_city_center(pos: Vector2) -> void:
 	CITY_X = pos.x
 	CITY_Y = pos.y
-	_init_ships()
 	_init_birds()
 
 # ── AMBIENT SHIPS ────────────────────────────────────────────
@@ -95,9 +93,7 @@ func _edge_pos(edge: int, rng: RandomNumberGenerator) -> Vector2:
 
 func _process(delta: float) -> void:
 	_t += delta
-	_tick_ships(delta)
 	_tick_birds(delta)
-	_tick_events(delta)
 	queue_redraw()
 
 func _tick_ships(delta: float) -> void:
@@ -142,12 +138,6 @@ func _tick_ships(delta: float) -> void:
 
 func _draw() -> void:
 	_draw_birds()
-
-	if _ship_tex == null or _ship_tex_flip == null:
-		return
-
-	for s in _ships:
-		_draw_ship(s)
 
 	for ev in _events:
 		_draw_event(ev)

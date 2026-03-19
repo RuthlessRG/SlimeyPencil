@@ -27,7 +27,6 @@ signal room_joined(room_id: String, my_peer_id: int)
 signal peer_joined(peer_id: int)
 signal peer_left(peer_id: int)
 signal game_data_received(from_peer: int, data: Dictionary)
-signal host_left
 
 # ── Public state (read by other scripts) ──────────────────────────────
 var my_peer_id   : int    = -1

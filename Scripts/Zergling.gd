@@ -171,7 +171,33 @@ func apply_knockdown_state(duration: float) -> void:
 func start_hitlag(duration: float) -> void:
 	_hitlag_timer = maxf(_hitlag_timer, duration)
 
+func _award_kill_reward() -> void:
+	var players = get_tree().get_nodes_in_group("player")
+	var killer : Node = null
+	for p in players:
+		if not is_instance_valid(p): continue
+		if p.get("_current_target") == self:
+			killer = p; break
+		if killer == null or global_position.distance_to(p.global_position) < global_position.distance_to(killer.global_position):
+			killer = p
+	if killer != null and killer.has_method("add_exp"):
+		killer.call("add_exp", 5.0)
+	if randf() < 0.30:
+		var loot_script = load("res://Scripts/GroundLoot.gd")
+		if loot_script:
+			var loot = Node2D.new(); loot.set_script(loot_script)
+			get_tree().current_scene.add_child(loot)
+			loot.global_position = global_position
+			loot.call("init", randi_range(1, 5), 0.0)
+	# Gear drop
+	var item_script = load("res://Scripts/LootTable.gd")
+	if item_script and killer != null and killer.has_method("add_item_to_inventory"):
+		var item = item_script.roll_drop("zergling")
+		if not item.is_empty():
+			killer.call("add_item_to_inventory", item)
+
 func _die() -> void:
+	_award_kill_reward()
 	_is_dead       = true
 	_death_timer   = 0.0
 	_knockback_vel = Vector2.ZERO

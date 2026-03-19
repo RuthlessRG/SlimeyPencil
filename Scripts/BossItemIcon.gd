@@ -304,12 +304,7 @@ func _draw_mount() -> void:
 			else:
 				hx = cx + 17.0 - (a-0.5)*2.0*31.0
 				hy = cy - sin((a-0.5)*2.0*PI)*9.0
-		hull.append(Vector2(cx+17, cy))
-		hull.append(Vector2(cx+8,  cy-9))
-		hull.append(Vector2(cx-12, cy-7))
-		hull.append(Vector2(cx-14, cy))
-		hull.append(Vector2(cx-12, cy+7))
-		hull.append(Vector2(cx+8,  cy+9))
+			hull.append(Vector2(hx, hy))
 		draw_colored_polygon(hull, hull_c)
 		# Cockpit glass
 		draw_colored_polygon(PackedVector2Array([
@@ -337,7 +332,7 @@ func _draw_mount() -> void:
 	else:
 		# ── Transport speeder icon ────────────────────────────
 		var hull_c  = Color(0.86, 0.88, 0.92)
-		var dark_c  = Color(0.38, 0.42, 0.50)
+		var _dark_c = Color(0.38, 0.42, 0.50)
 		var acc_c   = Color(1.00, 0.82, 0.10)
 		var glow_c  = Color(acc_c.r, acc_c.g, acc_c.b, 0.55 + sin(t*5.0)*0.25)
 		# Shadow

@@ -16,7 +16,12 @@ var _font  : Font   = null
 func init(amount: float, col: Color) -> void:
 	_text  = str(int(amount))
 	_color = col
-	# Load Roboto Black for punchy damage numbers
+	var loaded = load("res://Assets/Fonts/Roboto/static/Roboto-Black.ttf")
+	_font = loaded if loaded else ThemeDB.fallback_font
+
+func init_text(text: String, col: Color) -> void:
+	_text  = text
+	_color = col
 	var loaded = load("res://Assets/Fonts/Roboto/static/Roboto-Black.ttf")
 	_font = loaded if loaded else ThemeDB.fallback_font
 
