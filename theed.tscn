@@ -417,6 +417,7 @@ script = ExtResource("1_theed")
 [node name="City" type="StaticBody2D" parent="." unique_id=457409698]
 
 [node name="CityImage" type="Sprite2D" parent="City" unique_id=761083629]
+position = Vector2(-1810, 101)
 texture = ExtResource("2_xakw3")
 
 [node name="Terminals" type="Node2D" parent="." unique_id=1936028187]
