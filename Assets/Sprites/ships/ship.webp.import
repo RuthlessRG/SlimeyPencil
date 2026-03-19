@@ -2,16 +2,26 @@
 
 importer="texture"
 type="CompressedTexture2D"
+<<<<<<<< HEAD:Assets/Sprites/ships/ship.webp.import
 uid="uid://bvri1aehffc0a"
 path="res://.godot/imported/ship.webp-05d20286cceb5380ed7c5282512c93f8.ctex"
+========
+uid="uid://bl3j7gvvv86q1"
+path="res://.godot/imported/bush1.png-e60fa6cf95587c003988a66ef8828e0b.ctex"
+>>>>>>>> origin/main:Assets/Backgrounds/bush1.png.import
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
+<<<<<<<< HEAD:Assets/Sprites/ships/ship.webp.import
 source_file="res://Assets/Sprites/ships/ship.webp"
 dest_files=["res://.godot/imported/ship.webp-05d20286cceb5380ed7c5282512c93f8.ctex"]
+========
+source_file="res://Assets/Backgrounds/bush1.png"
+dest_files=["res://.godot/imported/bush1.png-e60fa6cf95587c003988a66ef8828e0b.ctex"]
+>>>>>>>> origin/main:Assets/Backgrounds/bush1.png.import
 
 [params]
 
