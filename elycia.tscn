@@ -1,3 +1,6 @@
-[gd_scene format=3 uid="uid://xpwn7xogr84e"]
+[gd_scene load_steps=2 format=3 uid="uid://xpwn7xogr84e"]
+
+[ext_resource type="Script" path="res://Scripts/ElyciaScene.gd" id="1_elycia"]
 
 [node name="Elycia" type="Node2D" unique_id=1027200104]
+script = ExtResource("1_elycia")
