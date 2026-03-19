@@ -4,6 +4,7 @@ extends CanvasLayer
 #  CombatQueueHUD.gd — SWG Pre-CU combat queue tracker
 #  Shows only while the player has a valid target (in combat).
 #  Fades in/out. Displays queued abilities + countdown timer.
+#  Draggable; position saved to user://combat_queue_pos.cfg
 # ============================================================
 
 var _player      : Node  = null
@@ -15,6 +16,12 @@ var _is_showing  : bool  = false
 var _vis_tween   : Tween = null
 var _font        : Font
 var _font_bold   : Font
+
+# Drag state
+var _dragging    : bool    = false
+var _drag_offset : Vector2 = Vector2.ZERO
+const SAVE_PATH  : String  = "user://combat_queue_pos.cfg"
+
 
 const HUD_W    : float = 190.0
 const ROW_H    : float = 22.0
@@ -44,17 +51,15 @@ func init(player: Node) -> void:
 
 func _build_ui() -> void:
 	var vp     = get_viewport().get_visible_rect().size
-	# Total panel height: header + gap + timer bar + gap + rows + padding
 	var hud_h  = PAD + 14.0 + 4.0 + 6.0 + 5.0 + MAX_ROWS * (ROW_H + ROW_PAD) - ROW_PAD + PAD
-	# Sit just above the action bar (action bar is ~66px from bottom)
-	var hud_x  = vp.x * 0.5 - HUD_W * 0.5
-	var hud_y  = vp.y - 72.0 - hud_h
+	# Default position — center of screen, lower-middle area
+	var default_pos = Vector2(vp.x * 0.5 - HUD_W * 0.5, vp.y * 0.55 - hud_h * 0.5)
 
 	_panel          = Panel.new()
-	_panel.position = Vector2(hud_x, hud_y)
+	_panel.position = _load_position(default_pos)
 	_panel.size     = Vector2(HUD_W, hud_h)
-	_panel.modulate.a = 0.0  # start invisible
-	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_panel.modulate.a = 0.0
+	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	var sty = StyleBoxFlat.new()
 	sty.bg_color = COL_BG
 	sty.border_color = COL_BORDER
@@ -64,6 +69,7 @@ func _build_ui() -> void:
 	sty.shadow_size  = 5
 	_panel.add_theme_stylebox_override("panel", sty)
 	add_child(_panel)
+	_panel.gui_input.connect(_on_panel_input)
 
 	# Top accent line
 	var accent = ColorRect.new()
@@ -73,7 +79,7 @@ func _build_ui() -> void:
 	accent.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.add_child(accent)
 
-	# Header
+	# Header (drag handle visual)
 	var hdr = Label.new()
 	hdr.text = "COMBAT QUEUE"
 	hdr.add_theme_font_override("font", _font_bold)
@@ -146,6 +152,44 @@ func _make_row(idx: int, y: float) -> Control:
 
 	return row
 
+# ── Drag handling ─────────────────────────────────────────────
+func _on_panel_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				_dragging    = true
+				_drag_offset = _panel.position - get_viewport().get_mouse_position()
+			else:
+				if _dragging:
+					_dragging = false
+					_save_position(_panel.position)
+	elif event is InputEventMouseMotion and _dragging:
+		var new_pos = get_viewport().get_mouse_position() + _drag_offset
+		# Clamp to viewport so it can't be dragged off screen
+		var vp = get_viewport().get_visible_rect().size
+		new_pos.x = clampf(new_pos.x, 0.0, vp.x - HUD_W)
+		new_pos.y = clampf(new_pos.y, 0.0, vp.y - _panel.size.y)
+		_panel.position = new_pos
+
+# ── Position persistence ──────────────────────────────────────
+func _save_position(pos: Vector2) -> void:
+	var cfg = ConfigFile.new()
+	cfg.set_value("hud", "x", pos.x)
+	cfg.set_value("hud", "y", pos.y)
+	cfg.save(SAVE_PATH)
+
+func _load_position(default_pos: Vector2) -> Vector2:
+	var cfg = ConfigFile.new()
+	var pos = default_pos
+	if cfg.load(SAVE_PATH) == OK:
+		pos = Vector2(
+			cfg.get_value("hud", "x", default_pos.x),
+			cfg.get_value("hud", "y", default_pos.y))
+	var vp = get_viewport().get_visible_rect().size
+	pos.x = clampf(pos.x, 0.0, vp.x - HUD_W)
+	pos.y = clampf(pos.y, 0.0, vp.y - 20.0)
+	return pos
+
 # ── Per-frame update ──────────────────────────────────────────
 func _process(_delta: float) -> void:
 	if _player == null or not is_instance_valid(_player): return
@@ -164,7 +208,6 @@ func _process(_delta: float) -> void:
 	if interval > 0.0:
 		var frac = clampf(1.0 - qt / interval, 0.0, 1.0)
 		_timer_bar.size.x = frac * (HUD_W - PAD * 2.0)
-		# Gold → bright as it nears firing
 		_timer_bar.color = Color(
 			0.55 + frac * 0.30,
 			0.38 + frac * 0.28,
@@ -183,7 +226,7 @@ func _process(_delta: float) -> void:
 			var sid : String = queue[i]
 			var display = sid.replace("_", " ").to_upper()
 			if lbl: lbl.text = display
-			if i == 0:  # NEXT — bright gold highlight
+			if i == 0:
 				if lbl: lbl.add_theme_color_override("font_color", COL_NEXT_TEXT)
 				if bg:  bg.color = COL_NEXT_BG
 				if num: num.add_theme_color_override("font_color", COL_NEXT_NUM)

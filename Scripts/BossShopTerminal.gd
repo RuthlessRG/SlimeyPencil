@@ -8,7 +8,7 @@ var _roboto : Font = load("res://Assets/Fonts/Roboto/static/Roboto-Regular.ttf")
 #  to open the shop window.
 # ============================================================
 
-const INTERACT_RANGE : float = 38.0
+const INTERACT_RANGE : float = 100.0
 
 var _t           : float = 0.0
 var _player_near : bool  = false
@@ -23,17 +23,28 @@ func _ready() -> void:
 	_prompt_lbl.add_theme_font_size_override("font_size", 9)
 	_prompt_lbl.add_theme_color_override("font_color", Color(0.75, 0.95, 1.0))
 	_prompt_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_prompt_lbl.position = Vector2(-28, -58)
 	_prompt_lbl.size     = Vector2(60, 14)
 	_prompt_lbl.visible  = false
 	_prompt_lbl.z_index  = 10
+	var spr = get_node_or_null("AnimatedSprite2D")
+	if spr:
+		_prompt_lbl.position = spr.position + Vector2(-28, -58)
+	else:
+		_prompt_lbl.position = Vector2(-28, -58)
 	add_child(_prompt_lbl)
+
+func _get_interact_position() -> Vector2:
+	var spr = get_node_or_null("AnimatedSprite2D")
+	if spr:
+		return spr.global_position
+	return global_position
 
 func _process(delta: float) -> void:
 	_t += delta
 	var near = false
+	var my_pos = _get_interact_position()
 	for p in get_tree().get_nodes_in_group("player"):
-		if is_instance_valid(p) and global_position.distance_to(p.global_position) <= INTERACT_RANGE:
+		if is_instance_valid(p) and my_pos.distance_to(p.global_position) <= INTERACT_RANGE:
 			near = true
 			break
 	if near != _player_near:
@@ -42,6 +53,8 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	if get_node_or_null("AnimatedSprite2D") != null:
+		return
 	var glow        = 0.60 + sin(_t * 2.1) * 0.28
 	var screen_glow = 0.55 + sin(_t * 3.7) * 0.22
 

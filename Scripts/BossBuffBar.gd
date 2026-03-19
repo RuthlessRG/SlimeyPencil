@@ -160,7 +160,8 @@ var _t : float = 0.0
 func _process(d): _t += d; queue_redraw()
 func _draw():
 \tvar cx=size.x*0.5; var cy=size.y*0.5; var _c=Vector2(cx,cy)
-\t_draw_ICONID(cx,cy)
+\tif has_method("_draw_ICONID"): _draw_ICONID(cx,cy)
+\telse: _draw_generic(cx,cy)
 func _draw_sprint(cx,cy):
 \tvar c=Vector2(cx,cy); var p=0.6+sin(_t*4.0)*0.2
 \tdraw_circle(c,15.0,Color(0.10,0.40,0.90,0.22))
@@ -185,6 +186,41 @@ func _draw_triple(cx,cy):
 \t\tvar xoff=float(i-1)*7.0; var oc=c+Vector2(xoff,0)
 \t\tvar tip=oc+Vector2(0,-9); var bl=oc+Vector2(-3,3); var br=oc+Vector2(3,3)
 \t\tdraw_colored_polygon(PackedVector2Array([tip,bl,br]),Color(CRR,CGG,CBB,p))
+func _draw_knockdown(cx,cy):
+\tvar c=Vector2(cx,cy); var p=0.7+sin(_t*3.0)*0.20
+\tdraw_circle(c,15.0,Color(0.60,0.20,0.05,0.25))
+\tdraw_line(Vector2(cx-11,cy+4),Vector2(cx+11,cy+4),Color(CRR,CGG,CBB,p),2.5)
+\tdraw_circle(Vector2(cx-6,cy+4),3.5,Color(CRR,CGG,CBB,p*0.7))
+\tdraw_line(Vector2(cx-6,cy+4),Vector2(cx-6,cy-5),Color(CRR,CGG,CBB,p),2.0)
+\tdraw_line(Vector2(cx-6,cy-1),Vector2(cx-1,cy+2),Color(CRR,CGG,CBB,p),1.8)
+func _draw_dizzy(cx,cy):
+\tvar c=Vector2(cx,cy); var p=0.65+sin(_t*4.0)*0.22
+\tdraw_circle(c,15.0,Color(0.55,0.45,0.05,0.22))
+\tfor i in 3:
+\t\tvar a=_t*3.0+float(i)*2.094; var r=8.0
+\t\tvar sp=Vector2(cos(a)*r+cx,sin(a)*r+cy)
+\t\tdraw_line(sp+Vector2(-3,-3),sp+Vector2(3,3),Color(CRR,CGG,CBB,p),2.0)
+\t\tdraw_line(sp+Vector2(3,-3),sp+Vector2(-3,3),Color(CRR,CGG,CBB,p),2.0)
+func _draw_stun(cx,cy):
+\tvar c=Vector2(cx,cy); var p=0.70+sin(_t*5.0)*0.20
+\tdraw_circle(c,15.0,Color(0.55,0.55,0.05,0.22))
+\tvar pts=PackedVector2Array([Vector2(cx-3,cy-12),Vector2(cx+5,cy-2),Vector2(cx-1,cy-2),Vector2(cx+3,cy+10),Vector2(cx-5,cy+0),Vector2(cx+1,cy+0)])
+\tdraw_colored_polygon(pts,Color(CRR,CGG,CBB,p))
+func _draw_blind(cx,cy):
+\tvar c=Vector2(cx,cy); var p=0.65+sin(_t*2.5)*0.18
+\tdraw_circle(c,15.0,Color(0.10,0.10,0.40,0.25))
+\tdraw_arc(c,9.0,0.4,2.74,12,Color(CRR,CGG,CBB,p),2.0)
+\tdraw_circle(c,3.5,Color(CRR,CGG,CBB,p*0.8))
+\tdraw_line(Vector2(cx-10,cy-8),Vector2(cx+10,cy+8),Color(0.9,0.2,0.2,p),2.5)
+func _draw_intimidate(cx,cy):
+\tvar c=Vector2(cx,cy); var p=0.70+sin(_t*3.5)*0.22
+\tdraw_circle(c,15.0,Color(0.50,0.05,0.40,0.22))
+\tdraw_rect(Rect2(cx-2.5,cy-12,5,9),Color(CRR,CGG,CBB,p))
+\tdraw_circle(Vector2(cx,cy+5),3.0,Color(CRR,CGG,CBB,p))
+func _draw_generic(cx,cy):
+\tvar c=Vector2(cx,cy); var p=0.65+sin(_t*3.0)*0.20
+\tdraw_circle(c,14.0,Color(CRR,CGG,CBB,0.18))
+\tdraw_arc(c,9.0,0.0,6.2832,20,Color(CRR,CGG,CBB,p),2.0)
 """
 	src = src.replace("ICONID", icon_id)
 	src = src.replace("CRR", cr).replace("CGG", cg).replace("CBB", cb)
