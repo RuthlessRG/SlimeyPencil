@@ -980,10 +980,10 @@ func _build_frames(cls: String) -> SpriteFrames:
 						atlas.atlas = tex
 						atlas.region = Rect2(fi * 512, 0, 512, tex.get_height())
 						frames.add_frame(idle_anim, atlas)
-			var run_tex_sc = load(scbase+"run/run_"+dir+".png") as Texture2D
-			var run_fc_sc = int(run_tex_sc.get_width() / 512.0) if run_tex_sc else 20
-			_add_strip(frames, "run_"+dir, scbase+"run/run_"+dir+".png", 512, 512, run_fc_sc, 24.0)
-			_add_strip(frames, "attack_"+dir, scbase+"attack/attack_"+dir+".png", 512, 512, 30, 24.0, false)
+				var run_tex_sc = load(scbase+"run/run_"+dir+".png") as Texture2D
+				var run_fc_sc = int(run_tex_sc.get_width() / 512.0) if run_tex_sc else 20
+				_add_strip(frames, "run_"+dir, scbase+"run/run_"+dir+".png", 512, 512, run_fc_sc, 24.0)
+				_add_strip(frames, "attack_"+dir, scbase+"attack/attack_"+dir+".png", 512, 512, 30, 24.0, false)
 		"streetfighter":
 			var sfbase = "res://Characters/NEWFOUNDMETHOD/Brawler2/"
 			for dir in ["s","n","e","w","se","sw","ne","nw"]:
