@@ -2,6 +2,7 @@
 
 importer="texture"
 type="CompressedTexture2D"
+<<<<<<< HEAD
 <<<<<<<< HEAD:Assets/Backgrounds/bush3.png.import
 uid="uid://cu48fm4w1casi"
 path="res://.godot/imported/bush3.png-bb6d8f13640823b3ea74a8a47afc54d7.ctex"
@@ -9,12 +10,22 @@ path="res://.godot/imported/bush3.png-bb6d8f13640823b3ea74a8a47afc54d7.ctex"
 uid="uid://bwvb8b8r7bo5m"
 path="res://.godot/imported/bush2.png-3aa3d23a45f610c2b979f6a8fea2f4c0.ctex"
 >>>>>>>> origin/main:Assets/Backgrounds/bush2.png.import
+=======
+<<<<<<<< HEAD:Characters/NEWFOUNDMETHOD/NPC/npc4.jpg.import
+uid="uid://boqbxi7ffcud4"
+path="res://.godot/imported/npc4.jpg-260cb7cfb2f1579088fccfc8dfe22cb9.ctex"
+========
+uid="uid://cu48fm4w1casi"
+path="res://.godot/imported/bush3.png-bb6d8f13640823b3ea74a8a47afc54d7.ctex"
+>>>>>>>> origin/main:Assets/Backgrounds/bush3.png.import
+>>>>>>> origin/main
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
+<<<<<<< HEAD
 <<<<<<<< HEAD:Assets/Backgrounds/bush3.png.import
 source_file="res://Assets/Backgrounds/bush3.png"
 dest_files=["res://.godot/imported/bush3.png-bb6d8f13640823b3ea74a8a47afc54d7.ctex"]
@@ -22,6 +33,15 @@ dest_files=["res://.godot/imported/bush3.png-bb6d8f13640823b3ea74a8a47afc54d7.ct
 source_file="res://Assets/Backgrounds/bush2.png"
 dest_files=["res://.godot/imported/bush2.png-3aa3d23a45f610c2b979f6a8fea2f4c0.ctex"]
 >>>>>>>> origin/main:Assets/Backgrounds/bush2.png.import
+=======
+<<<<<<<< HEAD:Characters/NEWFOUNDMETHOD/NPC/npc4.jpg.import
+source_file="res://Characters/NEWFOUNDMETHOD/NPC/npc4.jpg"
+dest_files=["res://.godot/imported/npc4.jpg-260cb7cfb2f1579088fccfc8dfe22cb9.ctex"]
+========
+source_file="res://Assets/Backgrounds/bush3.png"
+dest_files=["res://.godot/imported/bush3.png-bb6d8f13640823b3ea74a8a47afc54d7.ctex"]
+>>>>>>>> origin/main:Assets/Backgrounds/bush3.png.import
+>>>>>>> origin/main
 
 [params]
 
