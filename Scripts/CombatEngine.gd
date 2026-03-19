@@ -74,7 +74,7 @@ static func roll_to_hit(attacker: Node, defender: Node, attack_data: Dictionary 
 	return {"result": "hit"}
 
 # ── DAMAGE CALCULATION ───────────────────────────────────────
-static func calc_damage(base_damage: float, damage_type: String, defender: Node, attack_data: Dictionary = {}) -> float:
+static func calc_damage(base_damage: float, damage_type: String, defender: Node, _attack_data: Dictionary = {}) -> float:
 	var dmg = base_damage
 
 	# Knockdown = 2× damage
@@ -90,7 +90,7 @@ static func calc_damage(base_damage: float, damage_type: String, defender: Node,
 
 # ── COMBAT STATE APPLICATION ─────────────────────────────────
 # Returns true if state was successfully applied
-static func try_apply_state(attacker: Node, defender: Node, state_name: String, duration: float, attack_data: Dictionary = {}) -> bool:
+static func try_apply_state(_attacker: Node, defender: Node, state_name: String, duration: float, _attack_data: Dictionary = {}) -> bool:
 	# Defense vs specific state
 	var defense_stat = "defense_vs_" + state_name
 	var def_chance = _get_stat(defender, defense_stat) * 0.005

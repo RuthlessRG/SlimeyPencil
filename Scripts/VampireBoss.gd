@@ -27,12 +27,17 @@ var _state            : State = State.CHASE
 var _reposition_timer : float = 0.0
 
 var character_name : String = "Vampire"
-var hp     : float = MAX_HP
-var max_hp : float = MAX_HP
+var hp         : float = MAX_HP
+var max_hp     : float = MAX_HP
+var ham_action : float = MAX_HP
+var max_action : float = MAX_HP
+var ham_mind   : float = MAX_HP
+var max_mind   : float = MAX_HP
 
 var _facing       : String = "s"
 var _is_attacking : bool   = false
 var _attack_timer : float  = 1.0
+var _drain_timer  : float  = randf_range(15.0, 22.0)  # Drain strike cooldown
 var _target       : Node   = null
 var _spawn_pos    : Vector2 = Vector2.ZERO
 const LEASH_RANGE : float = 500.0
@@ -67,6 +72,7 @@ func _process(delta: float) -> void:
 		return
 	_find_target()
 	_attack_timer -= delta
+	_drain_timer  -= delta
 	_update_animation()
 	queue_redraw()
 
@@ -197,11 +203,23 @@ func _do_attack() -> void:
 
 	if _target != null and is_instance_valid(_target):
 		var dmg = randf_range(ATTACK_DAMAGE_MIN, ATTACK_DAMAGE_MAX)
+		# Drain strike: stun + bonus damage on timer
+		var is_drain = _drain_timer <= 0.0
+		if is_drain:
+			_drain_timer = randf_range(16.0, 24.0)
+			dmg *= 1.6
 		if _target.has_method("take_damage"):
 			_target.take_damage(dmg)
+		# Lifesteal: recover 15% of normal damage
+		hp = minf(hp + dmg * 0.15, max_hp)
 		var arena = get_tree().get_first_node_in_group("boss_arena_scene")
 		if arena and arena.has_method("spawn_damage_number"):
 			arena.spawn_damage_number(_target.global_position, dmg, Color(1.0, 0.2, 0.15))
+		if is_drain:
+			if _target.has_method("apply_combat_state"):
+				_target.apply_combat_state("stun", 3.0)
+			if arena and arena.has_method("spawn_damage_number"):
+				arena.spawn_damage_number(_target.global_position + Vector2(0,-20), 0, Color(0.6,0.1,0.9), "DRAIN STRIKE!")
 
 func _on_attack_done() -> void:
 	_is_attacking = false
@@ -254,7 +272,7 @@ func _mob_stand_up() -> void:
 	var sprite = get_node_or_null("Sprite") as AnimatedSprite2D
 	if sprite: sprite.rotation = 0.0
 
-func get_stat(stat_name: String) -> float:
+func get_stat(_stat_name: String) -> float:
 	return 0.0  # Mobs have no stat bonuses yet
 
 func _tick_mob_states(delta: float) -> void:
@@ -278,7 +296,33 @@ func take_damage(amount: float) -> void:
 	if hp <= 0.0:
 		_die()
 
+func _award_kill_reward() -> void:
+	var players = get_tree().get_nodes_in_group("player")
+	var killer : Node = null
+	for p in players:
+		if not is_instance_valid(p): continue
+		if p.get("_current_target") == self:
+			killer = p; break
+		if killer == null or global_position.distance_to(p.global_position) < global_position.distance_to(killer.global_position):
+			killer = p
+	if killer != null and killer.has_method("add_exp"):
+		killer.call("add_exp", 200.0)
+	var cred = randi_range(100, 160)
+	var loot_script = load("res://Scripts/GroundLoot.gd")
+	if loot_script:
+		var loot = Node2D.new(); loot.set_script(loot_script)
+		get_tree().current_scene.add_child(loot)
+		loot.global_position = global_position
+		loot.call("init", cred, 0.0)
+	# Gear drop
+	var item_script = load("res://Scripts/LootTable.gd")
+	if item_script and killer != null and killer.has_method("add_item_to_inventory"):
+		var item = item_script.roll_drop("boss_mid")
+		if not item.is_empty():
+			killer.call("add_item_to_inventory", item)
+
 func _die() -> void:
+	_award_kill_reward()
 	_dying = true
 	remove_from_group("targetable")
 	remove_from_group("boss")
@@ -286,7 +330,7 @@ func _die() -> void:
 	if arena and arena.has_method("on_boss_died"):
 		arena.call("on_boss_died")
 
-# ── DRAW — world-space HP bar above sprite (hidden while dying) ──
+# ── DRAW — world-space HAM bars above sprite (hidden while dying) ──
 func _draw() -> void:
 	if _dying:
 		return

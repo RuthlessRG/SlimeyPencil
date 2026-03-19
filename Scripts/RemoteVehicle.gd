@@ -25,7 +25,7 @@ func _draw() -> void:
 
 func _draw_fighter(fwd: Vector2, side: Vector2, eng_glow: Color) -> void:
 	# Shadow
-	draw_colored_polygon(_ell(Vector2(6, 8), 55, 14, angle, 16), Color(0, 0, 0, 0.22))
+	draw_colored_polygon(_ell(Vector2(6, 68), 55, 14, angle, 16), Color(0, 0, 0, 0.22))
 	# Hull (bezier-like)
 	var hull = PackedVector2Array()
 	for i in 21:
@@ -53,7 +53,7 @@ func _draw_fighter(fwd: Vector2, side: Vector2, eng_glow: Color) -> void:
 
 func _draw_transport(fwd: Vector2, side: Vector2, eng_glow: Color) -> void:
 	# Shadow
-	draw_colored_polygon(_ell(Vector2(8, 10), 48, 24, angle, 16), Color(0, 0, 0, 0.22))
+	draw_colored_polygon(_ell(Vector2(8, 72), 48, 24, angle, 16), Color(0, 0, 0, 0.22))
 	# Wide hull
 	draw_colored_polygon(PackedVector2Array([
 		fwd * (-45) - side * 22,

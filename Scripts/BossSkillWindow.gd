@@ -6,11 +6,38 @@ extends CanvasLayer
 #  This node owns the ghost icon and all drag logic.
 # ============================================================
 
-const SKILLS : Array = [
+const BASE_SKILLS : Array = [
 	{ "id":"sprint",        "name":"Sprint",        "icon":"sprint", "req_level":1, "cooldown":60.0, "desc":"+30% move speed for 15s",      "detail":"60s cooldown" },
 	{ "id":"sensu_bean",    "name":"Sensu Bean",     "icon":"sensu",  "req_level":3, "cooldown":60.0, "desc":"Restore full HP & MP over 10s", "detail":"60s cooldown" },
 	{ "id":"triple_strike", "name":"Triple Strike",  "icon":"triple", "req_level":5, "cooldown":0.0,  "desc":"Attack 3 times instantly",      "detail":"No cooldown"  },
 ]
+
+var SKILLS : Array = []
+
+func _build_skills_list() -> void:
+	SKILLS = BASE_SKILLS.duplicate(true)
+	if _player == null: return
+	var learned = _player.get("learned_boxes") as Array
+	if learned == null: return
+	for box_id in learned:
+		var box = ProfessionData.find_box(box_id)
+		if box.is_empty(): continue
+		var abilities = box.get("abilities", [])
+		for ab_id in abilities:
+			# Don't add duplicates
+			var exists = false
+			for s in SKILLS:
+				if s.id == ab_id: exists = true; break
+			if exists: continue
+			SKILLS.append({
+				"id": ab_id,
+				"name": ab_id.replace("_", " ").capitalize(),
+				"icon": ab_id,
+				"req_level": 1,
+				"cooldown": 15.0,
+				"desc": "Unlocked from " + box.name,
+				"detail": "Profession ability",
+			})
 
 const ICON_SZ  : float = 52.0
 const ROW_H    : float = 72.0
@@ -31,6 +58,7 @@ var _ghost         : Control = null
 func init(player: Node) -> void:
 	layer   = 15
 	_player = player
+	_build_skills_list()
 	_build_ui()
 	_build_ghost()
 
@@ -233,5 +261,21 @@ func _draw_triple(cx,cy):
 \t\tdraw_circle(oc+Vector2(0,5),2.5,Color(1.0,0.60,0.20,p))
 """
 	src = src.replace("LOCKVAL", "true" if locked else "false")
-	src = src.replace("ICONID", icon_id)
+	# Only replace ICONID if we have a draw function for it, otherwise use generic
+	if icon_id in ["sprint", "sensu", "triple"]:
+		src = src.replace("ICONID", icon_id)
+	else:
+		# Replace the _draw_ICONID call with a generic icon draw
+		src = src.replace("\t_draw_ICONID(cx,cy)", "\t_draw_generic(cx,cy)")
+		src += """
+func _draw_generic(cx,cy):
+\tvar c=Vector2(cx,cy);var p=0.6+sin(_t*3.0)*0.2
+\tdraw_circle(c,18.0,Color(0.20,0.50,0.80,0.3))
+\tdraw_circle(c,12.0,Color(0.30,0.65,0.95,p*0.5))
+\tdraw_circle(c,3.0,Color(0.50,0.85,1.00,p))
+\tfor i in 4:
+\t\tvar a=float(i)/4.0*TAU+_t*1.5
+\t\tvar r=10.0
+\t\tdraw_circle(c+Vector2(cos(a)*r,sin(a)*r),2.0,Color(0.40,0.75,1.00,p*0.6))
+"""
 	var s=GDScript.new(); s.source_code=src; s.reload(); return s
