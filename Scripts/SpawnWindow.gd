@@ -30,6 +30,7 @@ const ENTRIES = [
 	["Cyber Mob",           "_spawn_cyber_mob",      "EASY",    [0.30, 0.85, 0.40]],
 	["Armored Thug",        "_spawn_armored_thug",   "MEDIUM",  [0.95, 0.75, 0.20]],
 	["Robo Walker",         "_spawn_robowalker",     "MEDIUM",  [0.40, 0.80, 0.95]],
+	["Metal Robot",         "_spawn_metalrobot",     "MEDIUM",  [0.55, 0.65, 0.80]],
 	["Zerg Boss",           "_spawn_boss",           "BOSS",    [0.95, 0.38, 0.28]],
 	["Vampire Boss",        "_spawn_vampire",        "BOSS",    [0.95, 0.38, 0.28]],
 	["Cyber Lord",          "_spawn_cyberlord",      "BOSS",    [0.95, 0.38, 0.28]],

@@ -138,9 +138,14 @@ func _end_duel(won: bool) -> void:
 	_enable_duel_combat(false)
 	_countdown_lbl.visible = false
 	_status_lbl.visible    = false
-	# Heal both players
+	# Stop attacking and clear target
 	var pl = scene_ref.get("_player")
 	if is_instance_valid(pl):
+		pl.set("_current_target", null)
+		pl.set("_is_attacking", false)
+		if pl.has_method("_cancel_attack"):
+			pl.call("_cancel_attack")
+		# Heal both players
 		pl.set("hp", pl.get("max_hp"))
 		pl.set("mp", pl.get("max_mp"))
 	# Show result

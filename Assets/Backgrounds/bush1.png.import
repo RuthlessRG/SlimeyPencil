@@ -2,64 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<<< HEAD:Assets/Backgrounds/bush1.png.import
-uid="uid://bl3j7gvvv86q1"
+uid="uid://v5ku0y0xj31t"
 path="res://.godot/imported/bush1.png-e60fa6cf95587c003988a66ef8828e0b.ctex"
-========
-uid="uid://cu48fm4w1casi"
-path="res://.godot/imported/bush3.png-bb6d8f13640823b3ea74a8a47afc54d7.ctex"
->>>>>>>> 8bb975d37dd11c6c623b123eb8001af49d3b0c20:Assets/Backgrounds/bush3.png.import
-=======
-<<<<<<<< HEAD:Assets/Backgrounds/bush2.png.import
-uid="uid://bwvb8b8r7bo5m"
-path="res://.godot/imported/bush2.png-3aa3d23a45f610c2b979f6a8fea2f4c0.ctex"
-=======
-<<<<<<<< HEAD:Assets/Sprites/ships/ship.webp.import
-uid="uid://bvri1aehffc0a"
-path="res://.godot/imported/ship.webp-05d20286cceb5380ed7c5282512c93f8.ctex"
->>>>>>> origin/main
-========
-uid="uid://bl3j7gvvv86q1"
-path="res://.godot/imported/bush1.png-e60fa6cf95587c003988a66ef8828e0b.ctex"
->>>>>>>> origin/main:Assets/Backgrounds/bush1.png.import
-<<<<<<< HEAD
->>>>>>> origin/main
-=======
->>>>>>> origin/main
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<<< HEAD:Assets/Backgrounds/bush1.png.import
 source_file="res://Assets/Backgrounds/bush1.png"
 dest_files=["res://.godot/imported/bush1.png-e60fa6cf95587c003988a66ef8828e0b.ctex"]
-========
-source_file="res://Assets/Backgrounds/bush3.png"
-dest_files=["res://.godot/imported/bush3.png-bb6d8f13640823b3ea74a8a47afc54d7.ctex"]
->>>>>>>> 8bb975d37dd11c6c623b123eb8001af49d3b0c20:Assets/Backgrounds/bush3.png.import
-=======
-<<<<<<<< HEAD:Assets/Backgrounds/bush2.png.import
-source_file="res://Assets/Backgrounds/bush2.png"
-dest_files=["res://.godot/imported/bush2.png-3aa3d23a45f610c2b979f6a8fea2f4c0.ctex"]
-=======
-<<<<<<<< HEAD:Assets/Sprites/ships/ship.webp.import
-source_file="res://Assets/Sprites/ships/ship.webp"
-dest_files=["res://.godot/imported/ship.webp-05d20286cceb5380ed7c5282512c93f8.ctex"]
->>>>>>> origin/main
-========
-source_file="res://Assets/Backgrounds/bush1.png"
-dest_files=["res://.godot/imported/bush1.png-e60fa6cf95587c003988a66ef8828e0b.ctex"]
->>>>>>>> origin/main:Assets/Backgrounds/bush1.png.import
-<<<<<<< HEAD
->>>>>>> origin/main
-=======
->>>>>>> origin/main
 
 [params]
 

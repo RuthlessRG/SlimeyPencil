@@ -2,26 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-<<<<<<<< HEAD:Characters/NEWFOUNDMETHOD/NPC/npc4.jpg.import
-uid="uid://boqbxi7ffcud4"
+uid="uid://4tjvn3chsh8q"
 path="res://.godot/imported/npc4.jpg-260cb7cfb2f1579088fccfc8dfe22cb9.ctex"
-========
-uid="uid://cu48fm4w1casi"
-path="res://.godot/imported/bush3.png-bb6d8f13640823b3ea74a8a47afc54d7.ctex"
->>>>>>>> origin/main:Assets/Backgrounds/bush3.png.import
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-<<<<<<<< HEAD:Characters/NEWFOUNDMETHOD/NPC/npc4.jpg.import
 source_file="res://Characters/NEWFOUNDMETHOD/NPC/npc4.jpg"
 dest_files=["res://.godot/imported/npc4.jpg-260cb7cfb2f1579088fccfc8dfe22cb9.ctex"]
-========
-source_file="res://Assets/Backgrounds/bush3.png"
-dest_files=["res://.godot/imported/bush3.png-bb6d8f13640823b3ea74a8a47afc54d7.ctex"]
->>>>>>>> origin/main:Assets/Backgrounds/bush3.png.import
 
 [params]
 

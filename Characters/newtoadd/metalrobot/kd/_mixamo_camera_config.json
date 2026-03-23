@@ -1,0 +1,9 @@
+{
+  "mode": "mixamo",
+  "cam_distance": 4.5,
+  "cam_height": 2.8,
+  "char_center_z": 0.95,
+  "frame_width": 512,
+  "frame_height": 640,
+  "ortho_scale": 5.4863067263806
+}

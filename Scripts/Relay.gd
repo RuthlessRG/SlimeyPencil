@@ -163,8 +163,8 @@ func send_game_data(data: Dictionary, to_peer: int = -1) -> void:
 	})
 
 # ── Receiving ─────────────────────────────────────────────────────────
+var _recv_log_throttle : int = 0
 func _on_channel_message(msg) -> void:
-	print("[Relay] RAW msg.content type=%s value=%s" % [typeof(msg.content), str(msg.content).left(120)])
 	var parsed = JSON.parse_string(msg.content)
 	if not parsed is Dictionary:
 		print("[Relay] non-dict message ignored: ", msg.content)
@@ -177,7 +177,9 @@ func _on_channel_message(msg) -> void:
 		return  # directed to a different peer
 	var data = parsed.get("data", {})
 	if data is Dictionary:
-		print("[Relay] msg from peer_id=%d cmd=%s" % [from_peer, data.get("cmd", "?")])
+		_recv_log_throttle += 1
+		if _recv_log_throttle % 120 == 1:  # print once per ~6 seconds
+			print("[Relay] msg from peer_id=%d cmd=%s" % [from_peer, data.get("cmd", "?")])
 		emit_signal("game_data_received", from_peer, data)
 
 func _on_channel_presence(presence_event) -> void:
