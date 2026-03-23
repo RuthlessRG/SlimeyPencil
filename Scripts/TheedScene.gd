@@ -52,6 +52,7 @@ var _tgt_hp_bar      : ProgressBar  = null
 var _tgt_hp_lbl      : Label        = null
 var _tgt_action_bar  : ProgressBar  = null
 var _tgt_mp_bar      : ProgressBar  = null
+var _tgt_debuff_lbl  : Label        = null
 var _xp_panel        : Panel        = null
 var _xp_bar          : ProgressBar  = null
 var _xp_bar_lbl      : Label        = null
@@ -106,6 +107,14 @@ func _ready() -> void:
 	if city_node and city_node is StaticBody2D:
 		city_node.collision_layer = 0
 		city_node.collision_mask = 0
+	# Disable collision on all NPC/Nature StaticBody2D nodes (placed in editor, collision at origin)
+	for group_name in ["NPCs", "Nature"]:
+		var group_node = get_node_or_null(group_name)
+		if group_node:
+			for child in group_node.get_children():
+				if child is StaticBody2D:
+					child.collision_layer = 0
+					child.collision_mask = 0
 	var city_pos = city_node.position if city_node else _tile_to_world(20, 76)
 	overlay.call("set_city_center", city_pos)
 	_show_character_select()
@@ -340,8 +349,7 @@ func _handle_click(event: InputEventMouseButton) -> void:
 			if is_instance_valid(rp2):
 				_options_panel.call("show_for", closest_pid,
 					str(rp2.get_meta("character_name")), event.position)
-	else:
-		_clear_target()
+	# Clicking empty ground does NOT de-target; use ESC or target something else
 
 func _clear_target() -> void:
 	_player_target_peer = -1
@@ -404,12 +412,12 @@ func _show_character_select() -> void:
 	_select_layer.add_child(hint)
 
 	var classes = [
-		# Old brawler removed
+		{ "key":"streetfighter","label":"BRAWLER","color":Color(0.90,0.45,0.25), "desc":"Slow but devastating.\nWalk before you run.\nTwo attack styles.\n\nHP: 600\nAtk every: 2.5s\nRange: 130px", "locked":false },
+		{ "key":"scrapper","label":"SCRAPPER","color":Color(0.45,0.90,0.35), "desc":"Tough close-range\nfighter. Takes a\nbeating and hits back.\n\nHP: 500\nAtk every: 2s\nRange: 130px", "locked":false },
 		{ "key":"ranged",   "label":"MARKSMAN", "color":Color(0.35,0.80,0.95), "desc":"Long-range marksman.\nKeep your distance\nand chip away.\n\nHP: 180\nAtk every: 2.5s\nRange: 700px", "locked":false },
 		{ "key":"smuggler", "label":"SMUGGLER", "color":Color(0.85,0.65,0.25), "desc":"Cunning gunfighter.\nSame range as Marksman.\nStarts with Novice\nMarksman skills.\n\nHP: 300\nAtk every: 2.5s\nRange: 700px", "locked":false },
 		{ "key":"medic",    "label":"MEDIC",    "color":Color(0.30,0.85,0.90), "desc":"Combat medic.\nHeals allies with\ncanisters, poisons\nenemies.\n\nHP: 220\nAtk every: 3s\nRange: 500px", "locked":false },
-		{ "key":"scrapper","label":"SCRAPPER","color":Color(0.45,0.90,0.35), "desc":"Tough close-range\nfighter. Takes a\nbeating and hits back.\n\nHP: 500\nAtk every: 2s\nRange: 130px", "locked":false },
-		{ "key":"streetfighter","label":"STREET FIGHTER","color":Color(0.90,0.45,0.25), "desc":"Slow but devastating.\nWalk before you run.\nTwo attack styles.\n\nHP: 600\nAtk every: 2.5s\nRange: 130px", "locked":false },
+		{ "key":"medic",    "label":"TECHNO NUN", "color":Color(0.75,0.30,0.85), "desc":"Holy tech warrior.\nSame loadout as Medic.\nAlternate appearance.\n\nHP: 220\nAtk every: 3s\nRange: 500px", "locked":false },
 	]
 
 	var card_w  = 180.0; var card_h  = 300.0; var gap = 28.0
@@ -510,6 +518,7 @@ func _on_class_selected(cls: String) -> void:
 	_pending_nickname = PlayerData.nickname
 	_select_layer.queue_free()
 	_select_layer = null
+	_zoom_locked = false
 	_spawn_player(cls)
 	_spawn_terminals()
 	_spawn_trees()
@@ -535,10 +544,13 @@ func _spawn_player(cls: String) -> void:
 		sprite.scale  = Vector2(0.28, 0.28)
 		sprite.offset = Vector2(0, -160)
 	elif cls == "medic":
-		sprite.scale  = Vector2(0.38, 0.38)
+		sprite.scale  = Vector2(0.173, 0.173)
 		sprite.offset = Vector2(0, -121)
-	elif cls in ["ranged", "smuggler"]:
+	elif cls == "ranged":
 		sprite.scale  = Vector2(0.228, 0.228)
+		sprite.offset = Vector2(0, -73)
+	elif cls == "smuggler":
+		sprite.scale  = Vector2(0.194, 0.194)
 		sprite.offset = Vector2(0, -73)
 	elif cls == "streetfighter":
 		sprite.scale  = Vector2(0.28, 0.28)
@@ -818,15 +830,15 @@ func _build_frames(cls: String) -> SpriteFrames:
 		"melee":
 			var base = "res://Characters/minimmo/meleenew/"
 			for dir in ["s","n","e","w","se","sw","ne","nw"]:
-				_add_strip(frames,"idle_"+dir,  base+"idle/idle_"+dir+".png",   160,160,8,24.0)
-				_add_strip(frames,"run_"+dir,   base+"run/run_"+dir+".png",    160,160,8,24.0)
-				_add_strip(frames,"attack_"+dir,base+"attack/attack_"+dir+".png",160,160,6,24.0,false)
+				_add_strip(frames,"idle_"+dir,  base+"idle/idle_"+dir+".png",   160,160,8,30.0)
+				_add_strip(frames,"run_"+dir,   base+"run/run_"+dir+".png",    160,160,8,30.0)
+				_add_strip(frames,"attack_"+dir,base+"attack/attack_"+dir+".png",160,160,6,30.0,false)
 		"mage":
 			var base = "res://Characters/minimmo/mage/"
 			for dir in ["s","n","e","w"]:
-				_add_strip(frames,"idle_"+dir,  base+"idle/idle_"+dir+".png",   24,24,8,24.0)
-				_add_strip(frames,"run_"+dir,   base+"run/run_"+dir+".png",    24,24,4,24.0)
-				_add_strip(frames,"attack_"+dir,base+"attack/attack_"+dir+".png",24,24,6,24.0,false)
+				_add_strip(frames,"idle_"+dir,  base+"idle/idle_"+dir+".png",   24,24,8,30.0)
+				_add_strip(frames,"run_"+dir,   base+"run/run_"+dir+".png",    24,24,4,30.0)
+				_add_strip(frames,"attack_"+dir,base+"attack/attack_"+dir+".png",24,24,6,30.0,false)
 		"ranged":
 			var ncbase = "res://Characters/NEWFOUNDMETHOD/marksman2/"
 			# Idle:   3 real dirs (e/ne/se); n→ne, s→se, w/nw/sw mirror via flip_h
@@ -840,7 +852,7 @@ func _build_frames(cls: String) -> SpriteFrames:
 				var idir : String = idle_src[dir]
 				var idle_anim = "idle_" + dir
 				frames.add_animation(idle_anim)
-				frames.set_animation_speed(idle_anim, 24.0)
+				frames.set_animation_speed(idle_anim, 30.0)
 				frames.set_animation_loop(idle_anim, true)
 				for part in ["idle1", "idle2", "idle3", "idle4", "idle5", "idle6"]:
 					var path = ncbase + "idle/" + part + "/" + part + "_" + idir + ".png"
@@ -860,12 +872,12 @@ func _build_frames(cls: String) -> SpriteFrames:
 					var rtex = load(run_path) as Texture2D
 					var rfc = int(rtex.get_width() / 512.0) if rtex else 0
 					if rfc > 0:
-						_add_strip(frames, "run_" + dir, run_path, 512, 512, rfc, 24.0)
+						_add_strip(frames, "run_" + dir, run_path, 512, 512, rfc, 30.0)
 				# ── Attack: 2 parts, 5 real dirs, mirror w/nw/sw ─────
 				var adir : String = atk_src[dir]
 				var atk_anim = "attack_" + dir
 				frames.add_animation(atk_anim)
-				frames.set_animation_speed(atk_anim, 30.0)
+				frames.set_animation_speed(atk_anim, 32.0)
 				frames.set_animation_loop(atk_anim, false)
 				for part in ["attack1", "attack2"]:
 					var atk_path = ncbase + "attack/" + part + "/" + part + "_" + adir + ".png"
@@ -886,7 +898,7 @@ func _build_frames(cls: String) -> SpriteFrames:
 				# Idle: 3 parts, all 8 dirs available
 				var idle_anim = "idle_" + dir
 				frames.add_animation(idle_anim)
-				frames.set_animation_speed(idle_anim, 24.0)
+				frames.set_animation_speed(idle_anim, 30.0)
 				frames.set_animation_loop(idle_anim, true)
 				for pn in range(1, 4):
 					var path = smbase + "idle/idle" + str(pn) + "/idle" + str(pn) + "_" + dir + ".png"
@@ -903,12 +915,12 @@ func _build_frames(cls: String) -> SpriteFrames:
 				var run_path = smbase + "run/run_" + rdir_sm + ".png"
 				var rtex = load(run_path) as Texture2D
 				var rfc = int(rtex.get_width() / 512.0) if rtex else 20
-				_add_strip(frames, "run_" + dir, run_path, 512, 512, rfc, 24.0)
+				_add_strip(frames, "run_" + dir, run_path, 512, 512, rfc, 30.0)
 				# Attack: all 8 dirs available
 				var atk_path = smbase + "attack/attack_" + dir + ".png"
 				var atex = load(atk_path) as Texture2D
 				var afc = int(atex.get_width() / 512.0) if atex else 30
-				_add_strip(frames, "attack_" + dir, atk_path, 512, 512, afc, 24.0, false)
+				_add_strip(frames, "attack_" + dir, atk_path, 512, 512, afc, 30.0, false)
 		"medic":
 			var mbase = "res://Characters/NEWFOUNDMETHOD/medic/"
 			# All anims have 5 dirs (e/n/ne/s/se); w/nw/sw mirror via flip_h at runtime
@@ -918,7 +930,7 @@ func _build_frames(cls: String) -> SpriteFrames:
 				# Idle: 7 parts
 				var idle_anim = "idle_" + dir
 				frames.add_animation(idle_anim)
-				frames.set_animation_speed(idle_anim, 24.0)
+				frames.set_animation_speed(idle_anim, 30.0)
 				frames.set_animation_loop(idle_anim, true)
 				for pn in range(1, 8):
 					var path = mbase + "idle/idle" + str(pn) + "/idle" + str(pn) + "_" + sdir + ".png"
@@ -930,25 +942,24 @@ func _build_frames(cls: String) -> SpriteFrames:
 						var atlas = AtlasTexture.new()
 						atlas.atlas = tex; atlas.region = Rect2(fi * 512, 0, 512, tex.get_height())
 						frames.add_frame(idle_anim, atlas)
-				# Run: 7 parts
+				# Run: only part 1 has real frames (21 unique); parts 2-7 are mostly dupes
 				var run_anim = "run_" + dir
 				frames.add_animation(run_anim)
-				frames.set_animation_speed(run_anim, 24.0)
+				frames.set_animation_speed(run_anim, 30.0)
 				frames.set_animation_loop(run_anim, true)
-				for pn in range(1, 8):
-					var path = mbase + "run/run" + str(pn) + "/run" + str(pn) + "_" + sdir + ".png"
-					if not ResourceLoader.exists(path): continue
-					var tex = load(path) as Texture2D
-					if tex == null: continue
-					var fc = int(tex.get_width() / 512.0)
-					for fi in fc:
-						var atlas = AtlasTexture.new()
-						atlas.atlas = tex; atlas.region = Rect2(fi * 512, 0, 512, tex.get_height())
-						frames.add_frame(run_anim, atlas)
+				var run1_path = mbase + "run/run1/run1_" + sdir + ".png"
+				if ResourceLoader.exists(run1_path):
+					var rtex = load(run1_path) as Texture2D
+					if rtex:
+						var rfc = mini(int(rtex.get_width() / 512.0), 21)
+						for fi in rfc:
+							var atlas = AtlasTexture.new()
+							atlas.atlas = rtex; atlas.region = Rect2(fi * 512, 0, 512, rtex.get_height())
+							frames.add_frame(run_anim, atlas)
 				# Attack: 7 parts, no loop
 				var atk_anim = "attack_" + dir
 				frames.add_animation(atk_anim)
-				frames.set_animation_speed(atk_anim, 24.0)
+				frames.set_animation_speed(atk_anim, 30.0)
 				frames.set_animation_loop(atk_anim, false)
 				for pn in range(1, 8):
 					var path = mbase + "attack/attack" + str(pn) + "/attack" + str(pn) + "_" + sdir + ".png"
@@ -964,10 +975,9 @@ func _build_frames(cls: String) -> SpriteFrames:
 			var scbase = "res://Characters/NEWFOUNDMETHOD/Brawler3/"
 			for dir in ["s","n","e","w","se","sw","ne","nw"]:
 				# Idle: 4 parts played in sequence (idle1->idle2->idle3->idle4)
-				# Each part is a strip, combined into one animation
 				var idle_anim = "idle_" + dir
 				frames.add_animation(idle_anim)
-				frames.set_animation_speed(idle_anim, 24.0)
+				frames.set_animation_speed(idle_anim, 30.0)
 				frames.set_animation_loop(idle_anim, true)
 				for part in ["idle1", "idle2", "idle3", "idle4"]:
 					var path = scbase + "idle/" + part + "/" + part + "_" + dir + ".png"
@@ -980,18 +990,38 @@ func _build_frames(cls: String) -> SpriteFrames:
 						atlas.atlas = tex
 						atlas.region = Rect2(fi * 512, 0, 512, tex.get_height())
 						frames.add_frame(idle_anim, atlas)
+				# Run: 30 frames in strip but only first 19 are unique (rest are idle dupes causing jump)
 				var run_tex_sc = load(scbase+"run/run_"+dir+".png") as Texture2D
-				var run_fc_sc = int(run_tex_sc.get_width() / 512.0) if run_tex_sc else 20
-				_add_strip(frames, "run_"+dir, scbase+"run/run_"+dir+".png", 512, 512, run_fc_sc, 24.0)
-				_add_strip(frames, "attack_"+dir, scbase+"attack/attack_"+dir+".png", 512, 512, 30, 24.0, false)
+				var run_fc_sc = mini(int(run_tex_sc.get_width() / 512.0), 19) if run_tex_sc else 19
+				_add_strip(frames, "run_"+dir, scbase+"run/run_"+dir+".png", 512, 512, run_fc_sc, 30.0)
+				_add_strip(frames, "attack_"+dir, scbase+"attack/attack_"+dir+".png", 512, 512, 30, 30.0, false)
 		"streetfighter":
 			var sfbase = "res://Characters/NEWFOUNDMETHOD/Brawler2/"
+			# attack2 now has 3 sub-parts with 5 real dirs; w/nw/sw flip from e/ne/se
+			var atk2_src := {"s":"s","n":"n","e":"e","ne":"ne","se":"se","w":"e","nw":"ne","sw":"se"}
 			for dir in ["s","n","e","w","se","sw","ne","nw"]:
-				_add_strip(frames, "idle_"+dir, sfbase+"idle/idle_"+dir+".png", 512, 512, 30, 24.0)
-				_add_strip(frames, "walk_"+dir, sfbase+"walk/walk_"+dir+".png", 512, 512, 30, 24.0)
-				_add_strip(frames, "run_"+dir, sfbase+"run/run_"+dir+".png", 512, 512, 30, 24.0)
-				_add_strip(frames, "attack_"+dir, sfbase+"attack/attack_"+dir+".png", 512, 512, 30, 24.0, false)
-				_add_strip(frames, "attack2_"+dir, sfbase+"attack2/attack2_"+dir+".png", 512, 512, 30, 24.0, false)
+				_add_strip(frames, "idle_"+dir, sfbase+"idle/idle_"+dir+".png", 512, 512, 30, 30.0)
+				_add_strip(frames, "walk_"+dir, sfbase+"walk/walk_"+dir+".png", 512, 512, 30, 30.0)
+				# Run: only first 19 frames are unique (rest are idle dupes causing sliding)
+				_add_strip(frames, "run_"+dir, sfbase+"run/run_"+dir+".png", 512, 512, 19, 30.0)
+				_add_strip(frames, "attack_"+dir, sfbase+"attack/attack_"+dir+".png", 512, 512, 30, 30.0, false)
+				# Attack2: 3 sub-parts (attack1=40f, attack2=40f, attack3=5f), 700x1100, 5 dirs
+				var a2dir : String = atk2_src[dir]
+				var atk2_anim = "attack2_" + dir
+				frames.add_animation(atk2_anim)
+				frames.set_animation_speed(atk2_anim, 38.0)
+				frames.set_animation_loop(atk2_anim, false)
+				for pn in range(1, 4):
+					var path = sfbase + "attack2/attack" + str(pn) + "/attack" + str(pn) + "_" + a2dir + ".png"
+					if not ResourceLoader.exists(path): continue
+					var tex = load(path) as Texture2D
+					if tex == null: continue
+					var fh = int(tex.get_height())
+					var fc = int(tex.get_width() / 700.0)
+					for fi in fc:
+						var atlas = AtlasTexture.new()
+						atlas.atlas = tex; atlas.region = Rect2(fi * 700, 0, 700, fh)
+						frames.add_frame(atk2_anim, atlas)
 	return frames
 
 func _add_grid(frames: SpriteFrames, anim_name: String, path: String,
@@ -1115,7 +1145,7 @@ func _setup_hud(_cls: String) -> void:
 
 	# Target panel
 	const TGT_W : float = 280.0
-	const TGT_H : float = 82.0
+	const TGT_H : float = 96.0
 	_tgt_panel          = Panel.new()
 	_tgt_panel.size     = Vector2(TGT_W, TGT_H)
 	_tgt_panel.position = Vector2(vp.x * 0.5 - TGT_W * 0.5, 10)
@@ -1150,6 +1180,16 @@ func _setup_hud(_cls: String) -> void:
 
 	_tgt_mp_bar = _make_bar(Color(0.15, 0.30, 0.72), Vector2(10, 58), Vector2(TGT_W - 20, 12))
 	_tgt_panel.add_child(_tgt_mp_bar)
+
+	_tgt_debuff_lbl = Label.new()
+	_tgt_debuff_lbl.add_theme_font_override("font", bold)
+	_tgt_debuff_lbl.add_theme_font_size_override("font_size", 10)
+	_tgt_debuff_lbl.add_theme_color_override("font_color", Color(1.0, 0.6, 0.3))
+	_tgt_debuff_lbl.position = Vector2(10, 74)
+	_tgt_debuff_lbl.size     = Vector2(TGT_W - 20, 16)
+	_tgt_debuff_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_tgt_debuff_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tgt_panel.add_child(_tgt_debuff_lbl)
 
 	# Minimap
 	const MMAP_W : float = 180.0
@@ -1340,6 +1380,13 @@ func _update_hud() -> void:
 		if _tgt_mp_bar:
 			_tgt_mp_bar.max_value = emmx; _tgt_mp_bar.value = emnd
 			_tgt_mp_bar.visible = true
+		if _tgt_debuff_lbl:
+			var debuffs : PackedStringArray = []
+			for sname in ["dizzy", "knockdown", "stun", "blind", "intimidate"]:
+				var sv = tgt.get("state_" + sname) if tgt.get("state_" + sname) != null else 0.0
+				if sv > 0.0:
+					debuffs.append(sname.to_upper())
+			_tgt_debuff_lbl.text = "  ".join(debuffs) if debuffs.size() > 0 else ""
 	elif _player_target_peer != -1 and _remote_players.has(_player_target_peer):
 		var ptgt = _remote_players[_player_target_peer]
 		if is_instance_valid(ptgt):
@@ -1350,10 +1397,12 @@ func _update_hud() -> void:
 			_tgt_hp_bar.max_value = pmhp; _tgt_hp_bar.value = php
 			if _tgt_hp_lbl: _tgt_hp_lbl.text = "%d / %d" % [int(php), int(pmhp)]
 			if _tgt_mp_bar: _tgt_mp_bar.visible = true; _tgt_mp_bar.value = 100
+			if _tgt_debuff_lbl: _tgt_debuff_lbl.text = ""
 		else:
 			_player_target_peer = -1; _tgt_panel.visible = false
 	else:
 		_tgt_panel.visible = false
+		if _tgt_debuff_lbl: _tgt_debuff_lbl.text = ""
 
 func _on_frame_drag(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
@@ -1450,6 +1499,12 @@ func _on_relay_data(from_peer: int, data: Dictionary) -> void:
 			if is_instance_valid(_duel_system): _duel_system.call("on_duel_accepted", from_peer)
 		"duel_decline":
 			if is_instance_valid(_duel_system): _duel_system.call("on_duel_declined", from_peer)
+		"duel_end":
+			if is_instance_valid(_duel_system):
+				_duel_system.call("on_duel_ended_by_peer", from_peer, data.get("i_won", false))
+		"duel_damage":
+			if is_instance_valid(_duel_system):
+				_duel_system.call("on_duel_damage", float(data.get("amount", 0.0)))
 		"party_invite":
 			if is_instance_valid(_party_system):
 				_party_system.call("on_party_invite", from_peer, str(data.get("nick", "")), data.get("members", []))
@@ -1460,6 +1515,12 @@ func _on_relay_data(from_peer: int, data: Dictionary) -> void:
 		"party_update":
 			if is_instance_valid(_party_system):
 				_party_system.call("on_party_update", int(data.get("leader", -1)), data.get("members", []))
+		"party_leave":
+			if is_instance_valid(_party_system):
+				_party_system.call("on_party_leave", int(data.get("peer_id", from_peer)))
+		"party_kick":
+			if is_instance_valid(_party_system):
+				_party_system.call("on_party_kick", int(data.get("peer_id", from_peer)))
 		"trade_request":
 			if is_instance_valid(_trade_system):
 				_trade_system.call("show_request", from_peer, str(data.get("nick", "")))
@@ -1540,18 +1601,24 @@ func _add_remote_player(peer_id: int, cls: String, nick: String, pos: Vector2) -
 	var sprite           = AnimatedSprite2D.new()
 	sprite.name          = "Sprite"
 	sprite.sprite_frames = _build_frames(cls)
-	if cls == "melee" or cls == "scrapper":
+	if cls == "melee":
 		sprite.scale  = Vector2(44.0 / 160.0, 44.0 / 160.0)
 		sprite.offset = Vector2(0, -80)
+	elif cls in ["scrapper", "streetfighter"]:
+		sprite.scale  = Vector2(0.28, 0.28)
+		sprite.offset = Vector2(0, -160)
 	elif cls == "medic":
-		sprite.scale  = Vector2(0.38, 0.38)
+		sprite.scale  = Vector2(0.173, 0.173)
 		sprite.offset = Vector2(0, -121)
-	elif cls in ["ranged", "smuggler"]:
+	elif cls == "ranged":
 		sprite.scale  = Vector2(0.228, 0.228)
 		sprite.offset = Vector2(0, -73)
+	elif cls == "smuggler":
+		sprite.scale  = Vector2(0.194, 0.194)
+		sprite.offset = Vector2(0, -73)
 	else:
-		sprite.scale  = Vector2(1.0, 1.0)
-		sprite.offset = Vector2(0, -12)
+		sprite.scale  = Vector2(0.28, 0.28)
+		sprite.offset = Vector2(0, -160)
 	sprite.animation = "idle_s"
 	sprite.play()
 	rp.add_child(sprite)
@@ -1907,3 +1974,84 @@ func _spawn_robowalker(at_pos: Vector2 = Vector2.ZERO, broadcast: bool = true) -
 	_world_layer.add_child(mob); mob.tree_exiting.connect(_on_targetable_removed.bind(mob))
 	if broadcast:
 		Relay.send_game_data({"cmd": "spawn_creature", "type": "robowalker", "x": at_pos.x, "y": at_pos.y})
+
+func _build_metalrobot_frames() -> SpriteFrames:
+	var frames = SpriteFrames.new()
+	if frames.has_animation("default"): frames.remove_animation("default")
+	var base = "res://Characters/newtoadd/metalrobot/"
+	var dir_src := {"s":"s","n":"n","e":"e","ne":"ne","se":"se","w":"e","nw":"ne","sw":"se"}
+	for dir in ["s","n","e","ne","se","w","nw","sw"]:
+		var sdir : String = dir_src[dir]
+		# Idle: 2 parts (idle1=40f, idle2=11f), 512x512
+		var idle_anim = "idle_" + dir
+		frames.add_animation(idle_anim)
+		frames.set_animation_speed(idle_anim, 24.0)
+		frames.set_animation_loop(idle_anim, true)
+		for pn in range(1, 3):
+			var path = base + "idle/idle" + str(pn) + "/idle" + str(pn) + "_" + sdir + ".png"
+			if not ResourceLoader.exists(path): continue
+			var tex = load(path) as Texture2D
+			if tex == null: continue
+			var fc = int(tex.get_width() / 512.0)
+			for fi in fc:
+				var atlas = AtlasTexture.new()
+				atlas.atlas = tex; atlas.region = Rect2(fi * 512, 0, 512, 512)
+				frames.add_frame(idle_anim, atlas)
+		# Run: single strip, 30 frames, 512x640 (taller frame)
+		var run_path = base + "run/run_" + sdir + ".png"
+		var rtex = load(run_path) as Texture2D if ResourceLoader.exists(run_path) else null
+		var rfc = int(rtex.get_width() / 512.0) if rtex else 30
+		_add_strip(frames, "run_" + dir, run_path, 512, 640, rfc, 24.0)
+		# Attack: 3 parts (attack1=40f, attack2=40f, attack3=6f), all 512x512, no loop
+		var atk_anim = "attack_" + dir
+		frames.add_animation(atk_anim)
+		frames.set_animation_speed(atk_anim, 24.0)
+		frames.set_animation_loop(atk_anim, false)
+		for pn in range(1, 4):
+			var path = base + "attack/attack" + str(pn) + "/attack" + str(pn) + "_" + sdir + ".png"
+			if not ResourceLoader.exists(path): continue
+			var tex = load(path) as Texture2D
+			if tex == null: continue
+			var fh = int(tex.get_height())
+			var fc = int(tex.get_width() / 512.0)
+			for fi in fc:
+				var atlas = AtlasTexture.new()
+				atlas.atlas = tex; atlas.region = Rect2(fi * 512, 0, 512, fh)
+				frames.add_frame(atk_anim, atlas)
+		# Knockdown: 2 parts (kd1=40f, kd2=37f), 512x512 (scaled to match idle), no loop
+		var kd_anim = "kd_" + dir
+		frames.add_animation(kd_anim)
+		frames.set_animation_speed(kd_anim, 24.0)
+		frames.set_animation_loop(kd_anim, false)
+		for pn in range(1, 3):
+			var path = base + "kd/kd" + str(pn) + "/kd" + str(pn) + "_" + sdir + ".png"
+			if not ResourceLoader.exists(path): continue
+			var tex = load(path) as Texture2D
+			if tex == null: continue
+			var fh = int(tex.get_height())
+			var fc = int(tex.get_width() / 512.0)
+			for fi in fc:
+				var atlas = AtlasTexture.new()
+				atlas.atlas = tex; atlas.region = Rect2(fi * 512, 0, 512, fh)
+				frames.add_frame(kd_anim, atlas)
+	return frames
+
+func _spawn_metalrobot(at_pos: Vector2 = Vector2.ZERO, broadcast: bool = true) -> void:
+	var script = load("res://Scripts/MetalRobot.gd")
+	if script == null: return
+	var mob = CharacterBody2D.new(); mob.set_script(script)
+	var sprite = AnimatedSprite2D.new()
+	sprite.name = "Sprite"; sprite.sprite_frames = _build_metalrobot_frames()
+	sprite.scale = Vector2(0.30, 0.30); sprite.offset = Vector2(0, -170)
+	sprite.play("idle_s")
+	mob.add_child(sprite)
+	var col = CollisionShape2D.new(); var shape = CapsuleShape2D.new()
+	shape.radius = 20.0; shape.height = 40.0; col.shape = shape; mob.add_child(col)
+	if at_pos == Vector2.ZERO:
+		var n = get_tree().get_nodes_in_group("mob").size()
+		var angle = TAU * (float(n) / 8.0); var dist = 180.0 + n * 30.0
+		at_pos = _player.global_position + Vector2(cos(angle), sin(angle)) * dist
+	mob.position = at_pos; mob.collision_layer = 2; mob.collision_mask = 2
+	_world_layer.add_child(mob); mob.tree_exiting.connect(_on_targetable_removed.bind(mob))
+	if broadcast:
+		Relay.send_game_data({"cmd": "spawn_creature", "type": "metalrobot", "x": at_pos.x, "y": at_pos.y})

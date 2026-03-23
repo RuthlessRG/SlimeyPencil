@@ -3,22 +3,25 @@
 [ext_resource type="Script" uid="uid://ckygq2cp66mgi" path="res://Scripts/TheedScene.gd" id="1_theed"]
 [ext_resource type="Texture2D" uid="uid://by8fbea1jbo7u" path="res://Assets/Backgrounds/naboocityHIREZ.png" id="2_xakw3"]
 [ext_resource type="Texture2D" uid="uid://b2wnknrjy0l1c" path="res://Assets/Sprites/Bank.png" id="3_2tx76"]
+[ext_resource type="Script" uid="uid://6uxi7hthkxoc" path="res://Scripts/BankTerminal.gd" id="3_uf103"]
 [ext_resource type="Texture2D" uid="uid://db8m1unx76u5w" path="res://Assets/Sprites/missionmerminal1.png" id="4_kr33p"]
 [ext_resource type="Texture2D" uid="uid://0hi0d1i6oie4" path="res://Assets/Sprites/shoppingterminal.png" id="5_2h0hs"]
+[ext_resource type="Script" uid="uid://dola01kxi8c3m" path="res://Scripts/MissionTerminal.gd" id="5_mgnak"]
 [ext_resource type="Texture2D" uid="uid://cl3sh5mqc8jlu" path="res://Assets/Sprites/HealBuffTerminal.png" id="6_skbs0"]
 [ext_resource type="Texture2D" uid="uid://dptl1tryp18qd" path="res://Assets/Sprites/FoodTerminal.png" id="7_m1t4p"]
+[ext_resource type="Script" uid="uid://s1wt25phg416" path="res://Scripts/BossShopTerminal.gd" id="7_tb0j5"]
 [ext_resource type="Texture2D" uid="uid://d10jonr8yr2kk" path="res://Assets/Sprites/DrugTerminal.png" id="8_uui6l"]
 [ext_resource type="Texture2D" uid="uid://cirnq6haiqxnh" path="res://Characters/NEWFOUNDMETHOD/NPC/npcs1alpha.png" id="9_3rijx"]
 [ext_resource type="Texture2D" uid="uid://dkllw15k554l0" path="res://Characters/NEWFOUNDMETHOD/NPC/npcsalpha.png" id="10_slcdg"]
 [ext_resource type="Texture2D" uid="uid://dw156su16fjp2" path="res://Assets/Sprites/tree1new.png" id="11_slcdg"]
 [ext_resource type="Texture2D" uid="uid://o5ixram2helf" path="res://Assets/Backgrounds/mushroom.png" id="12_lylts"]
-[ext_resource type="Texture2D" uid="uid://bg5r0ap5umr5m" path="res://Characters/minimmo/Enemies/ZergBoss/idle/idle_n.png" id="12_nd3t2"]
-[ext_resource type="Texture2D" uid="uid://d4gkps74kdc1i" path="res://Characters/minimmo/Enemies/ZergBoss/idle/idle_e.png" id="13_jea2d"]
+[ext_resource type="Texture2D" uid="uid://bg5r0ap5umr5m" path="res://Characters/minimmo/oldnew/Enemies/ZergBoss/idle/idle_n.png" id="12_nd3t2"]
+[ext_resource type="Texture2D" uid="uid://d4gkps74kdc1i" path="res://Characters/minimmo/oldnew/Enemies/ZergBoss/idle/idle_e.png" id="13_jea2d"]
 [ext_resource type="Texture2D" uid="uid://8rexwd5l0rlv" path="res://Assets/Backgrounds/tree2.png" id="13_q6r1j"]
-[ext_resource type="Texture2D" uid="uid://b15xm24g2xtu1" path="res://Characters/minimmo/Enemies/ZergBoss/idle/idle_w.png" id="14_lylts"]
+[ext_resource type="Texture2D" uid="uid://b15xm24g2xtu1" path="res://Characters/minimmo/oldnew/Enemies/ZergBoss/idle/idle_w.png" id="14_lylts"]
 [ext_resource type="Texture2D" uid="uid://svs1hd3cx8b3" path="res://Assets/Backgrounds/nabootrees.png" id="14_vat8w"]
-[ext_resource type="Texture2D" uid="uid://bhuhr7uot277n" path="res://Characters/minimmo/Enemies/ZergBoss/idle/idle_s.png" id="15_q6r1j"]
-[ext_resource type="Texture2D" uid="uid://m1hiqasqn6px" path="res://Characters/minimmo/Enemies/Aadu/idle/idle_sw.png" id="16_vat8w"]
+[ext_resource type="Texture2D" uid="uid://bhuhr7uot277n" path="res://Characters/minimmo/oldnew/Enemies/ZergBoss/idle/idle_s.png" id="15_q6r1j"]
+[ext_resource type="Texture2D" uid="uid://m1hiqasqn6px" path="res://Characters/minimmo/oldnew/Enemies/Aadu/idle/idle_sw.png" id="16_vat8w"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_sstv4"]
 atlas = ExtResource("3_2tx76")
@@ -417,35 +420,28 @@ script = ExtResource("1_theed")
 [node name="City" type="StaticBody2D" parent="." unique_id=457409698]
 
 [node name="CityImage" type="Sprite2D" parent="City" unique_id=761083629]
-position = Vector2(-1810, 101)
+position = Vector2(237, -106)
 texture = ExtResource("2_xakw3")
 
 [node name="Terminals" type="Node2D" parent="." unique_id=1936028187]
 
-[node name="BankTerminal" type="StaticBody2D" parent="Terminals" unique_id=1224472146]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Terminals/BankTerminal" unique_id=158983474]
-
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Terminals/BankTerminal" unique_id=741167656]
-position = Vector2(416.34033, 218.54507)
-scale = Vector2(0.41, 0.41)
-sprite_frames = SubResource("SpriteFrames_15jx2")
-
 [node name="MissionTerminal" type="StaticBody2D" parent="Terminals" unique_id=1353079743]
+script = ExtResource("5_mgnak")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Terminals/MissionTerminal" unique_id=259000733]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Terminals/MissionTerminal" unique_id=1663611725]
-position = Vector2(458.99997, 245)
+position = Vector2(-296, -323)
 scale = Vector2(0.305, 0.305)
 sprite_frames = SubResource("SpriteFrames_jea2d")
 
 [node name="ShopTerminal" type="StaticBody2D" parent="Terminals" unique_id=2074803405]
+script = ExtResource("7_tb0j5")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Terminals/ShopTerminal" unique_id=456042547]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Terminals/ShopTerminal" unique_id=1762357631]
-position = Vector2(511, 270)
+position = Vector2(-1136.1317, 161.4776)
 scale = Vector2(0.34, 0.34)
 sprite_frames = SubResource("SpriteFrames_q6r1j")
 
@@ -454,7 +450,7 @@ sprite_frames = SubResource("SpriteFrames_q6r1j")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Terminals/HealthTerminal" unique_id=979040644]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Terminals/HealthTerminal" unique_id=1883379563]
-position = Vector2(258, 150)
+position = Vector2(2054.904, -126.210144)
 scale = Vector2(0.44, 0.44)
 sprite_frames = SubResource("SpriteFrames_uf103")
 
@@ -463,7 +459,7 @@ sprite_frames = SubResource("SpriteFrames_uf103")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Terminals/FoodTerminal" unique_id=564384284]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Terminals/FoodTerminal" unique_id=1780547226]
-position = Vector2(189, 110)
+position = Vector2(283, -57.000004)
 scale = Vector2(0.48, 0.48)
 sprite_frames = SubResource("SpriteFrames_tb0j5")
 
@@ -472,35 +468,11 @@ sprite_frames = SubResource("SpriteFrames_tb0j5")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Terminals/DrugTerminal" unique_id=975957069]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Terminals/DrugTerminal" unique_id=1052609696]
-position = Vector2(562, 296.00003)
+position = Vector2(-839.82654, -538.9839)
 scale = Vector2(0.42, 0.42)
 sprite_frames = SubResource("SpriteFrames_1iqrj")
 
 [node name="NPCs" type="Node2D" parent="." unique_id=871208683]
-
-[node name="StaticBody2D" type="StaticBody2D" parent="NPCs" unique_id=1726877502]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="NPCs/StaticBody2D" unique_id=85564311]
-shape = SubResource("RectangleShape2D_anxd6")
-
-[node name="Sprite2D" type="Sprite2D" parent="NPCs/StaticBody2D" unique_id=335897478]
-position = Vector2(118, 296)
-scale = Vector2(0.245, 0.245)
-texture = ExtResource("9_3rijx")
-region_enabled = true
-region_rect = Rect2(402.82025, 389.17004, 268.62012, 317.02014)
-
-[node name="StaticBody2D2" type="StaticBody2D" parent="NPCs" unique_id=731231822]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="NPCs/StaticBody2D2" unique_id=591585084]
-shape = SubResource("RectangleShape2D_anxd6")
-
-[node name="Sprite2D" type="Sprite2D" parent="NPCs/StaticBody2D2" unique_id=1971422875]
-position = Vector2(-269, 280)
-scale = Vector2(0.245, 0.245)
-texture = ExtResource("9_3rijx")
-region_enabled = true
-region_rect = Rect2(941.4298, 388.43484, 237.16016, 331.54013)
 
 [node name="StaticBody2D3" type="StaticBody2D" parent="NPCs" unique_id=206053453]
 
@@ -508,7 +480,7 @@ region_rect = Rect2(941.4298, 388.43484, 237.16016, 331.54013)
 shape = SubResource("RectangleShape2D_anxd6")
 
 [node name="Sprite2D" type="Sprite2D" parent="NPCs/StaticBody2D3" unique_id=1123827482]
-position = Vector2(-196, 236)
+position = Vector2(204.00002, -63)
 scale = Vector2(0.245, 0.245)
 texture = ExtResource("9_3rijx")
 region_enabled = true
@@ -520,35 +492,11 @@ region_rect = Rect2(941.42975, 33.904816, 200.86005, 356.95016)
 shape = SubResource("RectangleShape2D_anxd6")
 
 [node name="Sprite2D" type="Sprite2D" parent="NPCs/StaticBody2D4" unique_id=2096214186]
-position = Vector2(-143, 284)
+position = Vector2(911, 593)
 scale = Vector2(0.245, 0.245)
 texture = ExtResource("9_3rijx")
 region_enabled = true
 region_rect = Rect2(1212.4698, 36.32479, 180.29016, 360.58014)
-
-[node name="StaticBody2D5" type="StaticBody2D" parent="NPCs" unique_id=772795241]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="NPCs/StaticBody2D5" unique_id=1158340157]
-shape = SubResource("RectangleShape2D_anxd6")
-
-[node name="Sprite2D" type="Sprite2D" parent="NPCs/StaticBody2D5" unique_id=280643131]
-position = Vector2(-89, 317)
-scale = Vector2(0.245, 0.245)
-texture = ExtResource("9_3rijx")
-region_enabled = true
-region_rect = Rect2(16.989685, 14.544802, 319.44016, 378.73016)
-
-[node name="StaticBody2D6" type="StaticBody2D" parent="NPCs" unique_id=1492271259]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="NPCs/StaticBody2D6" unique_id=770772593]
-shape = SubResource("RectangleShape2D_anxd6")
-
-[node name="Sprite2D" type="Sprite2D" parent="NPCs/StaticBody2D6" unique_id=550135001]
-position = Vector2(3, 351)
-scale = Vector2(0.245, 0.245)
-texture = ExtResource("9_3rijx")
-region_enabled = true
-region_rect = Rect2(343.68973, 31.484795, 262.5701, 356.95013)
 
 [node name="StaticBody2D7" type="StaticBody2D" parent="NPCs" unique_id=2120166078]
 
@@ -556,7 +504,7 @@ region_rect = Rect2(343.68973, 31.484795, 262.5701, 356.95013)
 shape = SubResource("RectangleShape2D_anxd6")
 
 [node name="Sprite2D" type="Sprite2D" parent="NPCs/StaticBody2D7" unique_id=175261216]
-position = Vector2(-98, 386)
+position = Vector2(-429, 124)
 scale = Vector2(0.245, 0.245)
 texture = ExtResource("9_3rijx")
 region_enabled = true
@@ -568,35 +516,11 @@ region_rect = Rect2(83.818085, 399.99365, 227.27554, 304.54553)
 shape = SubResource("RectangleShape2D_anxd6")
 
 [node name="Sprite2D" type="Sprite2D" parent="NPCs/StaticBody2D8" unique_id=1894669632]
-position = Vector2(-45, 421)
+position = Vector2(-959.0317, 226.37766)
 scale = Vector2(0.245, 0.245)
 texture = ExtResource("10_slcdg")
 region_enabled = true
 region_rect = Rect2(767.1608, 379.42963, 170.71417, 333.37573)
-
-[node name="StaticBody2D9" type="StaticBody2D" parent="NPCs" unique_id=1148713030]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="NPCs/StaticBody2D9" unique_id=1057357493]
-shape = SubResource("RectangleShape2D_anxd6")
-
-[node name="Sprite2D" type="Sprite2D" parent="NPCs/StaticBody2D9" unique_id=134324145]
-position = Vector2(-176, 365)
-scale = Vector2(0.245, 0.245)
-texture = ExtResource("10_slcdg")
-region_enabled = true
-region_rect = Rect2(953.524, 30.650387, 231.91351, 341.42828)
-
-[node name="StaticBody2D10" type="StaticBody2D" parent="NPCs" unique_id=1976466382]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="NPCs/StaticBody2D10" unique_id=183841388]
-shape = SubResource("RectangleShape2D_anxd6")
-
-[node name="Sprite2D" type="Sprite2D" parent="NPCs/StaticBody2D10" unique_id=470783990]
-position = Vector2(59, 411)
-scale = Vector2(0.245, 0.245)
-texture = ExtResource("10_slcdg")
-region_enabled = true
-region_rect = Rect2(705.5053, 24.208344, 241.57666, 346.25983)
 
 [node name="StaticBody2D11" type="StaticBody2D" parent="NPCs" unique_id=1544834292]
 
@@ -604,7 +528,7 @@ region_rect = Rect2(705.5053, 24.208344, 241.57666, 346.25983)
 shape = SubResource("RectangleShape2D_anxd6")
 
 [node name="Sprite2D" type="Sprite2D" parent="NPCs/StaticBody2D11" unique_id=1216801920]
-position = Vector2(-274, 367)
+position = Vector2(853, 128.00003)
 scale = Vector2(0.245, 0.245)
 texture = ExtResource("10_slcdg")
 region_enabled = true
@@ -616,7 +540,7 @@ region_rect = Rect2(966.4081, 389.79428, 207.75586, 310.82864)
 shape = SubResource("RectangleShape2D_anxd6")
 
 [node name="Sprite2D" type="Sprite2D" parent="NPCs/StaticBody2D12" unique_id=149050352]
-position = Vector2(-150, 439)
+position = Vector2(-442.03143, -339.02203)
 scale = Vector2(0.245, 0.245)
 texture = ExtResource("10_slcdg")
 region_enabled = true
@@ -630,8 +554,8 @@ region_rect = Rect2(502.58093, 372.07867, 228.69257, 334.98627)
 position = Vector2(-1525.0217, 805.95355)
 
 [node name="Sprite2D" type="Sprite2D" parent="Nature/StaticBody2D" unique_id=2006639669]
-position = Vector2(-1701, 840)
-scale = Vector2(0.68, 0.68)
+position = Vector2(-3013, -1329)
+scale = Vector2(1.3833716, 1.258985)
 texture = ExtResource("11_slcdg")
 
 [node name="StaticBody2D2" type="StaticBody2D" parent="Nature" unique_id=2040013563]
@@ -640,8 +564,8 @@ texture = ExtResource("11_slcdg")
 position = Vector2(-1525.0217, 805.95355)
 
 [node name="Sprite2D" type="Sprite2D" parent="Nature/StaticBody2D2" unique_id=237898475]
-position = Vector2(-1138, 1284)
-scale = Vector2(0.68, 0.68)
+position = Vector2(3548, 668)
+scale = Vector2(2.0518823, 2.125156)
 texture = ExtResource("12_lylts")
 
 [node name="StaticBody2D3" type="StaticBody2D" parent="Nature" unique_id=1932549675]
@@ -660,8 +584,8 @@ texture = ExtResource("13_q6r1j")
 position = Vector2(-1525.0217, 805.95355)
 
 [node name="Sprite2D" type="Sprite2D" parent="Nature/StaticBody2D4" unique_id=115881805]
-position = Vector2(-2377, 1535)
-scale = Vector2(1.085, 1.085)
+position = Vector2(-2920, 1177)
+scale = Vector2(1.7487499, 1.8383332)
 texture = ExtResource("14_vat8w")
 
 [node name="Enemies" type="Node2D" parent="." unique_id=1395201658]
@@ -669,7 +593,7 @@ texture = ExtResource("14_vat8w")
 [node name="Node2D" type="CharacterBody2D" parent="Enemies" unique_id=135625597]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Enemies/Node2D" unique_id=1106701834]
-position = Vector2(-10, 272)
+position = Vector2(-304.66815, 406.60556)
 scale = Vector2(0.515, 0.515)
 sprite_frames = SubResource("SpriteFrames_vvm76")
 autoplay = "default"
@@ -678,7 +602,7 @@ frame_progress = 0.1801714
 [node name="Node2D3" type="CharacterBody2D" parent="Enemies" unique_id=92114268]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Enemies/Node2D3" unique_id=1722319096]
-position = Vector2(16, 235.00002)
+position = Vector2(-339.80658, 460.77725)
 scale = Vector2(0.515, 0.515)
 sprite_frames = SubResource("SpriteFrames_jolxt")
 autoplay = "default"
@@ -687,7 +611,7 @@ frame_progress = 0.57631767
 [node name="Node2D5" type="CharacterBody2D" parent="Enemies" unique_id=1721318381]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Enemies/Node2D5" unique_id=1235052821]
-position = Vector2(44, 260)
+position = Vector2(-398.37054, 533.9823)
 scale = Vector2(0.515, 0.515)
 sprite_frames = SubResource("SpriteFrames_ag1wt")
 autoplay = "default"
@@ -696,7 +620,7 @@ frame_progress = 0.8480704
 [node name="Node2D4" type="CharacterBody2D" parent="Enemies" unique_id=223393144]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Enemies/Node2D4" unique_id=84972313]
-position = Vector2(-47, 249)
+position = Vector2(-426.18848, 424.1747)
 scale = Vector2(0.515, 0.515)
 sprite_frames = SubResource("SpriteFrames_soqdp")
 autoplay = "default"
@@ -705,7 +629,7 @@ frame_progress = 0.35593206
 [node name="Node2D2" type="Node2D" parent="Enemies" unique_id=27761644]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Enemies/Node2D2" unique_id=602979421]
-position = Vector2(120, 175)
+position = Vector2(-258, 501)
 scale = Vector2(0.815, 0.815)
 sprite_frames = SubResource("SpriteFrames_ps1ou")
 autoplay = "default"

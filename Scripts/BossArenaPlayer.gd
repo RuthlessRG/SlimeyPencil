@@ -181,6 +181,7 @@ var _combat_timer   : float = 0.0
 # ── COMBAT STATES (SWG Pre-CU) ──────────────────────────────
 var state_dizzy      : float = 0.0
 var state_knockdown  : float = 0.0
+var _kd_immunity_timer : float = 0.0   # 30s immunity after standing up
 var state_stun       : float = 0.0
 var state_blind      : float = 0.0
 var state_intimidate : float = 0.0
@@ -215,6 +216,9 @@ const STATE_COLORS : Dictionary = {
 func apply_combat_state(state_name: String, duration: float) -> void:
 	var actual_dur = duration
 	if state_name == "knockdown":
+		if _kd_immunity_timer > 0.0:
+			_spawn_floating_text("IMMUNE", Color(0.7, 0.7, 0.7))
+			return
 		actual_dur = 999.0  # Knockdown lasts until stand up (space bar)
 		# Visually lay character on the floor
 		var sprite = get_node_or_null("Sprite") as AnimatedSprite2D
@@ -238,6 +242,8 @@ func apply_combat_state(state_name: String, duration: float) -> void:
 		})
 
 func _tick_combat_states(delta: float) -> void:
+	if _kd_immunity_timer > 0.0:
+		_kd_immunity_timer -= delta
 	var buff_bar = get_node_or_null("BuffBar")
 	# Knockdown does NOT tick down — only cleared by space bar stand up
 	for sname in ["dizzy", "stun", "blind", "intimidate"]:
@@ -844,9 +850,9 @@ func _physics_process(_delta: float) -> void:
 	_moving = input != Vector2.ZERO
 	if _moving:
 		var _sprint_mult = 1.65 if _sprint_active else 1.0
-		var _class_speed = 1.32 if character_class == "scrapper" else (1.2 if character_class == "ranged" else 1.0)
+		var _class_speed = 1.45 if character_class == "scrapper" else (1.2 if character_class == "ranged" else (1.1 if character_class in ["smuggler", "streetfighter"] else (1.3 if character_class == "medic" else 1.0)))
 		velocity = input.normalized() * SPEED * _sprint_mult * _class_speed
-		if character_class in ["melee", "medic", "scrapper", "streetfighter", "ranged"]:
+		if character_class in ["melee", "medic", "scrapper", "streetfighter", "ranged", "smuggler"]:
 			_facing = _facing_8dir(input)
 		elif input.y < 0.0:
 			_facing = "n"
@@ -1004,6 +1010,7 @@ func _try_stand_up() -> void:
 		return
 	# Not dizzy — successfully stand up
 	state_knockdown = 0.0
+	_kd_immunity_timer = 30.0
 	var bb = get_node_or_null("BuffBar")
 	if bb and bb.has_method("remove_buff"):
 		bb.call("remove_buff", "state_knockdown")
@@ -1321,6 +1328,13 @@ func _update_animation() -> void:
 		# medic all anims are 5-dir only; flip for all west-facing states
 		elif character_class == "medic":
 			sprite.flip_h = _facing in ["w", "nw", "sw"]
+		# streetfighter: attack2 is 5-dir; flip when playing attack2 + west-facing
+		elif character_class == "streetfighter":
+			var cur_anim = sprite.animation as String
+			if cur_anim.begins_with("attack2_"):
+				sprite.flip_h = _facing in ["w", "nw", "sw"]
+			else:
+				sprite.flip_h = false
 
 	# Reset rotation unless knocked down
 	if state_knockdown <= 0.0:
@@ -1572,7 +1586,7 @@ func _do_attack() -> void:
 		"medic":             _move_lock_timer = 0.0
 
 	var to_target = _current_target.global_position - global_position
-	if character_class in ["melee", "medic", "scrapper", "streetfighter", "ranged"]:
+	if character_class in ["melee", "medic", "scrapper", "streetfighter", "ranged", "smuggler"]:
 		_facing = _facing_8dir(to_target)
 	elif absf(to_target.x) >= absf(to_target.y):
 		_facing = "e" if to_target.x > 0.0 else "w"
@@ -1674,7 +1688,8 @@ func _do_attack() -> void:
 		_ranged_first_attack = false
 		get_tree().create_timer(fire_delay).timeout.connect(func():
 			if not is_instance_valid(cap_target): return
-			var sp = global_position + _facing_to_vec() * 18.0
+			var bx_off = 20.0 if _facing in ["e","ne","se"] else (-20.0 if _facing in ["w","nw","sw"] else 0.0)
+			var sp = global_position + _facing_to_vec() * 18.0 + Vector2(bx_off, -40)
 			if cap_arena and cap_arena.has_method("spawn_bullet"):
 				var bullet = cap_arena.spawn_bullet(sp, cap_target, cap_dmg)
 				if bullet != null and cap_glow.a > 0.0:
@@ -1868,10 +1883,10 @@ const ABILITY_DATA : Dictionary = {
 	"riposte":        {"dmg_mult": 1.3, "action_cost": 35, "state": "", "state_dur": 0.0, "cooldown": 8.0},
 	"blade_flurry":   {"dmg_mult": 0.6, "action_cost": 50, "state": "", "state_dur": 0.0, "cooldown": 10.0, "hits": 3},
 	"power_attack":   {"dmg_mult": 2.0, "action_cost": 70, "state": "", "state_dur": 0.0, "cooldown": 15.0},
-	"cleave":         {"dmg_mult": 1.5, "action_cost": 60, "state": "knockdown", "state_dur": 4.0, "cooldown": 18.0},
-	"leg_sweep":      {"dmg_mult": 0.8, "action_cost": 40, "state": "dizzy", "state_dur": 10.0, "cooldown": 14.0},
+	"cleave":         {"dmg_mult": 1.5, "action_cost": 60, "state": "knockdown", "state_dur": 4.0, "cooldown": 0.0},
+	"leg_sweep":      {"dmg_mult": 0.8, "action_cost": 40, "state": "dizzy", "state_dur": 10.0, "cooldown": 0.0},
 	"impale":         {"dmg_mult": 2.2, "action_cost": 80, "state": "", "state_dur": 0.0, "cooldown": 22.0},
-	"spinning_kick":  {"dmg_mult": 1.4, "action_cost": 45, "state": "dizzy", "state_dur": 6.0, "cooldown": 10.0},
+	"spinning_kick":  {"dmg_mult": 1.4, "action_cost": 45, "state": "dizzy", "state_dur": 6.0, "cooldown": 0.0},
 	"intimidate":     {"dmg_mult": 0.5, "action_cost": 30, "state": "intimidate", "state_dur": 15.0, "cooldown": 25.0},
 	"warcry":         {"dmg_mult": 0.3, "action_cost": 50, "state": "intimidate", "state_dur": 20.0, "cooldown": 30.0},
 	"berserk":        {"dmg_mult": 2.5, "action_cost": 100, "state": "", "state_dur": 0.0, "cooldown": 30.0},
@@ -1879,9 +1894,9 @@ const ABILITY_DATA : Dictionary = {
 	"fan_shot":       {"dmg_mult": 0.7, "action_cost": 50, "state": "", "state_dur": 0.0, "cooldown": 12.0, "hits": 3},
 	"aimed_shot":     {"dmg_mult": 1.8, "action_cost": 60, "state": "", "state_dur": 0.0, "cooldown": 15.0},
 	"headshot":       {"dmg_mult": 2.5, "action_cost": 90, "state": "stun", "state_dur": 4.0, "cooldown": 25.0},
-	"scatter_shot":   {"dmg_mult": 1.0, "action_cost": 40, "state": "dizzy", "state_dur": 6.0, "cooldown": 10.0},
+	"scatter_shot":   {"dmg_mult": 1.0, "action_cost": 40, "state": "dizzy", "state_dur": 6.0, "cooldown": 0.0},
 	"rapid_fire":     {"dmg_mult": 0.5, "action_cost": 55, "state": "", "state_dur": 0.0, "cooldown": 10.0, "hits": 4},
-	"leg_shot":       {"dmg_mult": 0.9, "action_cost": 35, "state": "dizzy", "state_dur": 8.0, "cooldown": 12.0},
+	"leg_shot":       {"dmg_mult": 0.9, "action_cost": 35, "state": "dizzy", "state_dur": 8.0, "cooldown": 0.0},
 	"flash_grenade":  {"dmg_mult": 0.3, "action_cost": 60, "state": "blind", "state_dur": 10.0, "cooldown": 30.0},
 	"called_shot":    {"dmg_mult": 2.0, "action_cost": 80, "state": "stun", "state_dur": 5.0, "cooldown": 20.0},
 	"stim_health":    {"dmg_mult": 0.0, "action_cost": 30, "state": "", "state_dur": 0.0, "cooldown": 8.0, "heal": "health", "heal_amt": 100},
@@ -2059,7 +2074,8 @@ func _fire_triple_strike() -> void:
 		if arena and arena.has_method("spawn_fireball"):
 			arena.spawn_fireball(spawn_pos, _current_target, dmg)
 	elif character_class in ["ranged", "smuggler"]:
-		var spawn_pos = global_position + _facing_to_vec() * 18.0
+		var bx_off2 = 20.0 if _facing in ["e","ne","se"] else (-20.0 if _facing in ["w","nw","sw"] else 0.0)
+		var spawn_pos = global_position + _facing_to_vec() * 18.0 + Vector2(bx_off2, -40)
 		if arena and arena.has_method("spawn_bullet"):
 			var bullet = arena.spawn_bullet(spawn_pos, _current_target, dmg)
 			var rifle_glow_col = Color(0,0,0,0)
