@@ -64,9 +64,13 @@ func _find_anim_player(root : Node) -> AnimationPlayer:
 func _process(delta : float) -> void:
 	if is_dead:
 		return
-	# Tick combat states
-	if state_dizzy > 0.0: state_dizzy -= delta
-	if state_knockdown > 0.0: state_knockdown -= delta
+	# Tick combat states — mobs auto-recover
+	if state_dizzy > 0.0:
+		state_dizzy -= delta
+	if state_knockdown > 0.0:
+		state_knockdown -= delta
+		if state_knockdown <= 0.0:
+			state_knockdown = 0.0  # auto stand up
 	if state_stun > 0.0: state_stun -= delta
 	if state_blind > 0.0: state_blind -= delta
 	if state_intimidate > 0.0: state_intimidate -= delta
@@ -86,6 +90,11 @@ func take_damage(amount : float, pool : String = "health") -> void:
 
 func _die() -> void:
 	is_dead = true
+	# Grant XP to player
+	var parent := get_parent()
+	if parent and parent.has_method("grant_xp"):
+		var xp_amount := 20.0 + level * 10.0
+		parent.grant_xp(xp_amount)
 	# Simple death: shrink and fade (can improve later)
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector3(0.1, 0.1, 0.1), 1.0)
@@ -96,7 +105,8 @@ func apply_combat_state(state_name : String, duration : float) -> void:
 		"dizzy":
 			state_dizzy = maxf(state_dizzy, duration)
 		"knockdown":
-			state_knockdown = maxf(state_knockdown, duration)
+			# Mobs auto-stand — cap KD to 10 seconds
+			state_knockdown = maxf(state_knockdown, minf(duration, 10.0))
 		"stun":
 			state_stun = maxf(state_stun, duration)
 		"blind":

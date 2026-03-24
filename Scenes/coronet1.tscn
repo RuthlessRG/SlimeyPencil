@@ -1,0 +1,178 @@
+[gd_scene format=3 uid="uid://kls2hs7frwvy"]
+
+[ext_resource type="Script" uid="uid://co4vsk03pm7r6" path="res://Scripts/CoronetPlayer.gd" id="1_tpw8t"]
+[ext_resource type="Texture2D" uid="uid://bv2wism04sy0o" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_BaseColor.jpg" id="2_a1ogx"]
+[ext_resource type="Texture2D" uid="uid://bp7p6cp4tyeqv" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_AO.jpg" id="3_xdc0h"]
+[ext_resource type="Texture2D" uid="uid://4g04ipb2tc1d" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_Normal.jpg" id="4_3wbdy"]
+[ext_resource type="Texture2D" uid="uid://d2n4qxi6jeyx4" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_Roughness.jpg" id="5_7esgl"]
+[ext_resource type="PackedScene" uid="uid://dl75e2b7yxg6r" path="res://Coronet/buildings/cnetstarport1.fbx" id="6_g4eft"]
+[ext_resource type="PackedScene" uid="uid://dd0wjxjw4lhip" path="res://Coronet/Terminal/Meshy_AI_Data_Terminal_Module_0323130107_texture.fbx" id="7_pgqyx"]
+[ext_resource type="PackedScene" uid="uid://cx7y2m5yo3tt0" path="res://Coronet/Mounts/landspeeder/Meshy_AI_Nebula_Voyager_0323130742_texture.fbx" id="8_mr04m"]
+[ext_resource type="PackedScene" uid="uid://d2q0jo17xer45" path="res://Coronet/buildings/b7/bluebuilding.fbx" id="9_pvj1c"]
+[ext_resource type="PackedScene" uid="uid://bwcv2et1c1k1k" path="res://Coronet/buildings/building1/Meshy_AI_A_building_with_light_0323141306_texture.fbx" id="10_k6p2y"]
+[ext_resource type="PackedScene" uid="uid://ddl2d4qsn1m2s" path="res://Coronet/buildings/b2/Meshy_AI_building_tower_0323141416_texture.fbx" id="11_vu7v0"]
+[ext_resource type="PackedScene" uid="uid://djfplqxab657n" path="res://Coronet/buildings/b3/Meshy_AI_cyberpunk_city_store__0323141922_texture.fbx" id="12_h4tpl"]
+[ext_resource type="PackedScene" uid="uid://brcxqdfmpolvw" path="res://Coronet/buildings/b4/Meshy_AI_Neon_city_corner_buil_0323141934_texture.fbx" id="13_rpvy7"]
+[ext_resource type="PackedScene" uid="uid://bsrwok0dins6o" path="res://Coronet/buildings/b5/Meshy_AI_office_building_in_Au_0323141339_texture.fbx" id="14_0sl0d"]
+[ext_resource type="PackedScene" uid="uid://c7upqwvofggme" path="res://Coronet/buildings/buildingtest/usethis/трианон.FBX" id="15_orebw"]
+[ext_resource type="ArrayMesh" uid="uid://bxhyfqum4y756" path="res://Coronet/buildings/buildingtest/hospitalusethis/10075_Hospital Building_V1_L3.obj" id="16_7mtlg"]
+[ext_resource type="ArrayMesh" path="res://Coronet/Mounts/testship2/ship04.obj" id="17_kxpte"]
+[ext_resource type="PackedScene" uid="uid://d14lpcicx6hor" path="res://Coronet/NPC/downloaded/redmechguy/Meshy_AI_Crimson_Shadow_Voyage_0320080603_texture.fbx" id="18_bowut"]
+[ext_resource type="PackedScene" uid="uid://d0teoabofrkv3" path="res://Coronet/buildings/b10/source/Sci-fi building 4.fbx" id="19_isrpa"]
+[ext_resource type="PackedScene" uid="uid://demr7y2bllucc" path="res://Coronet/buildings/b14/source/building_01.FBX.fbx" id="20_ha0w4"]
+[ext_resource type="PackedScene" uid="uid://domcuxbs0paro" path="res://Coronet/buildings/b17/source/2 Free Building.fbx" id="21_x1w5k"]
+[ext_resource type="ArrayMesh" path="res://Coronet/Mounts/testship3/spaceship.obj" id="22_qxapl"]
+[ext_resource type="PackedScene" uid="uid://du0rov2hd5jvt" path="res://Coronet/buildings/b8/source/Sci-fi building 7.fbx" id="23_4sb0k"]
+[ext_resource type="PackedScene" uid="uid://cv0ks4imt08oe" path="res://Coronet/buildings/b9/source/Sci-fi building 11.fbx" id="24_lmg1x"]
+[ext_resource type="PackedScene" uid="uid://dtrk8rqfrd650" path="res://Coronet/buildings/b11/source/Sci-fi building.fbx" id="25_k7tej"]
+[ext_resource type="PackedScene" uid="uid://c5fo0opqrbo11" path="res://Coronet/buildings/b12/source/Sci-fi building.fbx" id="26_18jlf"]
+[ext_resource type="PackedScene" uid="uid://dyqouwshodj87" path="res://Coronet/buildings/b15generator/source/Generator_low.fbx" id="27_0m18r"]
+[ext_resource type="PackedScene" uid="uid://bjklf1ck5gg1i" path="res://Coronet/buildings/scifibots/source/Gurdian Outpost Bots.blend" id="28_dolx2"]
+[ext_resource type="PackedScene" uid="uid://d3y0pjwncsreg" path="res://Coronet/buildings/b18warehouse/source/Warehouse.fbx" id="29_8uyf2"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
+sky_top_color = Color(0.29, 0.56, 0.85, 1)
+sky_horizon_color = Color(0.71, 0.83, 0.94, 1)
+ground_bottom_color = Color(0.35, 0.48, 0.29, 1)
+ground_horizon_color = Color(0.78, 0.85, 0.89, 1)
+
+[sub_resource type="Sky" id="Sky_1"]
+sky_material = SubResource("ProceduralSkyMaterial_1")
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 2
+sky = SubResource("Sky_1")
+ambient_light_source = 3
+reflected_light_source = 2
+tonemap_mode = 2
+ssao_enabled = true
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_1"]
+size = Vector2(200, 200)
+subdivide_width = 20
+subdivide_depth = 20
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass"]
+albedo_texture = ExtResource("2_a1ogx")
+roughness_texture = ExtResource("5_7esgl")
+normal_enabled = true
+normal_texture = ExtResource("4_3wbdy")
+ao_enabled = true
+ao_texture = ExtResource("3_xdc0h")
+uv1_scale = Vector3(20, 20, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1"]
+size = Vector3(100, 0.1, 100)
+
+[node name="Coronet" type="Node3D" unique_id=1568042367]
+script = ExtResource("1_tpw8t")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=186570749]
+environment = SubResource("Environment_1")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1184021775]
+transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 10, 0)
+light_energy = 1.2
+shadow_enabled = true
+directional_shadow_max_distance = 80.0
+
+[node name="Ground" type="StaticBody3D" parent="." unique_id=709955233]
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Ground" unique_id=1257531852]
+transform = Transform3D(1.7, 0, 0, 0, 1.7, 0, 0, 0, 1.7, 0, 0, 0)
+mesh = SubResource("PlaneMesh_1")
+surface_material_override/0 = SubResource("StandardMaterial3D_grass")
+
+[node name="GroundCollision" type="CollisionShape3D" parent="Ground" unique_id=22072720]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
+shape = SubResource("BoxShape3D_1")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1106083004]
+transform = Transform3D(1, 0, 0, 0, 0.574, 0.819, 0, -0.819, 0.574, 0, 12, 12)
+fov = 45.0
+
+[node name="cnetstarport1" parent="." unique_id=1957696692 instance=ExtResource("6_g4eft")]
+transform = Transform3D(0.18332322, 0, -2.1672604, 0, 2.175, 0, 2.1672604, 0, 0.18332322, 1.1164494, 6.022482, 93.08818)
+
+[node name="Terminal" parent="." unique_id=1030218533 instance=ExtResource("7_pgqyx")]
+transform = Transform3D(-1.5147022, 0, 0.030035995, 0, 1.5149997, 0, -0.030035995, 0, -1.5147022, -20.427387, 1.5883656, 30.659643)
+
+[node name="landspeeder" parent="." unique_id=1025743947 instance=ExtResource("8_mr04m")]
+transform = Transform3D(-1.28289, 0, -2.8220901, 0, 3.1, 0, 2.8220901, 0, -1.28289, -8.354267, 1.7351999, 10.191694)
+
+[node name="bluebuilding" parent="." unique_id=353157382 instance=ExtResource("9_pvj1c")]
+transform = Transform3D(9.15647, 0, 2.7999382, 0, 9.574998, 0, -2.7999382, 0, 9.15647, -31.705132, -5.087122, -189.27544)
+
+[node name="building1" parent="." unique_id=10888048 instance=ExtResource("10_k6p2y")]
+transform = Transform3D(-0.23163599, 0, -41.73436, 0, 52.634, 0, 41.73436, 0, -0.23163599, 64.41135, 51.701267, 12.892358)
+
+[node name="grey building" parent="." unique_id=160549197 instance=ExtResource("11_vu7v0")]
+transform = Transform3D(0.9162388, 0, -85.915115, 0, 85.92, 0, 85.915115, 0, 0.9162388, 74.100845, 82.837814, -26.162601)
+
+[node name="grey building2" parent="." unique_id=1803778813 instance=ExtResource("11_vu7v0")]
+transform = Transform3D(13.737595, 0, 68.05736, 0, 69.43001, 0, -68.05736, 0, 13.737595, -141.38626, 67.6976, 18.655579)
+
+[node name="minipinkdoor" parent="." unique_id=956078483 instance=ExtResource("12_h4tpl")]
+transform = Transform3D(-16.151285, 0, 5.2073846, 0, 16.97, 0, -5.2073846, 0, -16.151285, 65.146385, 15.6483755, 44.791615)
+
+[node name="pinkblue" parent="." unique_id=605988242 instance=ExtResource("13_rpvy7")]
+transform = Transform3D(49.842125, 0, -1.6673638, 0, 49.87, 0, 1.6673638, 0, 49.842125, -96.43357, 47.315376, 181.08296)
+
+[node name="apt1" parent="." unique_id=1769125136 instance=ExtResource("14_0sl0d")]
+transform = Transform3D(-14.924612, 0, 62.2612, 0, 64.025024, 0, -62.2612, 0, -14.924612, -108.83911, 21.09808, -72.04858)
+
+[node name="трианон" parent="." unique_id=1865062093 instance=ExtResource("15_orebw")]
+transform = Transform3D(1.1963181, 0, -0.14438903, 0, 1.205, 0, 0.14438903, 0, 1.1963181, -125.41522, -5.8786163, -43.27484)
+
+[node name="bighospital" type="MeshInstance3D" parent="." unique_id=649154324]
+transform = Transform3D(-0.00026180135, -0.029997211, -0.00031415708, -4.7438206e-11, -0.00031416904, 0.029998355, -0.029998858, 0.000261787, 2.7416154e-06, -127.413635, -21.143847, 75.018265)
+mesh = ExtResource("16_7mtlg")
+
+[node name="ship2" type="MeshInstance3D" parent="." unique_id=1008777032]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 159.87141, 1.9856148, 117.032616)
+mesh = ExtResource("17_kxpte")
+skeleton = NodePath("../Ground")
+
+[node name="vehiclemount2" parent="." unique_id=2059327579 instance=ExtResource("18_bowut")]
+transform = Transform3D(0.25946915, 0, 8.681123, 0, 8.685, 0, -8.681123, 0, 0.25946915, 137.87132, 4.697813, 103.478836)
+
+[node name="Sci-fi building 4" parent="." unique_id=48706583 instance=ExtResource("19_isrpa")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -251.95483, 18.567295, 15.218369)
+
+[node name="building_01_FBX" parent="." unique_id=251274908 instance=ExtResource("20_ha0w4")]
+transform = Transform3D(-53.60249, 0, -189.92062, 0, 197.34, 0, 189.92062, 0, -53.60249, 83.11182, 21.248049, 39.780796)
+
+[node name="Meshy_AI_A_building_with_light_0323141306_texture" parent="." unique_id=1569246641 instance=ExtResource("10_k6p2y")]
+transform = Transform3D(-62.985855, 0, -2.7301922, 0, 85.3069, 0, 2.7301922, 0, -62.985855, -151.74907, 51.20897, 106.81683)
+
+[node name="2 Free Building" parent="." unique_id=1404407194 instance=ExtResource("21_x1w5k")]
+transform = Transform3D(100.24956, 0, 0.29744828, 0, 100.25, 0, -0.29744828, 0, 100.24956, 8.335678, -3.0281162, -65.20921)
+
+[node name="vehiclemount" parent="." unique_id=1651523641 instance=ExtResource("18_bowut")]
+transform = Transform3D(8.675755, 0, -0.4006402, 0, 8.685, 0, 0.4006402, 0, 8.675755, -3.7490625, 4.697813, 102.503204)
+
+[node name="Spaceship" type="MeshInstance3D" parent="." unique_id=1250396257]
+transform = Transform3D(0.255, 0, 0, 0, 0.255, 0, 0, 0, 0.255, 162.31317, 1361.7898, 1845.657)
+mesh = ExtResource("22_qxapl")
+skeleton = NodePath("../Ground")
+
+[node name="Sci-fi building 7" parent="." unique_id=1149085440 instance=ExtResource("23_4sb0k")]
+transform = Transform3D(1.245, 0, 0, 0, 1.245, 0, 0, 0, 1.245, -185.59612, 6.4189243, -125.12174)
+
+[node name="Sci-fi building 11" parent="." unique_id=1333944864 instance=ExtResource("24_lmg1x")]
+transform = Transform3D(0.25211635, 0, 0.7855332, 0, 0.825, 0, -0.7855332, 0, 0.25211635, 33.183083, 4.598778, -142.86972)
+
+[node name="Sci-fi building" parent="." unique_id=1120936341 instance=ExtResource("25_k7tej")]
+transform = Transform3D(0.7184541, 0, -0.69557434, 0, 1, 0, 0.69557434, 0, 0.7184541, 60.604813, -5.2312775, 105.50963)
+
+[node name="Sci-fi building2" parent="." unique_id=2053271870 instance=ExtResource("26_18jlf")]
+transform = Transform3D(-1.3922043, 0, 0.08827323, 0, 1.3949999, 0, -0.08827323, 0, -1.3922043, 141.80052, -15.83757, 48.61949)
+
+[node name="Generator_low" parent="." unique_id=1626329665 instance=ExtResource("27_0m18r")]
+transform = Transform3D(2.92, 0, 0, 0, 2.92, 0, 0, 0, 2.92, -23.34126, 0.98218673, 30.5456)
+
+[node name="Gurdian Outpost Bots" parent="." unique_id=1705848911 instance=ExtResource("28_dolx2")]
+transform = Transform3D(0.40746996, 0, -0.9132186, 0, 1, 0, 0.9132186, 0, 0.40746996, -128.03276, 56.329044, -47.14461)
+
+[node name="Warehouse" parent="." unique_id=1134389105 instance=ExtResource("29_8uyf2")]
+transform = Transform3D(4.621139, 0, -0.4702134, 0, 4.6450005, 0, 0.4702134, 0, 4.621139, 278.61374, 6.6047745, -65.70745)

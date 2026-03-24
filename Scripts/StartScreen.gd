@@ -278,4 +278,4 @@ func _on_play() -> void:
 		tween.tween_property(_music, "volume_db", -80.0, 0.8)
 		await tween.finished
 		_music.stop()
-	get_tree().change_scene_to_file("res://theed.tscn")
+	get_tree().change_scene_to_file("res://Scenes/character_select.tscn")
