@@ -7,7 +7,7 @@ extends Node2D
 #
 #  Usage (from any boss script):
 #    var crumble = Node2D.new()
-#    crumble.set_script(load("res://Scripts/BossCrumble.gd"))
+#    crumble.set_script(load("res://Scripts/Client/VFX/BossCrumble.gd"))
 #    crumble.global_position = global_position
 #    get_parent().add_child(crumble)
 #    crumble.call("init", sprite_scale, boss_color)

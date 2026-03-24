@@ -288,13 +288,13 @@ func _award_kill_reward() -> void:
 	if killer != null and killer.has_method("add_exp"):
 		killer.call("add_exp", 35.0)
 	var cred = randi_range(16, 35)
-	var loot_script = load("res://Scripts/GroundLoot.gd")
+	var loot_script = load("res://Scripts/Gameplay/Items/GroundLoot.gd")
 	if loot_script:
 		var loot = Node2D.new(); loot.set_script(loot_script)
 		get_tree().current_scene.add_child(loot)
 		loot.global_position = global_position
 		loot.call("init", cred, 0.0)
-	var item_script = load("res://Scripts/LootTable.gd")
+	var item_script = load("res://Scripts/Shared/Data/LootTable.gd")
 	if item_script and killer != null and killer.has_method("add_item_to_inventory"):
 		var item = item_script.roll_drop("mob")
 		if not item.is_empty():

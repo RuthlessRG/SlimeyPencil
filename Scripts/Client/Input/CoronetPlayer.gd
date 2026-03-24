@@ -204,6 +204,11 @@ var _sprint_active := false
 var _sprint_timer := 0.0
 var _sprint_cooldown_timer := 0.0
 
+# ── AMBIENT MUSIC + FOOTSTEPS ─────────────────────────────
+var _music_player : AudioStreamPlayer = null
+var _footstep_player : AudioStreamPlayer3D = null
+var _footstep_playing := false
+
 # ── RAIN ───────────────────────────────────────────────────
 var _rain_particles : GPUParticles3D = null
 var _rain_audio : AudioStreamPlayer = null
@@ -481,6 +486,8 @@ func _ready() -> void:
 	_paint_starport()  # Only paint the starport grey
 	_setup_rain()
 	_setup_ambient_traffic()
+	_setup_ambient_music()
+	_setup_footsteps()
 	_setup_anim_blender()
 
 func _setup_anim_blender() -> void:
@@ -492,7 +499,7 @@ func _setup_anim_blender() -> void:
 		print("ANIM_BLEND: Cannot setup — missing AnimationPlayer or Skeleton")
 		return
 	var skel_path := _get_skel_path(ap, skel)
-	var blender_script = load("res://Scripts/Coronet/AnimBlender.gd")
+	var blender_script = load("res://Scripts/Client/Animation/AnimBlender.gd")
 	if blender_script == null:
 		print("ANIM_BLEND: Script not found")
 		return
@@ -779,9 +786,33 @@ func _apply_mat_recursive(node : Node, mat : StandardMaterial3D) -> void:
 # ════════════════════════════════════════════════════════════
 func _setup_ambient_traffic() -> void:
 	var traffic := Node3D.new()
-	traffic.set_script(load("res://Scripts/Coronet/AmbientTraffic.gd"))
+	traffic.set_script(load("res://Scripts/Client/VFX/AmbientTraffic.gd"))
 	traffic.name = "AmbientTraffic"
 	add_child(traffic)
+
+func _setup_ambient_music() -> void:
+	_music_player = AudioStreamPlayer.new()
+	var music := load("res://Sounds/spaceportambience.mp3")
+	if music:
+		_music_player.stream = music
+		_music_player.volume_db = -15.0
+		_music_player.autoplay = true
+		_music_player.bus = "Master"
+		add_child(_music_player)
+		_music_player.play()
+
+func _setup_footsteps() -> void:
+	_footstep_player = AudioStreamPlayer3D.new()
+	var footsteps := load("res://Sounds/footstepslong.mp3")
+	if footsteps:
+		_footstep_player.stream = footsteps
+		_footstep_player.volume_db = -8.0
+		_footstep_player.max_distance = 20.0
+		_footstep_player.bus = "Master"
+		if _active:
+			_active.add_child(_footstep_player)
+		else:
+			add_child(_footstep_player)
 
 func _setup_rain() -> void:
 	_rain_particles = GPUParticles3D.new()
@@ -1257,7 +1288,7 @@ func _trigger_lightning() -> void:
 # ════════════════════════════════════════════════════════════
 func _spawn_machine_walker() -> void:
 	var mw := Node3D.new()
-	mw.set_script(load("res://Scripts/MachineWalker.gd"))
+	mw.set_script(load("res://Scripts/Gameplay/Mobs/MachineWalker.gd"))
 	mw.name = "MachineWalker_" + str(randi() % 9999)
 	add_child(mw)
 	# Spawn 8 units in front of player (based on camera facing direction)
@@ -1281,7 +1312,7 @@ func _spawn_test_dummy() -> void:
 			return
 	# Spawn new
 	var td := Node3D.new()
-	td.set_script(load("res://Scripts/TestDummy.gd"))
+	td.set_script(load("res://Scripts/Gameplay/Mobs/TestDummy.gd"))
 	td.name = "TestDummy_" + str(randi() % 9999)
 	add_child(td)
 	var cam_forward := -_camera.global_transform.basis.z.normalized()
@@ -1374,7 +1405,7 @@ func _spawn_test_mobs() -> void:
 	var mob_names := ["Rogue Sentry", "Patrol Droid", "Outlaw Scout"]
 	for i in range(mob_positions.size()):
 		var mob := Node3D.new()
-		mob.set_script(load("res://Scripts/CoronetMob.gd"))
+		mob.set_script(load("res://Scripts/Gameplay/Mobs/CoronetMob.gd"))
 		mob.name = mob_names[i]
 		mob.set("mob_name", mob_names[i])
 		mob.set("max_hp", 300.0 + i * 100.0)
@@ -2576,7 +2607,7 @@ func _build_minimap() -> void:
 	_minimap_panel.add_child(loc_lbl)
 
 	# Draw area — create with script pre-loaded
-	var mm_script = load("res://Scripts/CoronetMinimap.gd") if ResourceLoader.exists("res://Scripts/CoronetMinimap.gd") else null
+	var mm_script = load("res://Scripts/Client/UI/CoronetMinimap.gd") if ResourceLoader.exists("res://Scripts/Client/UI/CoronetMinimap.gd") else null
 	_minimap_draw = Control.new()
 	if mm_script:
 		_minimap_draw.set_script(mm_script)
@@ -3680,6 +3711,13 @@ func _process(delta : float) -> void:
 	var base_speed := WALK_SPEED if _uses_walk else MOVE_SPEED
 	var speed := SPRINT_SPEED if _sprint_active else base_speed
 	var moving := input.length_squared() > 0.01
+	# Footstep audio
+	if moving and not _footstep_playing and _footstep_player and is_instance_valid(_footstep_player):
+		_footstep_player.play()
+		_footstep_playing = true
+	elif not moving and _footstep_playing and _footstep_player and is_instance_valid(_footstep_player):
+		_footstep_player.stop()
+		_footstep_playing = false
 	if moving:
 		input = input.normalized()
 		var rotated := input.rotated(Vector3.UP, _cam_yaw)

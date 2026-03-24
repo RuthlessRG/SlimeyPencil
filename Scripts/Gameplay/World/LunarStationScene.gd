@@ -550,7 +550,7 @@ const SHEET_COLS : int = 6
 const SHEET_ROWS : int = 10
 
 func _spawn_buildings() -> void:
-	var bscript = load("res://Scripts/LunarBuilding.gd")
+	var bscript = load("res://Scripts/Client/Rendering/LunarBuilding.gd")
 	var s3 = load("res://Assets/Tilesets/moonshyt3_alpha.png") as Texture2D
 	var s2 = load("res://Assets/Tilesets/moonshyt2_alpha.png") as Texture2D
 
@@ -1036,7 +1036,7 @@ func _setup_hud(_cls: String) -> void:
 	var btn_y    : float = 28 + MMAP_H + 22
 	var btn_half : float = (MMAP_W - 4) * 0.5
 
-	var help_script = load("res://Scripts/HelpWindow.gd")
+	var help_script = load("res://Scripts/Client/UI/HelpWindow.gd")
 	if help_script:
 		var help_win    = CanvasLayer.new()
 		help_win.set_script(help_script)
@@ -1045,7 +1045,7 @@ func _setup_hud(_cls: String) -> void:
 		help_win.call("set_btn_pos", Vector2(vp.x + MMAP_X + btn_half + 4, btn_y))
 		help_win.get("_btn").size = Vector2(btn_half, 24)
 
-	var settings_script = load("res://Scripts/SettingsWindow.gd")
+	var settings_script = load("res://Scripts/Client/UI/SettingsWindow.gd")
 	if settings_script:
 		var settings_win    = CanvasLayer.new()
 		settings_win.set_script(settings_script)
@@ -1254,7 +1254,7 @@ func _on_relay_data(from_peer: int, data: Dictionary) -> void:
 		"swing":
 			var rp2 = _remote_players.get(from_peer)
 			if not is_instance_valid(rp2): return
-			var sw_script = load("res://Scripts/BossWeaponSwing.gd")
+			var sw_script = load("res://Scripts/Client/Animation/BossWeaponSwing.gd")
 			if sw_script:
 				var sw = Node2D.new(); sw.set_script(sw_script)
 				sw.position = Vector2(0, -15)
@@ -1413,7 +1413,7 @@ func _angle_to_dir(angle: float, cls: String) -> String:
 
 func _add_remote_player(peer_id: int, cls: String, nick: String, pos: Vector2) -> void:
 	var rp = Node2D.new()
-	rp.set_script(load("res://Scripts/RemotePlayerProxy.gd"))
+	rp.set_script(load("res://Scripts/Shared/Network/RemotePlayerProxy.gd"))
 	rp.name = "Remote_%d" % peer_id
 	rp.position = pos
 	rp.set_meta("target_pos", pos)
@@ -1472,7 +1472,7 @@ func _on_targetable_removed(mob: Node) -> void:
 # ── DAMAGE NUMBERS ───────────────────────────────────────────
 func spawn_damage_number(world_pos: Vector2, amount: float, col: Color) -> void:
 	var dn = Node2D.new()
-	dn.set_script(load("res://Scripts/DamageNumber.gd"))
+	dn.set_script(load("res://Scripts/Gameplay/Combat/DamageNumber.gd"))
 	dn.position = world_pos
 	dn.set("damage_amount", amount)
 	dn.set("color", col)
@@ -1501,7 +1501,7 @@ func _ellipse(center: Vector2, rx: float, ry: float, rot: float, n: int) -> Pack
 #  SOCIAL SYSTEMS
 # ============================================================
 func _init_social_systems() -> void:
-	var op_script = load("res://Scripts/PlayerOptionsPanel.gd")
+	var op_script = load("res://Scripts/Client/UI/PlayerOptionsPanel.gd")
 	if op_script:
 		_options_panel = CanvasLayer.new()
 		_options_panel.set_script(op_script)
@@ -1513,19 +1513,19 @@ func _init_social_systems() -> void:
 			if is_instance_valid(_party_system): _party_system.call("send_invite", pid, nick))
 		_options_panel.connect("trade_requested", func(pid, _nick2):
 			Relay.send_game_data({"cmd": "trade_request", "nick": PlayerData.nickname}, pid))
-	var ds_script = load("res://Scripts/DuelSystem.gd")
+	var ds_script = load("res://Scripts/Gameplay/Combat/DuelSystem.gd")
 	if ds_script:
 		_duel_system = Node.new()
 		_duel_system.set_script(ds_script)
 		add_child(_duel_system)
 		_duel_system.call("init", self)
-	var ps_script = load("res://Scripts/PartySystem.gd")
+	var ps_script = load("res://Scripts/Multiplayer/PartySystem.gd")
 	if ps_script:
 		_party_system = Node.new()
 		_party_system.set_script(ps_script)
 		add_child(_party_system)
 		_party_system.call("init", self, _hud, 110.0)
-	var tw_script = load("res://Scripts/TradeWindow.gd")
+	var tw_script = load("res://Scripts/Multiplayer/TradeWindow.gd")
 	if tw_script:
 		_trade_system = CanvasLayer.new()
 		_trade_system.set_script(tw_script)
@@ -1689,7 +1689,7 @@ func _spawn_aadu_herd(center: Vector2, count: int, wander_r: float, baby_chance_
 		_spawn_single_aadu(pos, center, wander_r, baby, frames)
 
 func _spawn_single_aadu(pos: Vector2, herd_center: Vector2, wander_r: float, is_baby: bool, frames: SpriteFrames, mission_mob: bool = false) -> void:
-	var script = load("res://Scripts/Aadu.gd")
+	var script = load("res://Scripts/Gameplay/Mobs/Aadu.gd")
 	if script == null: return
 	var mob = CharacterBody2D.new()
 	mob.set_script(script)
@@ -1735,7 +1735,7 @@ func is_targeted(node: Node) -> bool:
 	return is_instance_valid(tgt) and tgt == node
 
 func spawn_fireball(spawn_pos: Vector2, target: Node, dmg: float, _broadcast: bool = true) -> void:
-	var script = load("res://Scripts/Fireball.gd")
+	var script = load("res://Scripts/Gameplay/Combat/Fireball.gd")
 	if script == null: return
 	var fb = Node2D.new(); fb.set_script(script); fb.position = spawn_pos
 	add_child(fb); fb.call("init", target, dmg)
@@ -1743,7 +1743,7 @@ func spawn_fireball(spawn_pos: Vector2, target: Node, dmg: float, _broadcast: bo
 		Relay.send_game_data({"cmd": "fireball", "sx": spawn_pos.x, "sy": spawn_pos.y, "tx": target.global_position.x, "ty": target.global_position.y})
 
 func spawn_bullet(spawn_pos: Vector2, target: Node, dmg: float, _broadcast: bool = true) -> Node:
-	var script = load("res://Scripts/Bullet.gd")
+	var script = load("res://Scripts/Gameplay/Combat/Bullet.gd")
 	if script == null: return null
 	var b = Node2D.new(); b.set_script(script); b.position = spawn_pos
 	add_child(b); b.call("init", target, dmg)
@@ -1752,7 +1752,7 @@ func spawn_bullet(spawn_pos: Vector2, target: Node, dmg: float, _broadcast: bool
 	return b
 
 func spawn_canister(spawn_pos: Vector2, target: Node, dmg: float, is_heal: bool, _broadcast: bool = true) -> void:
-	var script = load("res://Scripts/MedicCanister.gd")
+	var script = load("res://Scripts/Gameplay/Combat/MedicCanister.gd")
 	if script == null: return
 	var c = Node2D.new(); c.set_script(script); c.position = spawn_pos
 	add_child(c); c.call("init", target, dmg, is_heal)
@@ -1760,7 +1760,7 @@ func spawn_canister(spawn_pos: Vector2, target: Node, dmg: float, is_heal: bool,
 		Relay.send_game_data({"cmd": "canister", "sx": spawn_pos.x, "sy": spawn_pos.y, "tx": target.global_position.x, "ty": target.global_position.y, "heal": is_heal})
 
 func spawn_melee_hit(world_pos: Vector2, col: Color, _broadcast: bool = true) -> void:
-	var script = load("res://Scripts/MeleeHit.gd")
+	var script = load("res://Scripts/Client/VFX/MeleeHit.gd")
 	if script == null: return
 	var hit = Node2D.new(); hit.set_script(script); hit.position = world_pos
 	add_child(hit); hit.call("init", col)
@@ -1802,7 +1802,7 @@ func on_mob_died(world_pos: Vector2) -> void:
 	_check_mission_complete()
 
 func on_mob_dropped_loot(world_pos: Vector2) -> void:
-	var script = load("res://Scripts/LootBag.gd")
+	var script = load("res://Scripts/Gameplay/Items/LootBag.gd")
 	if script == null: return
 	var bag = Node2D.new(); bag.set_script(script); bag.position = world_pos
 	add_child(bag)
