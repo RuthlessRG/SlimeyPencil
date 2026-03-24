@@ -1,6 +1,5 @@
 [gd_scene format=3 uid="uid://bya4jmogyh1m"]
 
-[ext_resource type="AudioStream" path="res://Sounds/music_hub2.mp3" id="hub_music_1"]
 [ext_resource type="Script" uid="uid://co4vsk03pm7r6" path="res://Scripts/Client/Input/CoronetPlayer.gd" id="2_8dtm1"]
 [ext_resource type="PackedScene" uid="uid://d14lpcicx6hor" path="res://Coronet/NPC/downloaded/redmechguy/Meshy_AI_Crimson_Shadow_Voyage_0320080603_texture.fbx" id="2_dkyxw"]
 [ext_resource type="PackedScene" uid="uid://bw38etr4y16os" path="res://Coronet/buildings/b19houses/source/Low-poly House.fbx" id="6_t47dy"]
@@ -43,6 +42,7 @@
 [ext_resource type="PackedScene" uid="uid://skkad3y0thjh" path="res://Coronet/Mounts/spidershipgood/animated-sci_fi_ship.glb" id="41_fu6q7"]
 [ext_resource type="PackedScene" uid="uid://6tqichjwlhht" path="res://Coronet/Mounts/newshipstry/Meshy_AI_a_spaceship_0324032111_texture_fbx/Meshy_AI_a_spaceship_0324032111_texture.fbx" id="42_aesud"]
 [ext_resource type="PackedScene" uid="uid://cnrqxui7akncj" path="res://Coronet/Mounts/transport/Transport Shuttle_Blender Game Engine_blend.blend" id="42_bavek"]
+[ext_resource type="AudioStream" uid="uid://credkv0ctkll3" path="res://Sounds/music_hub2.mp3" id="hub_music_1"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.29, 0.56, 0.85, 1)
@@ -236,7 +236,7 @@ mesh = ExtResource("37_jhfpr")
 [node name="Meshy_AI_a_spaceship_0324032111_texture" parent="." unique_id=1264464368 instance=ExtResource("42_aesud")]
 transform = Transform3D(15.86, 0, 0, 0, 15.86, 0, 0, 0, 15.86, 0, 11.537748, 0)
 
-[node name="HubAmbience" type="AudioStreamPlayer" parent="."]
+[node name="HubAmbience" type="AudioStreamPlayer" parent="." unique_id=845088360]
 stream = ExtResource("hub_music_1")
 volume_db = -10.0
 autoplay = true
