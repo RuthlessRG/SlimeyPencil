@@ -1,0 +1,317 @@
+For your stack, the cleanest approach is to make the server authoritative for anything that affects fairness, persistence, or security, and keep the client focused on input, presentation, prediction, and UI. Godot’s docs explicitly separate networking concerns and note that networked games should distinguish player-local controller logic from shared world logic, while Nakama’s architecture centers authentication, session state, and authorization on the server.
+
+A strong rule of thumb is:
+
+Client owns: input collection, camera, UI/HUD, animation state selection, VFX/SFX, local interpolation/prediction, menus, inventory presentation, and sending player intents.
+Server owns: authentication, session validation, matchmaking, party/guild/social state, persistent inventories/currency, combat resolution, loot rolls, cooldown truth, movement validation, anti-cheat checks, authoritative spawn/despawn, and all database writes. Nakama’s docs describe auth and signed session handling on the server side, which fits this pattern well.
+Best-practice split for an MMO-style game
+
+For a smooth and secure MMO, do not send “the result” from the client. Send only intent.
+
+Good:
+
+“I pressed move toward vector X”
+“I used ability 14 on target 882”
+“I requested to buy item 27”
+
+Bad:
+
+“My position is now (120, 88)”
+“I dealt 450 damage”
+“Add sword to my inventory”
+
+That one design decision prevents a huge amount of cheating because the client never gets to declare truth.
+
+Recommended architecture for Godot + Nakama
+
+Use Godot client as the presentation/input layer and Nakama as the game backend and authority layer. For most games on this stack, that means:
+
+Godot client
+Connects/authenticates with Nakama
+Sends player commands/intents
+Renders world state
+Runs client-side prediction and interpolation for responsiveness
+Never stores secrets beyond short-lived session data
+Nakama
+Handles auth, sessions, matchmaking, parties, chat, presence, storage, leaderboards, social systems
+Hosts authoritative match logic or coordinates realtime authoritative state
+Validates all important game actions
+Persists trusted state to storage/database
+Database / persistence
+Only the server writes trusted player progress, inventory, currency, unlocks, account links
+Use append/log style audit entries for economy-sensitive actions
+
+This layout keeps your Godot project smaller and cleaner, and it prevents your client from becoming a second unofficial server.
+
+Security best practices
+1. Treat the client as hostile
+
+Assume every packet can be forged, replayed, delayed, or spammed. Never trust:
+
+damage
+cooldown completion
+hit confirmation
+item ownership
+currency totals
+quest completion
+character stats
+claimed movement position
+
+Instead, the server should recompute or validate them.
+
+2. Make the server authoritative for movement and combat
+
+For a fast MMO feel, the client can predict movement immediately, but the server should still validate:
+
+speed caps
+acceleration limits
+teleport distance
+collision boundaries
+skill range
+line-of-sight where relevant
+cast timing / cooldowns
+resource costs
+
+Then the server sends corrections only when needed. This gives smooth play without giving away trust.
+
+3. Validate every request against server-owned state
+
+Before accepting an action, verify:
+
+session is valid
+player is in correct world/zone/match
+actor owns the character/entity
+target exists and is in range
+ability is unlocked
+cooldown/resource costs are satisfied
+action order is legal
+inventory/currency mutation balances correctly
+4. Use TLS and secure sessions
+
+Godot’s HTTP client supports TLS and certificate verification, and Nakama’s auth model uses signed tokens/JWT-based sessions. Use HTTPS/WSS in production so credentials and session traffic are encrypted in transit.
+
+5. Keep secrets off the client
+
+Do not embed:
+
+admin keys
+database credentials
+privileged API tokens
+signing secrets
+internal service URLs you do not want exposed
+
+Anything in the client binary should be assumed recoverable.
+
+6. Rate-limit and budget expensive actions
+
+Protect your server from abuse by limiting:
+
+login attempts
+reconnect storms
+chat spam
+trade requests
+inventory operations
+pathing requests
+skill activation spam
+expensive search/list queries
+
+Also cap packet frequency per player for movement/input updates.
+
+7. Make economy operations idempotent and auditable
+
+For purchases, trades, loot claims, quest turn-ins:
+
+use transaction-style server logic
+include request IDs to prevent duplicate processing
+write audit logs for item/currency changes
+reconcile balances periodically
+
+This is a major MMO best practice because dupes often come from race conditions and retry handling.
+
+8. Separate public and private services on the VPS
+
+DigitalOcean recommends VPC/network isolation as part of secure infrastructure practice. Keep public-facing endpoints exposed only where needed, and keep internal services private whenever possible.
+
+9. Harden the VPS
+
+For your DigitalOcean droplet:
+
+patch the OS regularly
+enable automatic security updates where appropriate
+use a firewall/UFW
+expose only the ports you actually need
+protect SSH carefully before enabling the firewall
+monitor open listening ports and logs
+DigitalOcean’s security guidance specifically emphasizes updates, firewalling, and validating your exposed services.
+10. Log suspicious behavior server-side
+
+Track:
+
+impossible movement
+excessive failed actions
+abnormal economy events
+repeated auth failures
+packet floods
+desync frequency by player
+repeated target/range violations
+
+You need logs not only for banning, but for tuning your validation thresholds.
+
+Performance and smoothness best practices
+1. Send intents, not full state blobs
+
+Do not flood the wire with giant snapshots if only a few values changed. Send:
+
+compact input commands from client
+delta/state updates from server
+low-frequency reliable events for important actions
+high-frequency lightweight updates for moment-to-moment motion
+2. Use interpolation and client prediction
+
+For responsive gameplay:
+
+client predicts its own movement immediately
+remote players are interpolated
+server sends authoritative state corrections
+corrections should be small and smoothed where possible
+
+This is usually the best balance between feel and fairness.
+
+3. Interest management
+
+An MMO should not send every entity to every player. Partition by:
+
+zone
+map shard
+chunk/grid
+area-of-interest radius
+party/raid relevance
+
+Only send nearby or relevant entities. This is one of the biggest performance wins you can get.
+
+4. Fixed tick for gameplay, separate render/update concerns
+
+Keep authoritative gameplay on a clear server tick. Avoid mixing simulation timing with render framerate. On the client:
+
+render can run freely
+network receive is buffered
+simulation is reconciled cleanly
+5. Keep messages compact
+
+Prefer:
+
+IDs instead of long strings
+enums instead of descriptive text
+compressed snapshots where needed
+batching small updates
+6. Avoid over-synchronizing visuals
+
+Do not network:
+
+particles
+footstep timing
+decorative animation details
+non-gameplay-only visual effects
+
+Replicate the event trigger, then let each client render locally.
+
+7. Be careful with Godot scene/node overhead in hot paths
+
+Godot’s performance docs note that higher-level scene constructs are convenient but can carry overhead, and lower-level server APIs can be more efficient in performance-sensitive cases. Use normal nodes/scenes for clarity, but for the hottest systems avoid overly deep or noisy scene structures.
+
+8. Reuse network clients/connections where appropriate
+
+Godot’s HTTPClient docs note that the client should be reused across requests rather than recreated repeatedly. That matters for launcher/login/service-style traffic.
+
+A practical code-ownership model
+
+A very workable split is:
+
+Client modules
+
+InputController
+CameraController
+UI / Menus / HUD
+AnimationPresenter
+Audio / VFX
+LocalPrediction
+EntityInterpolation
+NetworkAdapterClient
+StateCacheReadOnly
+
+Server modules
+
+AuthService
+SessionService
+Match/ZoneService
+MovementValidator
+CombatResolver
+AbilitySystem
+InventoryService
+EconomyService
+QuestService
+PersistenceRepository
+Audit/Telemetry
+AntiAbuse / RateLimiter
+
+That structure keeps gameplay truth centralized on the server and keeps the client from becoming tangled with persistence and security rules.
+
+What should never live only on the client
+
+Do not make these client-only:
+
+final character position
+damage results
+hit detection truth in PvP
+item generation
+currency updates
+cooldown completion
+quest completion
+stat allocation
+loot rewards
+trade completion
+
+The client can display these, but the server should decide them.
+
+What can safely stay mostly client-side
+
+These are usually fine on the client:
+
+menu navigation
+cosmetic animation selection
+local camera shake
+non-authoritative particles
+UI sorting/filtering
+tooltip generation from server-provided data
+cosmetic-only emote playback triggers after server approval if needed
+Best deployment shape on a DigitalOcean VPS
+
+For a single-VPS start, a good practical baseline is:
+
+one droplet
+Nakama service
+database service
+reverse proxy/TLS termination if needed
+backups/snapshots
+firewall with minimum exposed ports
+internal-only DB binding if possible
+monitoring/logging
+
+As you grow, split out database and game services before you scale the client-facing edge.
+
+Most important principle
+
+For MMO security and smoothness at the same time:
+
+Client = fast and pretty.
+Server = true and trusted.
+
+That mindset usually leads to the right design decisions.
+
+A simple decision test you can use for every feature:
+
+Does it affect fairness, persistence, progression, or other players? Put it on the server.
+Does it affect only responsiveness, visuals, or local UX? Keep it on the client.
+Does it need both? Let the client predict and the server confirm.
+
+I can turn this into a concrete Godot + Nakama folder architecture next, with examples of which scripts belong in client vs server.

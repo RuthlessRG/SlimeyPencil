@@ -25,7 +25,7 @@ var _roboto : Font = load("res://Assets/Fonts/Roboto/static/Roboto-Regular.ttf")
 @export var burst_size     : int   = 3
 @export var active         : bool  = true
 @export var spawn_radius   : float = 28.0
-@export var zergling_script : Script = null   # set to res://Scripts/Zergling.gd
+@export var zergling_script : Script = null   # set to res://Scripts/Gameplay/Mobs/Zergling.gd
 
 # Visual
 var _pulse              : float = 0.0
@@ -91,7 +91,7 @@ func _spawn_one() -> void:
 	var script = zergling_script
 	if script == null:
 		# Try loading by path if not assigned
-		script = load("res://Scripts/Zergling.gd")
+		script = load("res://Scripts/Gameplay/Mobs/Zergling.gd")
 	if script == null:
 		push_warning("ZerglingSpawner: couldn't find Zergling.gd — set zergling_script export")
 		return

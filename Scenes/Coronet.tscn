@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bya4jmogyh1m"]
 
-[ext_resource type="Script" uid="uid://co4vsk03pm7r6" path="res://Scripts/CoronetPlayer.gd" id="2_8dtm1"]
+[ext_resource type="Script" uid="uid://co4vsk03pm7r6" path="res://Scripts/Client/Input/CoronetPlayer.gd" id="2_8dtm1"]
 [ext_resource type="PackedScene" uid="uid://d14lpcicx6hor" path="res://Coronet/NPC/downloaded/redmechguy/Meshy_AI_Crimson_Shadow_Voyage_0320080603_texture.fbx" id="2_dkyxw"]
 [ext_resource type="PackedScene" uid="uid://bw38etr4y16os" path="res://Coronet/buildings/b19houses/source/Low-poly House.fbx" id="6_t47dy"]
 [ext_resource type="PackedScene" uid="uid://dl75e2b7yxg6r" path="res://Coronet/buildings/cnetstarport1.fbx" id="7_g7818"]

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://kls2hs7frwvy"]
 
-[ext_resource type="Script" uid="uid://co4vsk03pm7r6" path="res://Scripts/CoronetPlayer.gd" id="1_tpw8t"]
+[ext_resource type="Script" uid="uid://co4vsk03pm7r6" path="res://Scripts/Client/Input/CoronetPlayer.gd" id="1_tpw8t"]
 [ext_resource type="Texture2D" uid="uid://bv2wism04sy0o" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_BaseColor.jpg" id="2_a1ogx"]
 [ext_resource type="Texture2D" uid="uid://bp7p6cp4tyeqv" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_AO.jpg" id="3_xdc0h"]
 [ext_resource type="Texture2D" uid="uid://4g04ipb2tc1d" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_Normal.jpg" id="4_3wbdy"]
