@@ -15,24 +15,27 @@ var _status_lbl   : Label            = null
 var _play_btn     : Button           = null
 var _spinner_lbl  : Label            = null
 var _logged_in    : bool             = false
+var _auto_play    : bool             = false
 var _busy         : bool             = false
 var _spin_tick    : float            = 0.0
 const _SPIN_FRAMES = ["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"]
 var _spin_idx     : int              = 0
+const _SAVE_PATH  = "user://login.cfg"
 
 func _ready() -> void:
 	_start_music()
 	_build_ui()
+	_load_saved_username()
 	Relay.connected_to_relay.connect(_on_relay_connected)
 	Relay.relay_error.connect(_on_relay_error)
 	Relay.connect_to_relay()
 
 func _start_music() -> void:
-	var stream = load("res://Sounds/Music/music_battle.mp3") as AudioStream
+	var stream = load("res://Sounds/music_start1.mp3") as AudioStream
 	if stream == null: return
 	_music            = AudioStreamPlayer.new()
 	_music.stream     = stream
-	_music.volume_db  = -22.0
+	_music.volume_db  = -28.0
 	_music.bus        = "Master"
 	add_child(_music)
 	_music.play()
@@ -44,34 +47,52 @@ func _build_ui() -> void:
 	add_child(_canvas)
 	var vp = get_viewport().get_visible_rect().size
 
-	# Background
-	var bg   = ColorRect.new()
-	bg.size  = vp
-	bg.color = Color(0.03, 0.04, 0.10, 1.0)
-	_canvas.add_child(bg)
+	# Background image
+	var bg_tex = load("res://Coronet/gamecover.png") as Texture2D
+	if bg_tex:
+		var bg_img = TextureRect.new()
+		bg_img.texture = bg_tex
+		bg_img.expand_mode  = TextureRect.EXPAND_IGNORE_SIZE
+		bg_img.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		bg_img.size = vp
+		bg_img.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_canvas.add_child(bg_img)
+	# Dark overlay so login panel stays readable
+	var overlay = ColorRect.new()
+	overlay.size  = vp
+	overlay.color = Color(0.0, 0.0, 0.05, 0.55)
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_canvas.add_child(overlay)
 
-	# Title
+	# Title — sci-fi glow effect (shadow layer + main layer)
+	var title_font = load("res://Assets/Fonts/Bebas_Neue/BebasNeue-Regular.ttf")
+	var title_y = vp.y * 0.08
+
+	# Glow shadow behind the title
+	var title_glow = Label.new()
+	title_glow.add_theme_font_override("font", title_font)
+	title_glow.text = "GALACTIC WAR OF THE STARS"
+	title_glow.add_theme_font_size_override("font_size", 72)
+	title_glow.add_theme_color_override("font_color", Color(0.20, 0.55, 1.00, 0.35))
+	title_glow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_glow.size     = Vector2(vp.x, 90)
+	title_glow.position = Vector2(0, title_y + 2)
+	title_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_canvas.add_child(title_glow)
+
+	# Main title
 	var title = Label.new()
-	title.add_theme_font_override("font", load("res://Assets/Fonts/Roboto/static/Roboto-Regular.ttf"))
-	title.text = "miniSWG"
-	title.add_theme_font_size_override("font_size", 64)
-	title.add_theme_color_override("font_color", Color(0.75, 0.88, 1.00))
+	title.add_theme_font_override("font", title_font)
+	title.text = "GALACTIC WAR OF THE STARS"
+	title.add_theme_font_size_override("font_size", 72)
+	title.add_theme_color_override("font_color", Color(0.85, 0.92, 1.00))
+	title.add_theme_color_override("font_outline_color", Color(0.15, 0.45, 0.95, 0.90))
+	title.add_theme_constant_override("outline_size", 3)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.size     = Vector2(vp.x, 80)
-	title.position = Vector2(0, vp.y * 0.12)
+	title.size     = Vector2(vp.x, 90)
+	title.position = Vector2(0, title_y)
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_canvas.add_child(title)
-
-	var sub = Label.new()
-	sub.add_theme_font_override("font", load("res://Assets/Fonts/Roboto/static/Roboto-Regular.ttf"))
-	sub.text = "CORONET ONLINE"
-	sub.add_theme_font_size_override("font_size", 16)
-	sub.add_theme_color_override("font_color", Color(0.45, 0.65, 0.90))
-	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	sub.size     = Vector2(vp.x, 26)
-	sub.position = Vector2(0, vp.y * 0.12 + 84)
-	sub.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_canvas.add_child(sub)
 
 	# Login panel
 	var PW   = 380.0
@@ -92,6 +113,10 @@ func _build_ui() -> void:
 	# Password field
 	_pass_field = _make_field(panel, "PASSWORD", 106, PW)
 	_pass_field.secret = true
+
+	# Enter key: play if logged in, otherwise login
+	_user_field.text_submitted.connect(func(_t): _on_enter_pressed())
+	_pass_field.text_submitted.connect(func(_t): _on_enter_pressed())
 
 	# Login / Register buttons (side by side)
 	var half_w = (PW - 46) * 0.5
@@ -139,6 +164,9 @@ func _build_ui() -> void:
 	_apply_play_style()
 	_play_btn.pressed.connect(_on_play)
 	panel.add_child(_play_btn)
+
+	# Auto-focus: password if username saved, otherwise username
+	_user_field.call_deferred("grab_focus")
 
 # ── UI helpers ─────────────────────────────────────────────────
 func _make_field(parent: Panel, label_text: String, y: float, pw: float) -> LineEdit:
@@ -221,19 +249,34 @@ func _on_relay_error(_msg: String) -> void:
 	_set_status("Server error — retrying…", Color(0.90, 0.35, 0.25))
 
 # ── Auth actions ───────────────────────────────────────────────
+func _on_enter_pressed() -> void:
+	if _logged_in and not _play_btn.disabled:
+		_on_play()
+	else:
+		_auto_play = true
+		_on_login()
+
 func _on_login() -> void:
 	var uname = _user_field.text.strip_edges()
 	var pwd   = _pass_field.text
 	if uname.length() == 0 or pwd.length() == 0:
 		_set_status("Enter username and password.", Color(0.90, 0.60, 0.20))
+		_auto_play = false
 		return
 	_set_busy(true, "Logging in…")
 	if await PlayerData.login(uname, pwd):
 		_logged_in = true
+		_save_username(uname)
 		_set_busy(false)
-		_set_status("Logged in as  %s  — press PLAY" % uname, Color(0.30, 0.85, 0.45))
 		_apply_play_style()
+		if _auto_play:
+			_auto_play = false
+			_set_status("Logged in — launching…", Color(0.30, 0.85, 0.45))
+			_on_play()
+		else:
+			_set_status("Logged in as  %s  — press PLAY" % uname, Color(0.30, 0.85, 0.45))
 	else:
+		_auto_play = false
 		_set_busy(false)
 		_set_status(PlayerData.last_error, Color(0.90, 0.35, 0.25))
 
@@ -270,6 +313,19 @@ func _set_status(msg: String, col: Color) -> void:
 	_status_lbl.text = msg
 	_status_lbl.add_theme_color_override("font_color", col)
 
+func _load_saved_username() -> void:
+	var cfg = ConfigFile.new()
+	if cfg.load(_SAVE_PATH) == OK:
+		var saved = cfg.get_value("login", "username", "")
+		if saved != "":
+			_user_field.text = saved
+			_pass_field.call_deferred("grab_focus")
+
+func _save_username(uname: String) -> void:
+	var cfg = ConfigFile.new()
+	cfg.set_value("login", "username", uname)
+	cfg.save(_SAVE_PATH)
+
 func _on_play() -> void:
 	_play_btn.disabled = true
 	_set_status("Loading world…", Color(0.55, 0.75, 1.00))
@@ -278,4 +334,4 @@ func _on_play() -> void:
 		tween.tween_property(_music, "volume_db", -80.0, 0.8)
 		await tween.finished
 		_music.stop()
-	get_tree().change_scene_to_file("res://Scenes/character_select.tscn")
+	get_tree().change_scene_to_file("res://Scenes/character_list.tscn")

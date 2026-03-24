@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://charlist001"]
+
+[ext_resource type="Script" uid="uid://charlist_scr01" path="res://Scripts/Client/UI/CharacterList.gd" id="1_charlist"]
+
+[node name="CharacterList" type="Node2D"]
+script = ExtResource("1_charlist")
