@@ -1,16 +1,46 @@
 [gd_scene format=3 uid="uid://bya4jmogyh1m"]
 
 [ext_resource type="Script" uid="uid://co4vsk03pm7r6" path="res://Scripts/CoronetPlayer.gd" id="2_8dtm1"]
-[ext_resource type="PackedScene" uid="uid://e1jc4a2chm3v" path="res://Characters/Coronet/Redarmor/idle/Meshy_AI_Ember_Guard_biped/Meshy_AI_Ember_Guard_biped_Animation_Idle_11_withSkin.fbx" id="2_8e6sm"]
-[ext_resource type="PackedScene" uid="uid://d14lpcicx6hor" path="res://Characters/Coronet/NPC/downloaded/redmechguy/Meshy_AI_Crimson_Shadow_Voyage_0320080603_texture.fbx" id="2_dkyxw"]
-[ext_resource type="PackedScene" uid="uid://d1j062t2dqyxr" path="res://Characters/Coronet/Redarmor/gun/Meshy_AI_a_sci_fi_gun_0320051819_texture_fbx/Meshy_AI_a_sci_fi_gun_0320051819_texture.fbx" id="3_8dtm1"]
-[ext_resource type="PackedScene" uid="uid://da6b614gfms6j" path="res://Characters/Coronet/silverarmor/idle/Meshy_AI_Iron_Sentinel_biped_Animation_Idle_frame_rate_60.fbx" id="3_8e6sm"]
-[ext_resource type="PackedScene" uid="uid://dfyu2488yntw" path="res://Characters/Coronet/silverarmor/stunbaton/Meshy_AI_Stun_baton_0320052259_texture_fbx/Meshy_AI_Stun_baton_0320052259_texture.fbx" id="4_dkyxw"]
-[ext_resource type="PackedScene" uid="uid://dl75e2b7yxg6r" path="res://Characters/Coronet/buildings/cnetstarport1.fbx" id="7_g7818"]
+[ext_resource type="PackedScene" uid="uid://d14lpcicx6hor" path="res://Coronet/NPC/downloaded/redmechguy/Meshy_AI_Crimson_Shadow_Voyage_0320080603_texture.fbx" id="2_dkyxw"]
+[ext_resource type="PackedScene" uid="uid://bw38etr4y16os" path="res://Coronet/buildings/b19houses/source/Low-poly House.fbx" id="6_t47dy"]
+[ext_resource type="PackedScene" uid="uid://dl75e2b7yxg6r" path="res://Coronet/buildings/cnetstarport1.fbx" id="7_g7818"]
 [ext_resource type="Texture2D" uid="uid://bv2wism04sy0o" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_BaseColor.jpg" id="10_terrain_color"]
 [ext_resource type="Texture2D" uid="uid://4g04ipb2tc1d" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_Normal.jpg" id="11_terrain_normal"]
 [ext_resource type="Texture2D" uid="uid://d2n4qxi6jeyx4" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_Roughness.jpg" id="12_terrain_rough"]
 [ext_resource type="Texture2D" uid="uid://bp7p6cp4tyeqv" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_AO.jpg" id="13_terrain_ao"]
+[ext_resource type="PackedScene" uid="uid://dd0wjxjw4lhip" path="res://Coronet/Terminal/Meshy_AI_Data_Terminal_Module_0323130107_texture.fbx" id="14_e2oyx"]
+[ext_resource type="PackedScene" uid="uid://cx7y2m5yo3tt0" path="res://Coronet/Mounts/landspeeder/Meshy_AI_Nebula_Voyager_0323130742_texture.fbx" id="15_4hl71"]
+[ext_resource type="PackedScene" uid="uid://bwcv2et1c1k1k" path="res://Coronet/buildings/building1/Meshy_AI_A_building_with_light_0323141306_texture.fbx" id="16_ac3t0"]
+[ext_resource type="PackedScene" uid="uid://d2q0jo17xer45" path="res://Coronet/buildings/b7/bluebuilding.fbx" id="16_ikke8"]
+[ext_resource type="PackedScene" uid="uid://ddl2d4qsn1m2s" path="res://Coronet/buildings/b2/Meshy_AI_building_tower_0323141416_texture.fbx" id="17_i6tfk"]
+[ext_resource type="ArrayMesh" uid="uid://d4hixqafj3fjt" path="res://Coronet/Mounts/testship2/ship04.obj" id="17_uc8yl"]
+[ext_resource type="PackedScene" uid="uid://djfplqxab657n" path="res://Coronet/buildings/b3/Meshy_AI_cyberpunk_city_store__0323141922_texture.fbx" id="19_ivbhk"]
+[ext_resource type="PackedScene" uid="uid://d0teoabofrkv3" path="res://Coronet/buildings/b10/source/Sci-fi building 4.fbx" id="19_llyn7"]
+[ext_resource type="PackedScene" uid="uid://demr7y2bllucc" path="res://Coronet/buildings/b14/source/building_01.FBX.fbx" id="20_84gth"]
+[ext_resource type="PackedScene" uid="uid://brcxqdfmpolvw" path="res://Coronet/buildings/b4/Meshy_AI_Neon_city_corner_buil_0323141934_texture.fbx" id="20_st04s"]
+[ext_resource type="PackedScene" uid="uid://bsrwok0dins6o" path="res://Coronet/buildings/b5/Meshy_AI_office_building_in_Au_0323141339_texture.fbx" id="21_0r62c"]
+[ext_resource type="PackedScene" uid="uid://domcuxbs0paro" path="res://Coronet/buildings/b17/source/2 Free Building.fbx" id="21_y4qkm"]
+[ext_resource type="PackedScene" uid="uid://c7upqwvofggme" path="res://Coronet/buildings/buildingtest/usethis/трианон.FBX" id="22_ikke8"]
+[ext_resource type="ArrayMesh" uid="uid://bxhyfqum4y756" path="res://Coronet/buildings/buildingtest/hospitalusethis/10075_Hospital Building_V1_L3.obj" id="23_ivbhk"]
+[ext_resource type="PackedScene" uid="uid://du0rov2hd5jvt" path="res://Coronet/buildings/b8/source/Sci-fi building 7.fbx" id="23_t47dy"]
+[ext_resource type="PackedScene" uid="uid://cv0ks4imt08oe" path="res://Coronet/buildings/b9/source/Sci-fi building 11.fbx" id="24_hir64"]
+[ext_resource type="PackedScene" uid="uid://dtrk8rqfrd650" path="res://Coronet/buildings/b11/source/Sci-fi building.fbx" id="25_32gix"]
+[ext_resource type="PackedScene" uid="uid://c5fo0opqrbo11" path="res://Coronet/buildings/b12/source/Sci-fi building.fbx" id="26_jhfpr"]
+[ext_resource type="PackedScene" uid="uid://dyqouwshodj87" path="res://Coronet/buildings/b15generator/source/Generator_low.fbx" id="27_oasf7"]
+[ext_resource type="PackedScene" uid="uid://bjklf1ck5gg1i" path="res://Coronet/buildings/scifibots/source/Gurdian Outpost Bots.blend" id="28_krpup"]
+[ext_resource type="PackedScene" uid="uid://d3y0pjwncsreg" path="res://Coronet/buildings/b18warehouse/source/Warehouse.fbx" id="29_bomax"]
+[ext_resource type="PackedScene" uid="uid://ss7wmg8bcfgf" path="res://Coronet/buildings/vendingmachine/PSX Vending Machine.fbx" id="32_32gix"]
+[ext_resource type="PackedScene" uid="uid://b4esnbif0o51v" path="res://Coronet/buildings/b21lowpolygarage/garages/garages.fbx" id="33_jhfpr"]
+[ext_resource type="PackedScene" uid="uid://c53gq6tmk427i" path="res://Coronet/buildings/b23/source/зданияч.fbx" id="35_hir64"]
+[ext_resource type="PackedScene" uid="uid://4n5j5plvb8wm" path="res://Coronet/buildings/b24/source/Background cyberpunk building.fbx" id="36_oasf7"]
+[ext_resource type="ArrayMesh" uid="uid://dyt82qndebfgs" path="res://Coronet/Mounts/testship/spaceship.obj" id="37_jhfpr"]
+[ext_resource type="PackedScene" uid="uid://cinqg7mvtw3wa" path="res://Coronet/buildings/b25/source/Storefront Zelezares.fbx" id="37_krpup"]
+[ext_resource type="PackedScene" uid="uid://cimt7b17jnoy2" path="res://Coronet/buildings/building.glb" id="38_bomax"]
+[ext_resource type="PackedScene" uid="uid://bx56mg8ch8650" path="res://Coronet/buildings/b27/source/Building 00.fbx" id="38_krpup"]
+[ext_resource type="PackedScene" uid="uid://dfksmmoaf6jli" path="res://Coronet/buildings/b28/source/PSX Japanese Apartment.fbx" id="39_bomax"]
+[ext_resource type="PackedScene" uid="uid://sxcj7rst7vfg" path="res://Coronet/Mounts/ship1keep/source/sp_1.blend" id="40_k64gw"]
+[ext_resource type="PackedScene" uid="uid://skkad3y0thjh" path="res://Coronet/Mounts/spidershipgood/animated-sci_fi_ship.glb" id="41_fu6q7"]
+[ext_resource type="PackedScene" uid="uid://cnrqxui7akncj" path="res://Coronet/Mounts/transport/Transport Shuttle_Blender Game Engine_blend.blend" id="42_bavek"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.29, 0.56, 0.85, 1)
@@ -54,14 +84,14 @@ environment = SubResource("Environment_1")
 
 [node name="Sun" type="DirectionalLight3D" parent="." unique_id=1184021775]
 transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 10, 0)
-light_energy = 1.2
+light_energy = 1.02
 shadow_enabled = true
 directional_shadow_max_distance = 80.0
 
 [node name="Ground" type="StaticBody3D" parent="." unique_id=709955233]
 
 [node name="GroundMesh" type="MeshInstance3D" parent="Ground" unique_id=1257531852]
-transform = Transform3D(2.75, 0, 0, 0, 2.75, 0, 0, 0, 2.75, 0.5877956, 0.1312049, 2.3658094)
+transform = Transform3D(3.06, 0, 0, 0, 3.06, 0, 0, 0, 3.06, 11.221817, 0, -56.31967)
 mesh = SubResource("PlaneMesh_1")
 surface_material_override/0 = SubResource("StandardMaterial3D_grass")
 
@@ -69,185 +99,136 @@ surface_material_override/0 = SubResource("StandardMaterial3D_grass")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
 shape = SubResource("BoxShape3D_1")
 
-[node name="vehiclemount" parent="Ground" unique_id=1651523641 instance=ExtResource("2_dkyxw")]
-transform = Transform3D(8.675755, 0, -0.4006402, 0, 8.685, 0, 0.4006402, 0, 8.675755, -1.4047565, 3.4765282, 8.443314)
+[node name="Low-poly House" parent="Ground" unique_id=669563468 instance=ExtResource("6_t47dy")]
+transform = Transform3D(-0.00179451, 0, -1.0599984, 0, 1.06, 0, 1.0599984, 0, -0.00179451, 35.92315, 1.1338711, -183.8102)
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1106083004]
 transform = Transform3D(1, 0, 0, 0, 0.574, 0.819, 0, -0.819, 0.574, 0, 12, 12)
 fov = 45.0
 
-[node name="Meshy_AI_Ember_Guard_biped_Animation_Idle_11_withSkin" parent="." unique_id=1490890333 instance=ExtResource("2_8e6sm")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6516345, 0.09182596, 1.008966)
-
-[node name="Skeleton3D" parent="Meshy_AI_Ember_Guard_biped_Animation_Idle_11_withSkin/Armature" parent_id_path=PackedInt32Array(1490890333, 685778044) index="0" unique_id=1990567610]
-bones/1/position = Vector3(0.110332996, -0.07486382, 0.009490029)
-bones/1/rotation = Quaternion(0.943152, 0.0099843275, -0.23686168, 0.23294029)
-bones/1/scale = Vector3(0.99999994, 1.0000002, 0.99999994)
-bones/2/position = Vector3(-2.1603617e-09, 0.23267011, 3.5632772e-09)
-bones/2/rotation = Quaternion(0.2507144, 0.104711615, 0.056924142, 0.96069634)
-bones/2/scale = Vector3(0.99999994, 0.9999998, 1)
-bones/3/position = Vector3(2.2914046e-09, 0.29390565, 4.8152074e-08)
-bones/3/rotation = Quaternion(-0.4714235, -0.026099637, 0.011834429, 0.88144124)
-bones/3/scale = Vector3(1, 1, 0.9999999)
-bones/4/position = Vector3(-3.8136445e-08, 0.27071565, 1.06770564e-07)
-bones/4/rotation = Quaternion(-0.45029584, -0.041263197, -0.02083738, 0.891682)
-bones/4/scale = Vector3(0.99999994, 1, 1.0000001)
-bones/5/position = Vector3(-0.13106953, -0.020812696, 0.046577323)
-bones/5/rotation = Quaternion(0.940989, -0.18414779, 0.046614997, 0.28010055)
-bones/5/scale = Vector3(0.9999998, 0.9999999, 0.99999976)
-bones/6/position = Vector3(2.1133033e-08, 0.2336459, -9.350545e-09)
-bones/6/rotation = Quaternion(0.25221023, -0.113033436, -0.06259424, 0.9590075)
-bones/6/scale = Vector3(0.99999994, 1.0000001, 0.9999999)
-bones/7/position = Vector3(3.8584833e-09, 0.29393998, 8.3218964e-08)
-bones/7/rotation = Quaternion(-0.4706376, 0.025711622, -0.012060557, 0.88186944)
-bones/7/scale = Vector3(1, 1.0000001, 1)
-bones/8/position = Vector3(1.5293631e-08, 0.27154055, 2.571047e-08)
-bones/8/rotation = Quaternion(-0.45126778, 0.041165635, 0.020844234, 0.8911949)
-bones/8/scale = Vector3(1, 0.9999999, 0.99999994)
-bones/9/position = Vector3(0.020736592, 0.1350675, -0.056067508)
-bones/9/rotation = Quaternion(-0.18641913, 0.09161472, -0.08959717, 0.9740775)
-bones/9/scale = Vector3(1.0000001, 1.0000001, 1.0000001)
-bones/10/position = Vector3(-4.413379e-08, 0.14770524, 9.7481355e-08)
-bones/10/rotation = Quaternion(-2.1576547e-08, 6.7911414e-09, -4.234953e-09, 1)
-bones/10/scale = Vector3(0.9999998, 0.99999994, 0.9999998)
-bones/11/position = Vector3(-1.9305793e-09, 0.14770526, -9.869727e-09)
-bones/11/rotation = Quaternion(-0.042106047, -0.0023590042, 0.002580426, 0.999107)
-bones/11/scale = Vector3(0.99999994, 0.9999998, 1)
-bones/12/position = Vector3(0.05503488, 0.07912659, -0.0055618146)
-bones/12/rotation = Quaternion(0.50785446, 0.53778225, -0.4944806, 0.456468)
-bones/12/scale = Vector3(1.0000001, 1, 1.0000001)
-bones/13/position = Vector3(-1.6461803e-08, 0.21747081, 3.0343523e-07)
-bones/13/rotation = Quaternion(0.44500208, 0.47122568, 0.17142552, 0.74197894)
-bones/13/scale = Vector3(0.99999994, 0.9999998, 0.9999998)
-bones/14/position = Vector3(5.9973345e-08, 0.27313784, 6.699171e-08)
-bones/14/rotation = Quaternion(-0.24952184, -0.11362523, 0.05121021, 0.9603154)
-bones/14/scale = Vector3(0.99999994, 0.99999994, 1)
-bones/15/position = Vector3(1.0954188e-07, 0.25636375, 1.6860353e-07)
-bones/15/rotation = Quaternion(0.020149432, 0.08555256, 0.14121817, 0.9860691)
-bones/15/scale = Vector3(0.99999994, 0.99999994, 1)
-bones/16/position = Vector3(-0.054753106, 0.08024876, -0.00426588)
-bones/16/rotation = Quaternion(-0.50826687, 0.5373924, -0.48364437, -0.4679341)
-bones/16/scale = Vector3(1.0000002, 1.0000004, 1.0000001)
-bones/17/position = Vector3(5.6781206e-09, 0.22243549, 3.058232e-07)
-bones/17/rotation = Quaternion(0.44518986, -0.47070014, -0.17123659, 0.74224347)
-bones/17/scale = Vector3(0.9999999, 1, 0.9999998)
-bones/18/position = Vector3(-8.11232e-08, 0.27308658, 6.581693e-08)
-bones/18/rotation = Quaternion(-0.24841236, 0.11373132, -0.050275464, 0.96063983)
-bones/18/scale = Vector3(1, 1.0000001, 1.0000001)
-bones/19/position = Vector3(6.84179e-08, 0.2562254, 1.0006538e-08)
-bones/19/rotation = Quaternion(0.017663198, -0.08571453, -0.14384677, 0.98572266)
-bones/19/scale = Vector3(1, 1, 0.99999994)
-bones/20/position = Vector3(-0.00028175814, 0.116295345, 0.009827659)
-bones/20/rotation = Quaternion(0.042142548, -0.0017258559, 0.0011353599, 0.99910945)
-bones/20/scale = Vector3(1.0000001, 1.0000001, 1.0000002)
-bones/21/position = Vector3(-2.0232456e-09, 0.07321069, 1.9700648e-08)
-bones/21/rotation = Quaternion(0.36404482, -9.990755e-05, -0.004851646, 0.93136877)
-bones/21/scale = Vector3(1.0000001, 0.9999999, 0.9999999)
-bones/22/position = Vector3(-0.0029847564, 0.327869, -0.21403533)
-bones/22/rotation = Quaternion(-0.28515333, 2.9757472e-09, 0.0039765057, 0.9584737)
-bones/22/scale = Vector3(0.99999976, 1.0000001, 0.99999994)
-bones/23/position = Vector3(0.0029847554, 0.19351873, 0.21403524)
-bones/23/rotation = Quaternion(0.4057774, -3.8722128e-08, -0.0056586456, 0.91395444)
-bones/23/scale = Vector3(0.99999994, 1, 1)
-
-[node name="BoneAttachment3D" type="BoneAttachment3D" parent="Meshy_AI_Ember_Guard_biped_Animation_Idle_11_withSkin/Armature/Skeleton3D" index="1" unique_id=1599635456]
-transform = Transform3D(0.9149744, 0.38778314, -0.11155844, 0.3071987, -0.490174, 0.815695, 0.26162976, -0.78061086, -0.56762356, 0.59114426, -0.18170303, 0.95931417)
-bone_name = "LeftHand"
-bone_idx = 15
-
-[node name="Meshy_AI_a_sci_fi_gun_0320051819_texture" parent="Meshy_AI_Ember_Guard_biped_Animation_Idle_11_withSkin/Armature/Skeleton3D/BoneAttachment3D" unique_id=1971924311 instance=ExtResource("3_8dtm1")]
-transform = Transform3D(0.20599487, -0.089997545, -0.009563885, 0.042654946, 0.075572655, 0.2075917, -0.079821974, -0.19187066, 0.08625071, -0.023799896, 0.31003076, 0.016813993)
-
-[node name="AnimationPlayer" parent="Meshy_AI_Ember_Guard_biped_Animation_Idle_11_withSkin" index="1" unique_id=1071466780]
-autoplay = &"Armature|Armature|Idle_11|baselayer"
-
-[node name="Meshy_AI_Iron_Sentinel_biped_Animation_Idle_frame_rate_60" parent="." unique_id=97368560 instance=ExtResource("3_8e6sm")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.40380627, 0.19695687, 1.5407393)
-
-[node name="Skeleton3D" parent="Meshy_AI_Iron_Sentinel_biped_Animation_Idle_frame_rate_60/Armature" parent_id_path=PackedInt32Array(97368560, 1749066886) index="0" unique_id=2059445225]
-bones/1/position = Vector3(0.1162335, -0.07002458, -0.029734714)
-bones/1/rotation = Quaternion(0.9801545, 0.12482383, -0.08615395, -0.12764663)
-bones/1/scale = Vector3(1.0000006, 1.0000001, 1.0000007)
-bones/2/position = Vector3(-1.0804053e-08, 0.34358305, 6.302873e-08)
-bones/2/rotation = Quaternion(0.2210042, 0.028583704, 0.0036039015, 0.97484726)
-bones/2/scale = Vector3(0.99999994, 0.99999994, 1.0000001)
-bones/3/position = Vector3(2.1255714e-08, 0.3108777, -2.1781553e-08)
-bones/3/rotation = Quaternion(-0.50722593, 0.018910762, 0.058180086, 0.85963905)
-bones/3/scale = Vector3(1, 0.99999994, 1)
-bones/4/position = Vector3(5.6585012e-08, 0.16164196, 1.1138512e-07)
-bones/4/rotation = Quaternion(-0.36268014, -0.0031344322, -0.0012288413, 0.93190765)
-bones/4/scale = Vector3(1, 1, 1)
-bones/5/position = Vector3(-0.107341245, -0.09243074, -0.01478814)
-bones/5/rotation = Quaternion(0.9911646, -0.032494597, 0.010568146, -0.12816049)
-bones/5/scale = Vector3(0.9999998, 0.99999994, 0.9999989)
-bones/6/position = Vector3(-5.6378313e-10, 0.33779913, 5.0171938e-08)
-bones/6/rotation = Quaternion(0.21990082, -0.050934825, -0.029519685, 0.9737443)
-bones/6/scale = Vector3(1.0000001, 1.0000001, 1.0000001)
-bones/7/position = Vector3(-3.8879584e-09, 0.31357026, 2.4004656e-08)
-bones/7/rotation = Quaternion(-0.50405693, 0.014069089, -0.013207073, 0.8634548)
-bones/7/scale = Vector3(0.9999999, 1, 0.9999999)
-bones/8/position = Vector3(3.317639e-08, 0.17128971, 1.3055278e-07)
-bones/8/rotation = Quaternion(-0.36529398, 0.01650697, 0.006477933, 0.9307233)
-bones/8/scale = Vector3(1.0000002, 1, 1.0000001)
-bones/9/position = Vector3(-0.008892213, 0.110446684, 0.044523112)
-bones/9/rotation = Quaternion(0.18821639, 0.042177293, 0.046086386, 0.9801386)
-bones/9/scale = Vector3(0.99999994, 1.0000002, 0.99999994)
-bones/10/position = Vector3(-4.4712536e-09, 0.11941476, -9.257206e-08)
-bones/10/rotation = Quaternion(7.319352e-08, -9.717667e-09, 4.7900937e-09, 1)
-bones/10/scale = Vector3(1, 0.9999998, 0.9999999)
-bones/11/position = Vector3(5.960477e-10, 0.11941462, 7.548469e-09)
-bones/11/rotation = Quaternion(0.027293898, -0.0028842376, 0.002639601, 0.9996198)
-bones/11/scale = Vector3(1.0000001, 1.0000001, 1.0000001)
-bones/12/position = Vector3(0.054762136, 0.08807834, 0.0017300502)
-bones/12/rotation = Quaternion(0.50727725, 0.5095303, -0.4952898, 0.4875825)
-bones/12/scale = Vector3(1, 0.99999976, 1)
-bones/13/position = Vector3(-2.4434843e-09, 0.21709052, 8.539389e-10)
-bones/13/rotation = Quaternion(0.410623, 0.41244715, 0.301865, 0.7550852)
-bones/13/scale = Vector3(1, 0.99999976, 0.9999999)
-bones/14/position = Vector3(-1.0775017e-07, 0.23631868, 2.3797474e-08)
-bones/14/rotation = Quaternion(-0.28613743, -0.17177825, -0.06200416, 0.9406238)
-bones/14/scale = Vector3(1.0000001, 0.99999994, 0.9999999)
-bones/15/position = Vector3(8.334758e-08, 0.2404597, -1.7140981e-07)
-bones/15/rotation = Quaternion(0.057089824, 0.08607119, 0.17027575, 0.9799687)
-bones/15/scale = Vector3(1.0000001, 1, 1.0000001)
-bones/16/position = Vector3(-0.055198673, 0.09967613, 0.0029239038)
-bones/16/rotation = Quaternion(-0.5075379, 0.50927067, -0.48952037, -0.49337465)
-bones/16/scale = Vector3(0.99999994, 0.9999998, 0.99999976)
-bones/17/position = Vector3(9.155666e-09, 0.22302195, -8.874901e-12)
-bones/17/rotation = Quaternion(0.4139348, -0.41534883, -0.30782297, 0.7492585)
-bones/17/scale = Vector3(1, 1, 1.0000002)
-bones/18/position = Vector3(1.8406396e-07, 0.24280103, -2.2808955e-08)
-bones/18/rotation = Quaternion(-0.2881431, 0.19036205, 0.08847225, 0.9342957)
-bones/18/scale = Vector3(0.99999994, 1, 1)
-bones/19/position = Vector3(-2.4405827e-08, 0.2322066, -1.2692814e-07)
-bones/19/rotation = Quaternion(0.059784714, -0.09651629, -0.1936327, 0.97448283)
-bones/19/scale = Vector3(1.0000001, 0.99999994, 1)
-bones/20/position = Vector3(0.000436539, 0.08513763, -0.0046540173)
-bones/20/rotation = Quaternion(-0.027293928, 0.0028842422, -0.0026395966, 0.9996198)
-bones/20/scale = Vector3(1.0000001, 0.99999994, 1)
-bones/21/position = Vector3(-4.4991372e-11, 0.06826732, -1.8398543e-08)
-bones/21/rotation = Quaternion(0.49870202, -3.161273e-09, -1.6669613e-08, 0.8667735)
-bones/21/scale = Vector3(1, 1.0000001, 1)
-bones/22/position = Vector3(-5.8379364e-09, 0.3149349, -0.17840299)
-bones/22/rotation = Quaternion(-0.25485912, -1.1510132e-09, 8.978114e-09, 0.9669782)
-bones/22/scale = Vector3(1, 1.0000002, 1.0000001)
-bones/23/position = Vector3(6.899501e-09, 0.25249502, 0.17840302)
-bones/23/rotation = Quaternion(0.3027317, -6.9435394e-08, -3.2012565e-08, 0.9530758)
-bones/23/scale = Vector3(1, 1.0000001, 1.0000001)
-
-[node name="BoneAttachment3D" type="BoneAttachment3D" parent="Meshy_AI_Iron_Sentinel_biped_Animation_Idle_frame_rate_60/Armature/Skeleton3D" index="1" unique_id=196530496]
-transform = Transform3D(0.30826104, -0.928332, 0.65365005, -1.1109934, -0.10704898, 0.37191072, -0.23399149, -0.714719, -0.90471435, -0.5878813, 0.34056196, 1.1020583)
-bone_name = "RightHand"
-bone_idx = 19
-
-[node name="Meshy_AI_Stun_baton_0320052259_texture" parent="Meshy_AI_Iron_Sentinel_biped_Animation_Idle_frame_rate_60/Armature/Skeleton3D/BoneAttachment3D" unique_id=136507924 instance=ExtResource("4_dkyxw")]
-transform = Transform3D(-0.23713206, -0.028563753, 0.3754695, 0.038494185, -0.44323182, -0.009407237, 0.3745817, 0.027466297, 0.23866114, 0.15404409, 0.12399638, -0.20159602)
-
-[node name="AnimationPlayer" parent="Meshy_AI_Iron_Sentinel_biped_Animation_Idle_frame_rate_60" index="1" unique_id=1966204453]
-autoplay = &"Armature|Armature|Armature|Armature|Idle|baselayer"
-
 [node name="cnetstarport1" parent="." unique_id=1957696692 instance=ExtResource("7_g7818")]
-transform = Transform3D(0.18451105, 0, -1.2514714, 0, 1.265, 0, 1.2514714, 0, 0.18451105, 1.1164494, 3.1000538, 64.32705)
+transform = Transform3D(0.18332322, 0, -2.1672604, 0, 2.175, 0, 2.1672604, 0, 0.18332322, 1.1164494, 6.022482, 93.08818)
 
-[editable path="Meshy_AI_Ember_Guard_biped_Animation_Idle_11_withSkin"]
-[editable path="Meshy_AI_Iron_Sentinel_biped_Animation_Idle_frame_rate_60"]
+[node name="Terminal" parent="." unique_id=1030218533 instance=ExtResource("14_e2oyx")]
+transform = Transform3D(-1.5147022, 0, 0.030035995, 0, 1.5149997, 0, -0.030035995, 0, -1.5147022, -20.427387, 1.5883656, 30.659643)
+
+[node name="landspeeder" parent="." unique_id=1025743947 instance=ExtResource("15_4hl71")]
+transform = Transform3D(-1.28289, 0, -2.8220901, 0, 3.1, 0, 2.8220901, 0, -1.28289, 42.260803, 1.7351999, 46.298313)
+
+[node name="bluebuilding" parent="." unique_id=353157382 instance=ExtResource("16_ikke8")]
+transform = Transform3D(9.150095, 0, -2.8207064, 0, 9.574998, 0, 2.8207064, 0, 9.150095, 139.1748, -5.087122, -248.06166)
+
+[node name="building1" parent="." unique_id=10888048 instance=ExtResource("16_ac3t0")]
+transform = Transform3D(-0.28172618, 0, -50.759216, 0, 64.016, 0, 50.759216, 0, -0.28172618, 284.10254, 39.138836, 49.298325)
+
+[node name="grey building" parent="." unique_id=160549197 instance=ExtResource("17_i6tfk")]
+transform = Transform3D(77.655045, 0, -36.768734, 0, 85.91996, 0, 36.768734, 0, 77.655045, 70.78078, 82.837814, -28.760906)
+
+[node name="grey building2" parent="." unique_id=1803778813 instance=ExtResource("17_i6tfk")]
+transform = Transform3D(72.97753, 0, 11.734849, 0, 73.915, 0, -11.734849, 0, 72.97753, -32.557114, 66.01083, -200.92287)
+
+[node name="minipinkdoor" parent="." unique_id=956078483 instance=ExtResource("19_ivbhk")]
+transform = Transform3D(9.194059, 0, 23.586409, 0, 25.315004, 0, -23.586409, 0, 9.194059, 55.361477, 22.655354, -86.829285)
+
+[node name="pinkblue" parent="." unique_id=605988242 instance=ExtResource("20_st04s")]
+transform = Transform3D(49.842125, 0, -1.6673638, 0, 49.87, 0, 1.6673638, 0, 49.842125, -96.43357, 47.315376, 181.08296)
+
+[node name="apt1" parent="." unique_id=1769125136 instance=ExtResource("21_0r62c")]
+transform = Transform3D(48.72344, 0, 41.535862, 0, 64.02502, 0, -41.535862, 0, 48.72344, -81.69564, 21.09808, -148.58148)
+
+[node name="трианон" parent="." unique_id=1865062093 instance=ExtResource("22_ikke8")]
+transform = Transform3D(0.99696887, 0, 1.0111641, 0, 1.42, 0, -1.0111641, 0, 0.99696887, -15.762253, -5.8786163, -48.903046)
+
+[node name="bighospital" type="MeshInstance3D" parent="." unique_id=649154324]
+transform = Transform3D(-0.00026180138, -0.02999721, -0.00031415708, -4.743821e-11, -0.000314169, 0.029998355, -0.02999886, 0.00026178698, 2.7416154e-06, -127.413635, -21.143847, 75.018265)
+mesh = ExtResource("23_ivbhk")
+
+[node name="ship2" type="MeshInstance3D" parent="." unique_id=1008777032]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 159.87141, 1.9856148, 117.032616)
+mesh = ExtResource("17_uc8yl")
+skeleton = NodePath("../Ground")
+
+[node name="vehiclemount2" parent="." unique_id=2059327579 instance=ExtResource("2_dkyxw")]
+transform = Transform3D(0.25946915, 0, 8.681123, 0, 8.685, 0, -8.681123, 0, 0.25946915, 137.87132, 4.697813, 103.478836)
+
+[node name="Sci-fi building 4" parent="." unique_id=48706583 instance=ExtResource("19_llyn7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -251.95483, 18.567295, 15.218369)
+
+[node name="building_01_FBX" parent="." unique_id=251274908 instance=ExtResource("20_84gth")]
+transform = Transform3D(196.8166, 0, -14.363487, 0, 197.34003, 0, 14.363487, 0, 196.8166, 106.42926, -0.7181244, -199.98755)
+
+[node name="Meshy_AI_A_building_with_light_0323141306_texture" parent="." unique_id=1569246641 instance=ExtResource("16_ac3t0")]
+transform = Transform3D(-60.4544, 0, -17.88675, 0, 85.3069, 0, 17.88675, 0, -60.4544, -4.9751835, 51.20897, -238.7121)
+
+[node name="2 Free Building" parent="." unique_id=1404407194 instance=ExtResource("21_y4qkm")]
+transform = Transform3D(100.12135, 0, -5.077183, 0, 100.249985, 0, 5.077183, 0, 100.12135, -210.01971, -3.4364948, -18.27224)
+
+[node name="vehiclemount" parent="." unique_id=1651523641 instance=ExtResource("2_dkyxw")]
+transform = Transform3D(-0.66509545, 0, -8.659496, 0, 8.685, 0, 8.659496, 0, -0.66509545, -57.83204, 4.697813, 41.641533)
+
+[node name="Spaceship" type="MeshInstance3D" parent="." unique_id=1250396257]
+transform = Transform3D(0.255, 0, 0, 0, 0.255, 0, 0, 0, 0.255, 162.31317, 1361.7898, 1845.657)
+skeleton = NodePath("../Ground")
+
+[node name="Sci-fi building 7" parent="." unique_id=1149085440 instance=ExtResource("23_t47dy")]
+transform = Transform3D(1.2384717, 0, 0.12732826, 0, 1.2449995, 0, -0.12732826, 0, 1.2384717, -188.92627, 6.4189243, -182.21307)
+
+[node name="Sci-fi building 11" parent="." unique_id=1333944864 instance=ExtResource("24_hir64")]
+transform = Transform3D(0.6768064, 0, 0.47176045, 0, 0.82499987, 0, -0.47176045, 0, 0.6768064, 162.74962, -1.659298, -160.99847)
+
+[node name="Sci-fi building" parent="." unique_id=1120936341 instance=ExtResource("25_32gix")]
+transform = Transform3D(0.5100678, 0, -0.9689458, 0, 1.095, 0, 0.9689458, 0, 0.5100678, 71.195885, -5.2312775, 104.90698)
+
+[node name="Sci-fi building2" parent="." unique_id=2053271870 instance=ExtResource("26_jhfpr")]
+transform = Transform3D(-0.7914227, 0, -0.14722452, 0, 0.8049998, 0, 0.14722452, 0, -0.7914227, 158.8847, 1.4036102, 65.636566)
+
+[node name="Generator_low" parent="." unique_id=1626329665 instance=ExtResource("27_oasf7")]
+transform = Transform3D(2.92, 0, 0, 0, 2.92, 0, 0, 0, 2.92, -23.34126, 0.98218673, 30.5456)
+
+[node name="Gurdian Outpost Bots" parent="." unique_id=1705848911 instance=ExtResource("28_krpup")]
+transform = Transform3D(-0.04912868, 0, -0.99879247, 0, 1, 0, 0.99879247, 0, -0.04912868, -27.039604, 56.329044, -47.14461)
+
+[node name="Warehouse" parent="." unique_id=1134389105 instance=ExtResource("29_bomax")]
+transform = Transform3D(1.3247105, 0, 0.02770236, 0, 1.325, 0, -0.02770236, 0, 1.3247105, 5.034585, 0.21438742, -163.16122)
+
+[node name="PSX Vending Machine" parent="." unique_id=257185727 instance=ExtResource("32_32gix")]
+transform = Transform3D(0.28716502, 0, 4.866534, 0, 4.8749995, 0, -4.866534, 0, 0.28716502, -25.540054, 1.4854946, 31.151535)
+
+[node name="garages" parent="." unique_id=456956721 instance=ExtResource("33_jhfpr")]
+transform = Transform3D(-0.02900441, 0, -4.164899, 0, 4.165, 0, 4.164899, 0, -0.02900441, 51.166683, 6.4560556, -238.73346)
+
+[node name="зданияч" parent="." unique_id=1327944366 instance=ExtResource("35_hir64")]
+transform = Transform3D(-9.479874, 0, -0.43827254, 0, 9.49, 0, 0.43827254, 0, -9.479874, 185.06792, 15.517166, -46.065407)
+
+[node name="Background cyberpunk building" parent="." unique_id=1050441703 instance=ExtResource("36_oasf7")]
+transform = Transform3D(-0.13193464, 0, 3.467491, 0, 3.47, 0, -3.467491, 0, -0.13193464, 261.3629, 3.734192, -77.31589)
+
+[node name="Storefront Zelezares" parent="." unique_id=1922904347 instance=ExtResource("37_krpup")]
+transform = Transform3D(-0.10754472, 0, 5.4139323, 0, 5.4150004, 0, -5.4139323, 0, -0.10754472, -131.38489, -0.68747234, 104.327446)
+
+[node name="Sketchfab_Scene" parent="." unique_id=1233168503 instance=ExtResource("38_bomax")]
+transform = Transform3D(32.534695, 0, 0.9980035, 0, 69.452, 0, -0.9980035, 0, 32.534695, 91.11777, 35.31495, -174.81715)
+
+[node name="Building 00" parent="." unique_id=15097215 instance=ExtResource("38_krpup")]
+transform = Transform3D(-146.20976, 0, 419.78653, 0, 444.52, 0, -419.78653, 0, -146.20976, -332.10223, -0.13453674, 412.52606)
+
+[node name="PSX Japanese Apartment" parent="." unique_id=634738521 instance=ExtResource("39_bomax")]
+transform = Transform3D(-2.8548114, 0, -6.522609, 0, 7.1200004, 0, 6.522609, 0, -2.8548114, 37.94492, -1.6829758, -46.677185)
+
+[node name="sp_1" parent="." unique_id=1929425757 instance=ExtResource("40_k64gw")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 213.24776, 0, 149.69385)
+
+[node name="Sketchfab_Scene2" parent="." unique_id=921002946 instance=ExtResource("41_fu6q7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 250.27145, 38.34223, 181.96124)
+
+[node name="Transport Shuttle_Blender Game Engine_blend" parent="." unique_id=1225489 instance=ExtResource("42_bavek")]
+transform = Transform3D(3.385, 0, 0, 0, 3.385, 0, 0, 0, 3.385, -3.3042068, 0.66405106, 100.25435)
+
+[node name="Plane" parent="Transport Shuttle_Blender Game Engine_blend" index="4" unique_id=1867462030]
+visible = false
+
+[node name="Spaceship2" type="MeshInstance3D" parent="." unique_id=1628395437]
+transform = Transform3D(0.49, 0, 0, 0, 0.49, 0, 0, 0, 0.49, -24.781454, 1711.1921, 1091.874)
+mesh = ExtResource("37_jhfpr")
+
+[editable path="Transport Shuttle_Blender Game Engine_blend"]

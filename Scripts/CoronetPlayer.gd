@@ -35,20 +35,70 @@ const TARGET_CYCLE_RANGE := 30.0
 
 # ── ANIMATION FBX PATHS ────────────────────────────────────
 const SILVER_ANIMS := {
-	"run":     "res://Characters/Coronet/silverarmor/run/Meshy_AI_Iron_Sentinel_biped/Meshy_AI_Iron_Sentinel_biped_Animation_Running_withSkin.fbx",
-	"walk":    "res://Characters/Coronet/silverarmor/walk/Meshy_AI_Iron_Sentinel_biped/Meshy_AI_Iron_Sentinel_biped_Animation_Walking_withSkin.fbx",
-	"attack":  "res://Characters/Coronet/silverarmor/attack/Meshy_AI_Iron_Sentinel_biped/Meshy_AI_Iron_Sentinel_biped_Animation_Right_Hand_Sword_Slash_withSkin.fbx",
-	"attack2": "res://Characters/Coronet/silverarmor/attack2/Meshy_AI_Iron_Sentinel_biped/Meshy_AI_Iron_Sentinel_biped_Animation_Weapon_Combo_1_withSkin.fbx",
-	"dodge":   "res://Characters/Coronet/silverarmor/dodge/Meshy_AI_Iron_Sentinel_biped_Animation_Counterstrike_withSkin.fbx",
-	"kd":      "res://Characters/Coronet/silverarmor/kd/Meshy_AI_Iron_Sentinel_biped_Animation_Knock_Down_1_withSkin.fbx",
+	"run":     "res://Coronet/silverarmor/run/Meshy_AI_Iron_Sentinel_biped/Meshy_AI_Iron_Sentinel_biped_Animation_Running_withSkin.fbx",
+	"walk":    "res://Coronet/silverarmor/walk/Meshy_AI_Iron_Sentinel_biped/Meshy_AI_Iron_Sentinel_biped_Animation_Walking_withSkin.fbx",
+	"attack":  "res://Coronet/silverarmor/attack/Meshy_AI_Iron_Sentinel_biped/Meshy_AI_Iron_Sentinel_biped_Animation_Right_Hand_Sword_Slash_withSkin.fbx",
+	"attack2": "res://Coronet/silverarmor/attack2/Meshy_AI_Iron_Sentinel_biped/Meshy_AI_Iron_Sentinel_biped_Animation_Weapon_Combo_1_withSkin.fbx",
+	"dodge":   "res://Coronet/silverarmor/dodge/Meshy_AI_Iron_Sentinel_biped_Animation_Counterstrike_withSkin.fbx",
+	"kd":      "res://Coronet/silverarmor/kd/Meshy_AI_Iron_Sentinel_biped_Animation_Knock_Down_1_withSkin.fbx",
 }
 const RED_ANIMS := {
-	"run":     "res://Characters/Coronet/Redarmor/run/Meshy_AI_Ember_Guard_biped/Meshy_AI_Ember_Guard_biped_Animation_Running_withSkin.fbx",
-	"walk":    "res://Characters/Coronet/Redarmor/walk/Meshy_AI_Ember_Guard_biped/Meshy_AI_Ember_Guard_biped_Animation_Walking_withSkin.fbx",
-	"attack":  "res://Characters/Coronet/Redarmor/attack/shootfromhip.fbx",
-	"attack2": "res://Characters/Coronet/Redarmor/attack/shootfromhip.fbx",
-	"dodge":   "res://Characters/Coronet/Redarmor/dodge/Meshy_AI_Ember_Guard_biped_Animation_Roll_Dodge_3_withSkin.fbx",
-	"kd":      "res://Characters/Coronet/Redarmor/kd/Meshy_AI_Ember_Guard_biped_Animation_Knock_Down_1_withSkin.fbx",
+	"run":     "res://Coronet/Redarmor/run/Meshy_AI_Ember_Guard_biped/Meshy_AI_Ember_Guard_biped_Animation_Running_withSkin.fbx",
+	"walk":    "res://Coronet/Redarmor/walk/Meshy_AI_Ember_Guard_biped/Meshy_AI_Ember_Guard_biped_Animation_Walking_withSkin.fbx",
+	"attack":  "res://Coronet/Redarmor/attack/shootfromhip.fbx",
+	"attack2": "res://Coronet/Redarmor/attack/shootfromhip.fbx",
+	"dodge":   "res://Coronet/Redarmor/dodge/Meshy_AI_Ember_Guard_biped_Animation_Roll_Dodge_3_withSkin.fbx",
+	"kd":      "res://Coronet/Redarmor/kd/Meshy_AI_Ember_Guard_biped_Animation_Knock_Down_1_withSkin.fbx",
+}
+const REDSOLDIER_ANIMS := {
+	"walk":    "res://Coronet/redsoldier/Meshy_AI_Azure_Sentinel_biped_Animation_Walking_frame_rate_60.fbx",
+	"run":     "res://Coronet/redsoldier/Meshy_AI_Azure_Sentinel_biped_Animation_Running_frame_rate_60.fbx",
+	"attack":  "res://Coronet/redsoldier/shootingRGEDIT.fbx",
+	"attack2": "res://Coronet/redsoldier/Meshy_AI_Azure_Sentinel_biped_Animation_Draw_and_Shoot_Left_frame_rate_60.fbx",
+	"dodge":   "res://Coronet/redsoldier/Meshy_AI_Azure_Sentinel_biped_Animation_Stand_Dodge_frame_rate_60.fbx",
+	"kd":      "res://Coronet/redsoldier/Meshy_AI_Azure_Sentinel_biped_Animation_Knock_Down_1_frame_rate_60.fbx",
+}
+const WHITESOLDIER_ANIMS := {
+	"walk":    "res://Coronet/whitesoldier/Meshy_AI_Azure_Sentinel_biped_Animation_Walking_frame_rate_60.fbx",
+	"run":     "res://Coronet/whitesoldier/Meshy_AI_Azure_Sentinel_biped_Animation_Running_frame_rate_60.fbx",
+	"attack":  "res://Coronet/whitesoldier/Meshy_AI_Azure_Sentinel_biped_Animation_Right_Hand_Sword_Slash_frame_rate_60.fbx",
+	"attack2": "res://Coronet/whitesoldier/Meshy_AI_Azure_Sentinel_biped_Animation_Weapon_Combo_frame_rate_60.fbx",
+	"dodge":   "res://Coronet/whitesoldier/Meshy_AI_Azure_Sentinel_biped_Animation_Stand_Dodge_frame_rate_60.fbx",
+	"kd":      "res://Coronet/whitesoldier/Meshy_AI_Azure_Sentinel_biped_Animation_Knock_Down_1_frame_rate_60.fbx",
+}
+
+# Map character select ID → idle FBX path (for runtime spawning)
+const CHAR_IDLE_FBX := {
+	"RedArmor":     "res://Coronet/Redarmor/idle/Meshy_AI_Ember_Guard_biped/Meshy_AI_Ember_Guard_biped_Animation_Idle_11_withSkin.fbx",
+	"SilverArmor":  "res://Coronet/silverarmor/idle/Meshy_AI_Iron_Sentinel_biped_Animation_Idle_frame_rate_60.fbx",
+	"RedSoldier":   "res://Coronet/redsoldier/Meshy_AI_Azure_Sentinel_biped_Animation_Idle_11_frame_rate_60.fbx",
+	"WhiteSoldier":  "res://Coronet/whitesoldier/Meshy_AI_Azure_Sentinel_biped_Animation_Idle_11_frame_rate_60.fbx",
+}
+const CHAR_ANIM_SETS := {
+	"RedArmor":     "RED",
+	"SilverArmor":  "SILVER",
+	"RedSoldier":   "REDSOLDIER",
+	"WhiteSoldier":  "WHITESOLDIER",
+}
+const CHAR_CLASSES := {
+	"RedArmor":     "ranged",
+	"SilverArmor":  "melee",
+	"RedSoldier":   "ranged",
+	"WhiteSoldier":  "melee",
+}
+# Soldiers use walk for normal movement and run only for sprint
+const CHAR_HAS_WALK := {
+	"RedArmor":     false,
+	"SilverArmor":  false,
+	"RedSoldier":   true,
+	"WhiteSoldier":  true,
+}
+const WALK_SPEED := 2.5  # slower than MOVE_SPEED (5.0)
+const CHAR_DISPLAY_NAMES := {
+	"RedArmor":     "Red Armor",
+	"SilverArmor":  "Silver Sentinel",
+	"RedSoldier":   "Red Soldier",
+	"WhiteSoldier":  "White Soldier",
 }
 
 # ── NODES ───────────────────────────────────────────────────
@@ -56,6 +106,11 @@ var _silver : Node3D
 var _red    : Node3D
 var _camera : Camera3D
 var _active : Node3D
+var _selected_char_id : String = ""
+var _uses_walk := false  # true = currently in walk mode (toggled by ALT)
+var _can_walk := false   # true = character has walk anim available
+var _auto_run := false   # middle mouse toggles auto-run
+var _anim_blender : Node = null  # AnimBlender for upper/lower body split
 
 var _silver_anim : AnimationPlayer
 var _red_anim    : AnimationPlayer
@@ -64,9 +119,13 @@ var _red_armature    : Node3D
 
 # ── CAMERA ──────────────────────────────────────────────────
 var _cam_zoom := 1.0
+var _first_person := false
 var _cam_yaw := 0.0
-var _cam_pitch := 0.6
+var _cam_pitch := 0.0
 var _rmb_held := false
+var _rmb_press_pos := Vector2.ZERO
+var _rmb_press_time : int = 0
+var _rmb_dragged := false
 
 # ── PLAYER STATS ────────────────────────────────────────────
 var ham_health : float = 1000.0
@@ -78,6 +137,28 @@ var max_mind   : float = 600.0
 var accuracy   : float = 60.0
 var defense    : float = 40.0
 var character_class : String = "melee"
+
+# ── WOUNDS ─────────────────────────────────────────────────
+# Wounds reduce effective max HAM. They accumulate from combat.
+var wound_health : float = 0.0
+var wound_action : float = 0.0
+var wound_mind   : float = 0.0
+const WOUND_CHANCE := 0.15          # 15% chance per hit to inflict wounds
+const WOUND_HEAL_RATE := 2.0        # points healed per second (passive regen)
+const WOUND_AMOUNT_MIN := 5.0
+const WOUND_AMOUNT_MAX := 20.0
+
+# ── XP & LEVELING ──────────────────────────────────────────
+var level : int = 1
+var exp_points : float = 0.0
+var exp_needed : float = 100.0      # 100 * level
+var unspent_points : int = 0
+
+# ── PROFESSION SYSTEM ─────────────────────────────────────
+var _learned_boxes : Array = []         # box IDs the player has learned
+var _xp_pools : Dictionary = {"melee": 0, "ranged": 0}
+var _skill_points_available : int = 250
+var _credits : int = 1000
 
 # Combat states
 var state_dizzy : float = 0.0
@@ -94,6 +175,17 @@ var _attack_anim_timer := 0.0  # countdown for attack anim, then resume move ani
 var _attack_cycle := 0         # alternates between 0 and 1 for melee attack swap
 var _anim_state := "idle"  # idle, run, attack
 
+# ── COMBAT QUEUE ────────────────────────────────────────────
+var _combat_queue : Array = []   # skill IDs queued up
+var _queue_timer : float = 0.0   # countdown to execute next queued skill
+const QUEUE_MAX := 4
+const QUEUE_INTERVAL := 3.0      # seconds between queued executions
+
+# Queue HUD
+var _queue_panel : Panel
+var _queue_timer_bar : ColorRect
+var _queue_rows : Array = []     # labels for each queue slot
+
 # ── VEHICLE ─────────────────────────────────────────────────
 var _vehicle_mount : Node3D = null
 var _vehicle_base_y := 0.0
@@ -103,6 +195,7 @@ var _mount_tween : Tween = null
 var _vehicle_boosting := false
 var _vehicle_cur_speed := 0.0  # current speed (ramps up/down)
 var _vehicle_last_dir := Vector3.ZERO  # last horizontal movement direction
+var _vehicle_can_fly := true  # false = ground only (landspeeder)
 var _vehicle_prompt : Label3D = null
 var _speed_lines : Array = []  # speed effect meshes
 
@@ -134,12 +227,33 @@ var _combat_log : RichTextLabel
 var _target_indicator : Node3D  # visual ring under target
 var _player_buff_row : HBoxContainer
 var _tgt_debuff_row : HBoxContainer
+var _hp_wound_ov : ColorRect
+var _action_wound_ov : ColorRect
+var _mind_wound_ov : ColorRect
+var _xp_bar : ProgressBar
+var _xp_bar_lbl : Label
+var _stats_window : Panel
+var _stats_visible := false
+
+# ── POSTURE ICON ──────────────────────────────────────────
+var _posture_label : Label
+var _posture_box : Panel
+var _player_frame : Panel  # reference to pf for posture tracking
+const _STANDING_ICON := "🧍"
+const _KNOCKDOWN_ICON := "🧎"
+
+# ── RADIAL MENU ───────────────────────────────────────────
+var _radial_menu : Control = null
+var _radial_menu_visible := false
+var _radial_target_node : Node3D = null
+var _radial_target_type : String = ""
 
 # ── MINIMAP ────────────────────────────────────────────────
 const MMAP_SIZE := 180
 var _minimap_panel : Panel
 var _minimap_draw : Control
 var _minimap_zoom := 0.5  # world units per pixel
+var _coord_label : Label
 
 # ── CHAT ──────────────────────────────────────────────────
 var _chat_panel : Panel
@@ -159,7 +273,7 @@ var _hotbar_slots : Array = []      # Array of Panel (visual slots)
 var _hotbar_skills : Array = []     # Array of Dictionary (skill data per slot)
 var _hotbar_cooldowns : Array = []  # Array of float (cooldown timers)
 var _hotbar_labels : Array = []     # Array of Label (key number labels)
-var _hotbar_icons : Array = []      # Array of ColorRect (icon color)
+var _hotbar_icons : Array = []      # Array of TextureRect (skill icons)
 var _hotbar_cd_labels : Array = []  # Array of Label (cooldown text)
 # ── SKILLS WINDOW ──────────────────────────────────────────
 var _skills_window : Panel = null
@@ -177,6 +291,7 @@ const SKILL_DATA := {
 		"state_dur": 15.0,
 		"cooldown": 0.0,
 		"color": Color(0.9, 0.8, 0.2),
+		"icon": "res://Coronet/icons/dizzy.png",
 	},
 	"knockdown": {
 		"id": "knockdown",
@@ -188,6 +303,7 @@ const SKILL_DATA := {
 		"state_dur": 999.0,
 		"cooldown": 0.0,
 		"color": Color(0.9, 0.3, 0.2),
+		"icon": "res://Coronet/icons/kd.png",
 	},
 	"sprint": {
 		"id": "sprint",
@@ -200,6 +316,7 @@ const SKILL_DATA := {
 		"cooldown": 30.0,
 		"color": Color(0.3, 0.8, 1.0),
 		"self_cast": true,
+		"icon": "res://Coronet/icons/sprint.png",
 	},
 	"sensu_bean": {
 		"id": "sensu_bean",
@@ -212,6 +329,7 @@ const SKILL_DATA := {
 		"cooldown": 30.0,
 		"color": Color(0.2, 0.9, 0.3),
 		"self_cast": true,
+		"icon": "res://Coronet/icons/heal.png",
 	},
 }
 
@@ -228,88 +346,164 @@ const KD_IMMUNITY_DURATION := 30.0
 #  READY
 # ════════════════════════════════════════════════════════════
 func _ready() -> void:
-	for child in get_children():
-		var n : String = child.name
-		if "Iron_Sentinel" in n:
-			_silver = child
-		elif "Ember_Guard" in n:
-			_red = child
-
 	_camera = $Camera3D
 
-	if _silver:
-		_silver_anim = _find_anim_player(_silver)
-		_silver_armature = _silver.get_node_or_null("Armature")
+	# Check if character was selected from character select screen
+	_selected_char_id = ""
+	if get_tree().root.has_meta("selected_character"):
+		_selected_char_id = get_tree().root.get_meta("selected_character")
+
+	# If coming from character select, hide pre-placed scene characters and spawn selected
+	if _selected_char_id != "" and _selected_char_id in CHAR_IDLE_FBX:
+		# Hide all pre-placed character models
+		for child in get_children():
+			var n : String = child.name
+			if "Iron_Sentinel" in n or "Ember_Guard" in n:
+				child.visible = false
+				child.process_mode = Node.PROCESS_MODE_DISABLED
+		# Spawn selected character from FBX
+		var fbx_path : String = CHAR_IDLE_FBX[_selected_char_id]
+		if ResourceLoader.exists(fbx_path):
+			var scene : PackedScene = load(fbx_path)
+			var inst : Node3D = scene.instantiate()
+			inst.name = "PlayerCharacter"
+			inst.position = Vector3(0, 0, 1.5)
+			add_child(inst)
+			_active = inst
+		character_class = CHAR_CLASSES.get(_selected_char_id, "melee")
+		_can_walk = CHAR_HAS_WALK.get(_selected_char_id, false)
+		_uses_walk = false
+	else:
+		# Default: use pre-placed scene characters (for testing without char select)
+		_selected_char_id = "SilverArmor"
+		for child in get_children():
+			var n : String = child.name
+			if "Iron_Sentinel" in n:
+				_silver = child
+			elif "Ember_Guard" in n:
+				_red = child
+		# Fall back: if neither found, spawn SilverArmor from FBX
+		if _silver == null and _red == null:
+			var fbx_path : String = CHAR_IDLE_FBX["SilverArmor"]
+			if ResourceLoader.exists(fbx_path):
+				var scene : PackedScene = load(fbx_path)
+				var inst : Node3D = scene.instantiate()
+				inst.name = "PlayerCharacter"
+				inst.position = Vector3(0, 0, 1.5)
+				add_child(inst)
+				_silver = inst
+		_active = _silver if _silver else _red
+		character_class = "melee" if _silver else "ranged"
+		_uses_walk = false
+
+	if _active == null:
+		push_error("No player character found or spawned!")
+		return
+
+	# Setup the active character
+	var active_anim := _find_anim_player(_active)
+	var active_armature : Node3D = _active.get_node_or_null("Armature") if _active else null
+
+	# Store in _silver/_red slots for compatibility
+	if _selected_char_id in ["SilverArmor", "WhiteSoldier"]:
+		_silver = _active
+		_silver_anim = active_anim
+		_silver_armature = active_armature
 		if _silver_armature:
 			_silver_armature_rot = _silver_armature.rotation
-	if _red:
+	else:
+		_red = _active
+		_red_anim = active_anim
+		_red_armature = active_armature
+		if _red_armature:
+			_red_armature_rot = _red_armature.rotation
+
+	# Also set up the non-active default character if in test mode (no char select)
+	if _selected_char_id == "SilverArmor" and _red:
 		_red_anim = _find_anim_player(_red)
 		_red_armature = _red.get_node_or_null("Armature")
 		if _red_armature:
 			_red_armature_rot = _red_armature.rotation
 
-	# Print skeleton bone names for debugging
-	if _silver:
-		var skel := _find_skeleton(_silver)
-		if skel:
-			print("SILVER bones: ", _get_bone_names(skel))
-	if _red:
-		var skel := _find_skeleton(_red)
-		if skel:
-			print("RED bones: ", _get_bone_names(skel))
+	# Pick the right anim set
+	var anim_set_name : String = CHAR_ANIM_SETS.get(_selected_char_id, "SILVER")
+	var anim_dict : Dictionary
+	match anim_set_name:
+		"RED": anim_dict = RED_ANIMS
+		"REDSOLDIER": anim_dict = REDSOLDIER_ANIMS
+		"WHITESOLDIER": anim_dict = WHITESOLDIER_ANIMS
+		_: anim_dict = SILVER_ANIMS
 
-	var silver_skel : Skeleton3D = _find_skeleton(_silver) if _silver else null
-	var red_skel : Skeleton3D = _find_skeleton(_red) if _red else null
-	# Get skeleton path relative to AnimationPlayer for track remapping
-	var silver_skel_path := _get_skel_path(_silver_anim, silver_skel)
-	var red_skel_path := _get_skel_path(_red_anim, red_skel)
-	print("SILVER skel path: ", silver_skel_path)
-	print("RED skel path: ", red_skel_path)
-	_load_anims(_silver_anim, SILVER_ANIMS, silver_skel, silver_skel_path)
-	_load_anims(_red_anim, RED_ANIMS, red_skel, red_skel_path)
-	_strip_all_anims(_silver_anim)
-	_strip_all_anims(_red_anim)
-	_set_loop_modes(_silver_anim)
-	_set_loop_modes(_red_anim)
+	# Load animations
+	var active_skel : Skeleton3D = _find_skeleton(_active) if _active else null
+	var active_skel_path := _get_skel_path(active_anim, active_skel)
+	_load_anims(active_anim, anim_dict, active_skel, active_skel_path)
+	_strip_all_anims(active_anim)
+	_set_loop_modes(active_anim)
 
-	# Set up NPC-like stats on both characters so they can be targeted
-	if _silver:
-		_silver.set_meta("ham_health", 1000.0)
-		_silver.set_meta("max_hp", 1000.0)
-		_silver.set_meta("ham_action", 800.0)
-		_silver.set_meta("max_action", 800.0)
-		_silver.set_meta("ham_mind", 600.0)
-		_silver.set_meta("max_mind", 600.0)
-		_silver.set_meta("is_dead", false)
-		_silver.set_meta("display_name", "Silver Sentinel")
-		_silver.set_meta("accuracy", 60.0)
-		_silver.set_meta("defense", 40.0)
-	if _red:
-		_red.set_meta("ham_health", 1000.0)
-		_red.set_meta("max_hp", 1000.0)
-		_red.set_meta("ham_action", 800.0)
-		_red.set_meta("max_action", 800.0)
-		_red.set_meta("ham_mind", 600.0)
-		_red.set_meta("max_mind", 600.0)
-		_red.set_meta("is_dead", false)
-		_red.set_meta("display_name", "Ember Guard")
-		_red.set_meta("accuracy", 55.0)
-		_red.set_meta("defense", 35.0)
+	# Also load anims for non-active in test mode
+	if _selected_char_id == "SilverArmor" and _red_anim:
+		var red_skel : Skeleton3D = _find_skeleton(_red) if _red else null
+		var red_skel_path := _get_skel_path(_red_anim, red_skel)
+		_load_anims(_red_anim, RED_ANIMS, red_skel, red_skel_path)
+		_strip_all_anims(_red_anim)
+		_set_loop_modes(_red_anim)
 
-	_active = _silver
-	character_class = "melee"
+	# Set up meta stats on active character
+	if _active:
+		_active.set_meta("ham_health", 1000.0)
+		_active.set_meta("max_hp", 1000.0)
+		_active.set_meta("ham_action", 800.0)
+		_active.set_meta("max_action", 800.0)
+		_active.set_meta("ham_mind", 600.0)
+		_active.set_meta("max_mind", 600.0)
+		_active.set_meta("is_dead", false)
+		_active.set_meta("display_name", CHAR_DISPLAY_NAMES.get(_selected_char_id, "Player"))
+		_active.set_meta("accuracy", 60.0)
+		_active.set_meta("defense", 40.0)
+	# Spawn at the starport (near Transport Shuttle) — shifted -100 Z
+	_active.position = Vector3(-3.0, 0.0, 70.0)
 	_play_anim("idle")
+	# Start in first person mode
+	_cam_zoom = 0.15
+	_first_person = true
 	_update_camera(0.0)
 	_build_hud()
 	_build_hotbar()
+	_build_xp_bar_under_hotbar()
+	_build_combat_queue_hud()
 	_build_skills_window()
 	_build_minimap()
 	_build_chat()
 	_connect_relay()
-	_spawn_test_mobs()
+	#_spawn_test_mobs()  # Disabled — use F5/F6 to spawn mobs manually
 	_setup_vehicle()
-	_paint_buildings()
+	_paint_starport()  # Only paint the starport grey
 	_setup_rain()
+	_setup_ambient_traffic()
+	_setup_anim_blender()
+
+func _setup_anim_blender() -> void:
+	if _active == null:
+		return
+	var ap := _get_active_anim()
+	var skel := _find_skeleton(_active)
+	if ap == null or skel == null:
+		print("ANIM_BLEND: Cannot setup — missing AnimationPlayer or Skeleton")
+		return
+	var skel_path := _get_skel_path(ap, skel)
+	var blender_script = load("res://Scripts/Coronet/AnimBlender.gd")
+	if blender_script == null:
+		print("ANIM_BLEND: Script not found")
+		return
+	_anim_blender = Node.new()
+	_anim_blender.set_script(blender_script)
+	add_child(_anim_blender)
+	var success : bool = _anim_blender.setup(_active, ap, skel, skel_path)
+	if not success:
+		print("ANIM_BLEND: Setup failed — falling back to AnimationPlayer")
+		_anim_blender.queue_free()
+		_anim_blender = null
 
 # ════════════════════════════════════════════════════════════
 #  ANIMATION HELPERS
@@ -498,17 +692,40 @@ func _play_anim(anim_name : String) -> void:
 	var ap := _get_active_anim()
 	if ap == null:
 		return
+
+	# Resolve idle to the actual FBX idle anim name
+	var resolved_name := anim_name
 	if anim_name == "idle":
 		for a in ap.get_animation_list():
 			if a != "RESET" and a not in ["run","walk","attack","attack2","dodge","kd"]:
-				if ap.current_animation != a:
-					ap.play(a)
-				return
-	if ap.has_animation(anim_name):
-		ap.stop()
-		ap.play(anim_name)
-	else:
-		print("ANIM NOT FOUND: ", anim_name, " available: ", ap.get_animation_list())
+				resolved_name = a
+				break
+
+	# Use AnimBlender if available — upper/lower body split
+	if _anim_blender and _anim_blender.is_active():
+		var is_upper := anim_name in ["attack", "attack2", "dodge", "kd"]
+		if is_upper:
+			# Only blend when moving — if idle, play attack on full body
+			var is_moving := _anim_state in ["run", "walk"]
+			if is_moving:
+				_anim_blender.fire_upper(StringName(resolved_name))
+			else:
+				# Idle + attacking: play on full body (set as base, no one-shot)
+				_anim_blender.play_base(StringName(resolved_name))
+		else:
+			# Reset speed scale for base anims
+			ap.speed_scale = 1.0
+			_anim_blender.play_base(StringName(resolved_name))
+		return
+
+	# Fallback — direct AnimationPlayer (no blending)
+	if anim_name != "attack" and anim_name != "attack2":
+		ap.speed_scale = 1.0
+	if not ap.has_animation(resolved_name):
+		print("ANIM NOT FOUND: ", resolved_name, " available: ", ap.get_animation_list())
+		return
+	ap.stop()
+	ap.play(resolved_name)
 
 func _play_anim_on_node(node : Node3D, anim_name : String) -> void:
 	# Play an animation on a specific character node (not necessarily the active one)
@@ -528,14 +745,28 @@ func _play_anim_on_node(node : Node3D, anim_name : String) -> void:
 # ════════════════════════════════════════════════════════════
 #  BUILDINGS
 # ════════════════════════════════════════════════════════════
-func _paint_buildings() -> void:
+func _paint_starport() -> void:
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = Color(0.25, 0.25, 0.27, 1.0)
 	mat.roughness = 0.95
 	mat.metallic = 0.0
 	for child in get_children():
-		if "starport" in child.name.to_lower() or "building" in child.name.to_lower():
+		if "starport" in child.name.to_lower() or "cnet" in child.name.to_lower():
 			_apply_mat_recursive(child, mat)
+
+func _paint_buildings() -> void:
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.25, 0.25, 0.27, 1.0)
+	mat.roughness = 0.95
+	mat.metallic = 0.0
+	# Only paint nodes with these keywords in the name
+	var paint_keywords := ["starport", "building", "cnet"]
+	for child in get_children():
+		var lower := child.name.to_lower()
+		for keyword in paint_keywords:
+			if keyword in lower:
+				_apply_mat_recursive(child, mat)
+				break
 
 func _apply_mat_recursive(node : Node, mat : StandardMaterial3D) -> void:
 	if node is MeshInstance3D:
@@ -546,6 +777,12 @@ func _apply_mat_recursive(node : Node, mat : StandardMaterial3D) -> void:
 # ════════════════════════════════════════════════════════════
 #  RAIN
 # ════════════════════════════════════════════════════════════
+func _setup_ambient_traffic() -> void:
+	var traffic := Node3D.new()
+	traffic.set_script(load("res://Scripts/Coronet/AmbientTraffic.gd"))
+	traffic.name = "AmbientTraffic"
+	add_child(traffic)
+
 func _setup_rain() -> void:
 	_rain_particles = GPUParticles3D.new()
 	var mat := ParticleProcessMaterial.new()
@@ -636,12 +873,12 @@ func _toggle_rain() -> void:
 #  VEHICLE
 # ════════════════════════════════════════════════════════════
 func _setup_vehicle() -> void:
+	# Find first vehicle as default mount
 	for child in get_children():
 		if "vehiclemount" in child.name.to_lower() or "vehicle" in child.name.to_lower():
 			_vehicle_mount = child
 			_vehicle_base_y = child.position.y
 			break
-	# Also check under Ground node
 	if _vehicle_mount == null:
 		var ground := get_node_or_null("Ground")
 		if ground:
@@ -652,6 +889,63 @@ func _setup_vehicle() -> void:
 					break
 	if _vehicle_mount:
 		print("Vehicle mount found: ", _vehicle_mount.name, " base_y=", _vehicle_base_y)
+	# Add collision bodies to ALL mountable vehicles so raycasts can detect them
+	_add_vehicle_collision_to_all()
+
+func _add_vehicle_collision_to_all() -> void:
+	var vehicle_keywords := ["vehicle", "landspeeder", "speeder", "mount", "voyager", "shuttle"]
+	for child in get_children():
+		var cname := child.name.to_lower()
+		var is_vehicle := false
+		for kw in vehicle_keywords:
+			if kw in cname:
+				is_vehicle = true
+				break
+		if not is_vehicle:
+			continue
+		# Check if already has a collision body
+		var has_body := false
+		for gc in child.get_children():
+			if gc is StaticBody3D or gc is Area3D:
+				has_body = true
+				break
+		if not has_body:
+			var body := StaticBody3D.new()
+			var coll := CollisionShape3D.new()
+			var shape := BoxShape3D.new()
+			shape.size = Vector3(3.0, 1.5, 5.0)
+			coll.shape = shape
+			coll.position = Vector3(0, 0.75, 0)
+			body.add_child(coll)
+			child.add_child(body)
+			print("Added collision to vehicle: ", child.name)
+	# Also check under Ground node
+	var ground := get_node_or_null("Ground")
+	if ground:
+		for child in ground.get_children():
+			var cname := child.name.to_lower()
+			var is_vehicle := false
+			for kw in vehicle_keywords:
+				if kw in cname:
+					is_vehicle = true
+					break
+			if not is_vehicle:
+				continue
+			var has_body := false
+			for gc in child.get_children():
+				if gc is StaticBody3D or gc is Area3D:
+					has_body = true
+					break
+			if not has_body:
+				var body := StaticBody3D.new()
+				var coll := CollisionShape3D.new()
+				var shape := BoxShape3D.new()
+				shape.size = Vector3(3.0, 1.5, 5.0)
+				coll.shape = shape
+				coll.position = Vector3(0, 0.75, 0)
+				body.add_child(coll)
+				child.add_child(body)
+				print("Added collision to vehicle: ", child.name)
 
 func _tick_vehicle_hover(delta : float) -> void:
 	if _vehicle_mount == null or not is_instance_valid(_vehicle_mount):
@@ -662,7 +956,7 @@ func _tick_vehicle_hover(delta : float) -> void:
 		_vehicle_mount.position.y = _vehicle_base_y + hover_offset
 	# When mounted, hover bob is applied on top of current Y in the movement code
 
-func _toggle_mount() -> void:
+func _toggle_mount(force_mount := false) -> void:
 	if _vehicle_mount == null or not is_instance_valid(_vehicle_mount):
 		_log_combat("[color=gray]No vehicle nearby[/color]")
 		return
@@ -688,10 +982,11 @@ func _toggle_mount() -> void:
 		_log_combat("[color=yellow]Dismounted vehicle.[/color]")
 	else:
 		# ── MOUNT ──
-		var dist := _active.global_position.distance_to(_vehicle_mount.global_position)
-		if dist > VEHICLE_MOUNT_RANGE:
-			_log_combat("[color=gray]Too far from vehicle (get closer)[/color]")
-			return
+		if not force_mount:
+			var dist := _active.global_position.distance_to(_vehicle_mount.global_position)
+			if dist > VEHICLE_MOUNT_RANGE:
+				_log_combat("[color=gray]Too far from vehicle (get closer)[/color]")
+				return
 		_mounted = true
 		# Remove prompt
 		if _vehicle_prompt and is_instance_valid(_vehicle_prompt):
@@ -899,12 +1194,6 @@ func _tick_speed_lines(_delta : float, active : bool) -> void:
 		line.look_at(line.global_position + forward)
 		line.rotate_object_local(Vector3.RIGHT, PI * 0.5)
 		_speed_lines.append(line)
-		var tw := create_tween()
-		tw.tween_property(mat, "albedo_color:a", 0.0, 0.15)
-		tw.tween_callback(func():
-			if is_instance_valid(line):
-				line.queue_free()
-		)
 
 func _tick_rain() -> void:
 	if not _rain_enabled:
@@ -933,7 +1222,7 @@ func _tick_rain() -> void:
 				_lightning_bolt = null
 
 func _trigger_lightning() -> void:
-	if not _active:
+	if not _active or not is_inside_tree():
 		return
 	# Flash — briefly max out the sun
 	var sun = get_node_or_null("Sun")
@@ -979,6 +1268,103 @@ func _spawn_machine_walker() -> void:
 	mw.position.y = 0.0
 	_log_combat("[color=green]Machine Walker spawned![/color]")
 
+func _spawn_test_dummy() -> void:
+	# Toggle — if one exists, despawn it
+	for child in get_children():
+		if "TestDummy" in child.name:
+			if _current_target == child:
+				_current_target = null
+				_auto_attacking = false
+				_update_target_indicator()
+			child.queue_free()
+			_log_combat("[color=gray]Test Dummy despawned.[/color]")
+			return
+	# Spawn new
+	var td := Node3D.new()
+	td.set_script(load("res://Scripts/TestDummy.gd"))
+	td.name = "TestDummy_" + str(randi() % 9999)
+	add_child(td)
+	var cam_forward := -_camera.global_transform.basis.z.normalized()
+	cam_forward.y = 0.0
+	cam_forward = cam_forward.normalized()
+	td.global_position = _active.global_position + cam_forward * 8.0
+	td.position.y = 0.0
+	_log_combat("[color=green]Test Dummy spawned! (F6 to despawn)[/color]")
+
+# ════════════════════════════════════════════════════════════
+#  EFFECTIVE STATS (wounds + attributes)
+# ════════════════════════════════════════════════════════════
+func get_effective_max_health() -> float:
+	return maxf(1.0, max_health - wound_health + _get_prof_stat("max_health_bonus"))
+
+func get_effective_max_action() -> float:
+	return maxf(1.0, max_action_stat - wound_action + _get_prof_stat("max_action_bonus"))
+
+func get_effective_max_mind() -> float:
+	return maxf(1.0, max_mind - wound_mind + _get_prof_stat("max_mind_bonus"))
+
+func get_effective_accuracy() -> float:
+	return accuracy + _get_prof_stat("accuracy")
+
+func get_effective_defense() -> float:
+	return defense + _get_prof_stat("melee_defense") + _get_prof_stat("ranged_defense")
+
+func get_effective_damage() -> float:
+	if character_class == "melee":
+		return BASE_DAMAGE + _get_prof_stat("melee_damage")
+	return BASE_DAMAGE + _get_prof_stat("ranged_damage")
+
+# ════════════════════════════════════════════════════════════
+#  WOUNDS
+# ════════════════════════════════════════════════════════════
+func apply_wound(pool : String, amount : float) -> void:
+	match pool:
+		"health": wound_health = minf(wound_health + amount, max_health * 0.8)
+		"action": wound_action = minf(wound_action + amount, max_action_stat * 0.8)
+		"mind":   wound_mind = minf(wound_mind + amount, max_mind * 0.8)
+
+func _tick_wound_regen(delta : float) -> void:
+	var rate : float = WOUND_HEAL_RATE + 2.0
+	if wound_health > 0.0:
+		wound_health = maxf(0.0, wound_health - rate * delta)
+	if wound_action > 0.0:
+		wound_action = maxf(0.0, wound_action - rate * delta)
+	if wound_mind > 0.0:
+		wound_mind = maxf(0.0, wound_mind - rate * delta)
+	# Clamp current HAM to effective max
+	ham_health = minf(ham_health, get_effective_max_health())
+	ham_action = minf(ham_action, get_effective_max_action())
+	ham_mind = minf(ham_mind, get_effective_max_mind())
+
+# ════════════════════════════════════════════════════════════
+#  XP & LEVELING
+# ════════════════════════════════════════════════════════════
+func grant_xp(amount : float) -> void:
+	exp_points += amount
+	_spawn_damage_text(_active, "+%d XP" % int(amount), Color(0.75, 0.25, 1.0))
+	_log_combat("[color=purple]+%d XP[/color]" % int(amount))
+	while exp_points >= exp_needed:
+		exp_points -= exp_needed
+		_level_up()
+
+func _level_up() -> void:
+	level += 1
+	unspent_points += 3
+	exp_needed = 100.0 * level
+	# Full heal on level up
+	ham_health = get_effective_max_health()
+	ham_action = get_effective_max_action()
+	ham_mind = get_effective_max_mind()
+	# Clear wounds
+	wound_health = 0.0
+	wound_action = 0.0
+	wound_mind = 0.0
+	_log_combat("[color=yellow]LEVEL UP! You are now level %d! +3 stat points.[/color]" % level)
+	_spawn_damage_text(_active, "LEVEL %d!" % level, Color(1.0, 0.85, 0.2))
+
+func spend_stat_point(_attr : String) -> void:
+	pass  # Old attribute system removed — stats come from profession tree now
+
 func _spawn_test_mobs() -> void:
 	var mob_positions := [
 		Vector3(8.0, 0.0, 0.0),
@@ -1021,6 +1407,15 @@ func _spawn_test_mobs() -> void:
 # ════════════════════════════════════════════════════════════
 #  HUD
 # ════════════════════════════════════════════════════════════
+func _make_draggable(panel : Panel) -> void:
+	var drag_data := {"dragging": false}
+	panel.gui_input.connect(func(event : InputEvent):
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+			drag_data.dragging = event.pressed
+		if event is InputEventMouseMotion and drag_data.dragging:
+			panel.position += event.relative
+	)
+
 func _build_hud() -> void:
 	_hud = CanvasLayer.new()
 	_hud.layer = 10
@@ -1028,57 +1423,106 @@ func _build_hud() -> void:
 
 	# ── Player Frame ──
 	var pf := Panel.new()
-	pf.position = Vector2(10, 10)
-	pf.size = Vector2(220, 72)
+	pf.position = Vector2(38, 10)
+	pf.size = Vector2(220, 52)
 	var pf_style := StyleBoxFlat.new()
-	pf_style.bg_color = Color(0.04, 0.04, 0.04, 0.88)
-	pf_style.border_color = Color(0.25, 0.25, 0.3)
+	pf_style.bg_color = Color(0.04, 0.06, 0.1, 0.9)
+	pf_style.border_color = Color(0.2, 0.4, 0.6, 0.75)
 	pf_style.set_border_width_all(1)
-	pf_style.set_corner_radius_all(4)
+	pf_style.set_corner_radius_all(3)
 	pf.add_theme_stylebox_override("panel", pf_style)
+	pf.clip_contents = true
+	_make_draggable(pf)
 	_hud.add_child(pf)
+	_player_frame = pf
+
+	# Posture indicator — separate panel, follows player frame position
+	_posture_box = Panel.new()
+	_posture_box.position = Vector2(pf.position.x - 28, pf.position.y + 2)
+	_posture_box.size = Vector2(26, 48)
+	var pb_style := StyleBoxFlat.new()
+	pb_style.bg_color = Color(0.06, 0.1, 0.14, 0.9)
+	pb_style.border_color = Color(0.2, 0.4, 0.6, 0.75)
+	pb_style.set_border_width_all(1)
+	pb_style.set_corner_radius_all(3)
+	_posture_box.add_theme_stylebox_override("panel", pb_style)
+	_posture_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hud.add_child(_posture_box)
+	_posture_label = Label.new()
+	_posture_label.text = _STANDING_ICON
+	_posture_label.position = Vector2(0, 0)
+	_posture_label.size = Vector2(26, 48)
+	_posture_label.add_theme_font_size_override("font_size", 22)
+	_posture_label.add_theme_color_override("font_color", Color(0.4, 0.7, 0.9))
+	_posture_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_posture_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_posture_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_posture_box.add_child(_posture_label)
 
 	_player_name_lbl = Label.new()
-	_player_name_lbl.text = "Silver Sentinel"
-	_player_name_lbl.position = Vector2(8, 2)
-	_player_name_lbl.add_theme_font_size_override("font_size", 11)
+	_player_name_lbl.text = CHAR_DISPLAY_NAMES.get(_selected_char_id, "Player")
+	_player_name_lbl.position = Vector2(6, 1)
+	_player_name_lbl.size = Vector2(208, 14)
+	_player_name_lbl.add_theme_font_size_override("font_size", 10)
+	_player_name_lbl.add_theme_color_override("font_color", Color(0.85, 0.9, 0.95))
 	pf.add_child(_player_name_lbl)
 
-	_hp_bar = _make_bar(pf, Vector2(8, 20), Vector2(204, 14), Color(0.8, 0.15, 0.15))
-	_action_bar = _make_bar(pf, Vector2(8, 36), Vector2(204, 14), Color(0.85, 0.75, 0.1))
-	_mind_bar = _make_bar(pf, Vector2(8, 52), Vector2(204, 14), Color(0.15, 0.4, 0.85))
+	# HAM bars — compact, all fit inside the frame
+	var bar_x := 6.0
+	var bar_w := 208.0
+	var bar_h := 10.0
+	_hp_bar = _make_bar(pf, Vector2(bar_x, 16), Vector2(bar_w, bar_h), Color(0.8, 0.15, 0.15))
+	_action_bar = _make_bar(pf, Vector2(bar_x, 28), Vector2(bar_w, bar_h), Color(0.85, 0.75, 0.1))
+	_mind_bar = _make_bar(pf, Vector2(bar_x, 40), Vector2(bar_w, bar_h), Color(0.15, 0.4, 0.85))
+
+	# Wound overlays — black bar on right side of each HAM bar
+	_hp_wound_ov = _make_wound_overlay(Vector2(bar_x + bar_w, 16), bar_h)
+	pf.add_child(_hp_wound_ov)
+	_action_wound_ov = _make_wound_overlay(Vector2(bar_x + bar_w, 28), bar_h)
+	pf.add_child(_action_wound_ov)
+	_mind_wound_ov = _make_wound_overlay(Vector2(bar_x + bar_w, 40), bar_h)
+	pf.add_child(_mind_wound_ov)
 
 	# ── Player Buff/Debuff Row ──
+	# Player buff/debuff row — separate from frame to avoid clip_contents
 	_player_buff_row = HBoxContainer.new()
-	_player_buff_row.position = Vector2(10, 84)
+	_player_buff_row.position = Vector2(pf.position.x, pf.position.y + 54)
+	_player_buff_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hud.add_child(_player_buff_row)
 
 	# ── Target Frame ──
 	_tgt_panel = Panel.new()
 	_tgt_panel.position = Vector2(300, 10)
-	_tgt_panel.size = Vector2(250, 82)
+	_tgt_panel.size = Vector2(220, 52)
 	var tgt_style := StyleBoxFlat.new()
-	tgt_style.bg_color = Color(0.04, 0.04, 0.04, 0.88)
-	tgt_style.border_color = Color(0.25, 0.25, 0.3)
+	tgt_style.bg_color = Color(0.04, 0.06, 0.1, 0.9)
+	tgt_style.border_color = Color(0.2, 0.4, 0.6, 0.75)
 	tgt_style.set_border_width_all(1)
-	tgt_style.set_corner_radius_all(4)
+	tgt_style.set_corner_radius_all(3)
 	_tgt_panel.add_theme_stylebox_override("panel", tgt_style)
+	_tgt_panel.clip_contents = true
+	_make_draggable(_tgt_panel)
 	_tgt_panel.visible = false
 	_hud.add_child(_tgt_panel)
 
 	_tgt_name_lbl = Label.new()
 	_tgt_name_lbl.text = ""
-	_tgt_name_lbl.position = Vector2(8, 2)
-	_tgt_name_lbl.add_theme_font_size_override("font_size", 11)
+	_tgt_name_lbl.position = Vector2(6, 1)
+	_tgt_name_lbl.size = Vector2(208, 14)
+	_tgt_name_lbl.add_theme_font_size_override("font_size", 10)
+	_tgt_name_lbl.add_theme_color_override("font_color", Color(0.85, 0.9, 0.95))
 	_tgt_panel.add_child(_tgt_name_lbl)
 
-	_tgt_hp_bar = _make_bar(_tgt_panel, Vector2(8, 22), Vector2(234, 14), Color(0.8, 0.15, 0.15))
-	_tgt_action_bar = _make_bar(_tgt_panel, Vector2(8, 40), Vector2(234, 14), Color(0.85, 0.75, 0.1))
-	_tgt_mind_bar = _make_bar(_tgt_panel, Vector2(8, 58), Vector2(234, 14), Color(0.15, 0.4, 0.85))
+	var tbar_x := 6.0
+	var tbar_w := 208.0
+	var tbar_h := 10.0
+	_tgt_hp_bar = _make_bar(_tgt_panel, Vector2(tbar_x, 16), Vector2(tbar_w, tbar_h), Color(0.8, 0.15, 0.15))
+	_tgt_action_bar = _make_bar(_tgt_panel, Vector2(tbar_x, 28), Vector2(tbar_w, tbar_h), Color(0.85, 0.75, 0.1))
+	_tgt_mind_bar = _make_bar(_tgt_panel, Vector2(tbar_x, 40), Vector2(tbar_w, tbar_h), Color(0.15, 0.4, 0.85))
 
-	# ── Target Debuff Row ──
+	# ── Target Debuff Row — separate from frame to avoid clip
 	_tgt_debuff_row = HBoxContainer.new()
-	_tgt_debuff_row.position = Vector2(300, 94)
+	_tgt_debuff_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hud.add_child(_tgt_debuff_row)
 
 	# ── Combat Log ──
@@ -1101,14 +1545,41 @@ func _make_bar(parent : Control, pos : Vector2, sz : Vector2, color : Color) -> 
 	bar.max_value = 100.0
 	bar.value = 100.0
 	bar.show_percentage = false
+	bar.clip_contents = true
+	# Force exact height via theme constant
+	bar.add_theme_constant_override("outline_size", 0)
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = color
+	sb.set_content_margin_all(0)
+	sb.set_corner_radius_all(0)
 	bar.add_theme_stylebox_override("fill", sb)
 	var sb_bg := StyleBoxFlat.new()
 	sb_bg.bg_color = Color(0.1, 0.1, 0.1, 0.8)
+	sb_bg.set_content_margin_all(0)
+	sb_bg.set_corner_radius_all(0)
 	bar.add_theme_stylebox_override("background", sb_bg)
+	# Override all other styleboxes to prevent expansion
+	var sb_empty := StyleBoxEmpty.new()
+	bar.add_theme_stylebox_override("grabber_area", sb_empty)
+	bar.add_theme_stylebox_override("grabber_area_highlight", sb_empty)
 	parent.add_child(bar)
 	return bar
+
+func _apply_wound_overlay(ov : ColorRect, wound : float, raw_max : float, bar_x : float, bar_w : float) -> void:
+	if ov == null or raw_max <= 0.0:
+		return
+	var frac := clampf(wound / raw_max, 0.0, 1.0)
+	var w := frac * bar_w
+	ov.size.x = w
+	ov.position.x = bar_x + bar_w - w
+
+func _make_wound_overlay(right_edge : Vector2, h : float) -> ColorRect:
+	var cr := ColorRect.new()
+	cr.color = Color(0.0, 0.0, 0.0, 0.88)
+	cr.size = Vector2(0.0, h)
+	cr.position = right_edge
+	cr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return cr
 
 func _log_combat(text : String) -> void:
 	if _combat_log:
@@ -1121,7 +1592,7 @@ func _build_hotbar() -> void:
 	var vp := get_viewport().get_visible_rect().size
 	var total_w : float = HOTBAR_SLOTS * (SLOT_SIZE + SLOT_PAD) - SLOT_PAD
 	_hotbar_panel = Panel.new()
-	_hotbar_panel.position = Vector2((vp.x - total_w) * 0.5, vp.y - SLOT_SIZE - 20)
+	_hotbar_panel.position = Vector2((vp.x - total_w) * 0.5, vp.y - SLOT_SIZE - 70)
 	_hotbar_panel.size = Vector2(total_w + 16, SLOT_SIZE + 16)
 	var hb_style := StyleBoxFlat.new()
 	hb_style.bg_color = Color(0.08, 0.08, 0.1, 0.85)
@@ -1129,6 +1600,7 @@ func _build_hotbar() -> void:
 	hb_style.set_border_width_all(1)
 	hb_style.set_corner_radius_all(4)
 	_hotbar_panel.add_theme_stylebox_override("panel", hb_style)
+	_make_draggable(_hotbar_panel)
 	_hud.add_child(_hotbar_panel)
 
 	_hotbar_slots.clear()
@@ -1159,11 +1631,13 @@ func _build_hotbar() -> void:
 		slot.add_child(key_lbl)
 		_hotbar_labels.append(key_lbl)
 
-		# Skill icon (colored rect)
-		var icon := ColorRect.new()
-		icon.position = Vector2(6, 12)
-		icon.size = Vector2(32, 28)
-		icon.color = Color(0, 0, 0, 0)
+		# Skill icon (texture or colored fallback)
+		var icon := TextureRect.new()
+		icon.position = Vector2(2, 2)
+		icon.size = Vector2(SLOT_SIZE - 4, SLOT_SIZE - 4)
+		icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		slot.add_child(icon)
 		_hotbar_icons.append(icon)
 
@@ -1180,18 +1654,136 @@ func _build_hotbar() -> void:
 		_hotbar_skills.append({})
 		_hotbar_cooldowns.append(0.0)
 
-	# Pre-load dizzy on slot 1, knockdown on slot 2
+	# Pre-load default hotbar: dizzy, knockdown, sprint, sensu bean
 	_set_hotbar_slot(0, SKILL_DATA["dizzy"])
 	_set_hotbar_slot(1, SKILL_DATA["knockdown"])
+	_set_hotbar_slot(2, SKILL_DATA["sprint"])
+	_set_hotbar_slot(3, SKILL_DATA["sensu_bean"])
+
+func _build_combat_queue_hud() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	_queue_panel = Panel.new()
+	_queue_panel.position = Vector2(vp.x - 210, vp.y * 0.5 - 60)
+	_queue_panel.size = Vector2(190, 120)
+	var qp_style := StyleBoxFlat.new()
+	qp_style.bg_color = Color(0.04, 0.04, 0.06, 0.85)
+	qp_style.border_color = Color(0.4, 0.35, 0.2, 0.7)
+	qp_style.set_border_width_all(1)
+	qp_style.set_corner_radius_all(4)
+	_queue_panel.add_theme_stylebox_override("panel", qp_style)
+	_queue_panel.visible = false
+	_make_draggable(_queue_panel)
+	_hud.add_child(_queue_panel)
+
+	# Title
+	var title := Label.new()
+	title.text = "COMBAT QUEUE"
+	title.position = Vector2(6, 2)
+	title.add_theme_font_size_override("font_size", 9)
+	title.add_theme_color_override("font_color", Color(0.7, 0.6, 0.4))
+	_queue_panel.add_child(title)
+
+	# Timer bar
+	var timer_bg := ColorRect.new()
+	timer_bg.position = Vector2(6, 16)
+	timer_bg.size = Vector2(178, 6)
+	timer_bg.color = Color(0.1, 0.1, 0.1, 0.8)
+	_queue_panel.add_child(timer_bg)
+	_queue_timer_bar = ColorRect.new()
+	_queue_timer_bar.position = Vector2(6, 16)
+	_queue_timer_bar.size = Vector2(0, 6)
+	_queue_timer_bar.color = Color(0.7, 0.55, 0.15)
+	_queue_panel.add_child(_queue_timer_bar)
+
+	# Queue slot rows
+	_queue_rows.clear()
+	for i in range(QUEUE_MAX):
+		var row := Label.new()
+		row.position = Vector2(10, 26 + i * 22)
+		row.size = Vector2(170, 20)
+		row.add_theme_font_size_override("font_size", 11)
+		row.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
+		row.text = "—"
+		_queue_panel.add_child(row)
+		_queue_rows.append(row)
+
+func _update_combat_queue_hud() -> void:
+	if _queue_panel == null:
+		return
+	# Show when in combat (have target and auto-attacking)
+	var in_combat : bool = _auto_attacking and _current_target != null and is_instance_valid(_current_target)
+	_queue_panel.visible = in_combat
+	if not in_combat:
+		return
+	# Timer bar
+	if _queue_timer_bar:
+		var frac := clampf(1.0 - _queue_timer / QUEUE_INTERVAL, 0.0, 1.0)
+		_queue_timer_bar.size.x = frac * 178.0
+		_queue_timer_bar.color = Color(0.5 + frac * 0.3, 0.4 + frac * 0.2, 0.1, 0.9)
+	# Rows
+	for i in range(QUEUE_MAX):
+		if i >= _queue_rows.size():
+			break
+		var row : Label = _queue_rows[i]
+		if i < _combat_queue.size():
+			var skill_id : String = _combat_queue[i]
+			var skill : Dictionary = SKILL_DATA.get(skill_id, {})
+			var display : String = str(skill.get("name", skill_id)).to_upper()
+			row.text = str(i + 1) + ". " + display
+			if i == 0:
+				row.add_theme_color_override("font_color", Color(1.0, 0.9, 0.5))
+			else:
+				row.add_theme_color_override("font_color", Color(0.65, 0.65, 0.7))
+		else:
+			row.text = "—"
+			row.add_theme_color_override("font_color", Color(0.35, 0.35, 0.4))
+
+func _build_xp_bar_under_hotbar() -> void:
+	if _hotbar_panel == null:
+		return
+	var hb_w : float = _hotbar_panel.size.x
+	var xp_w : float = hb_w * 0.5
+	var xp_x : float = (hb_w - xp_w) * 0.5
+	var xp_y : float = _hotbar_panel.size.y + 2
+	_xp_bar = _make_bar(_hotbar_panel, Vector2(xp_x, xp_y), Vector2(xp_w, 10), Color(0.55, 0.2, 0.85))
+	# Add border to XP bar
+	var xp_border := StyleBoxFlat.new()
+	xp_border.bg_color = Color(0.55, 0.2, 0.85)
+	xp_border.border_color = Color(0.7, 0.4, 1.0, 0.8)
+	xp_border.set_border_width_all(1)
+	xp_border.set_content_margin_all(0)
+	xp_border.set_corner_radius_all(0)
+	_xp_bar.add_theme_stylebox_override("fill", xp_border)
+	var xp_bg_border := StyleBoxFlat.new()
+	xp_bg_border.bg_color = Color(0.1, 0.05, 0.15, 0.8)
+	xp_bg_border.border_color = Color(0.4, 0.2, 0.6, 0.6)
+	xp_bg_border.set_border_width_all(1)
+	xp_bg_border.set_content_margin_all(0)
+	xp_bg_border.set_corner_radius_all(0)
+	_xp_bar.add_theme_stylebox_override("background", xp_bg_border)
+	_xp_bar_lbl = Label.new()
+	_xp_bar_lbl.position = Vector2(xp_x, xp_y - 1)
+	_xp_bar_lbl.size = Vector2(xp_w, 10)
+	_xp_bar_lbl.add_theme_font_size_override("font_size", 11)
+	_xp_bar_lbl.add_theme_color_override("font_color", Color(1, 1, 1, 0.9))
+	_xp_bar_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_xp_bar_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_xp_bar_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hotbar_panel.add_child(_xp_bar_lbl)
 
 func _set_hotbar_slot(idx : int, skill : Dictionary) -> void:
 	if idx < 0 or idx >= HOTBAR_SLOTS:
 		return
 	_hotbar_skills[idx] = skill
+	var icon_node : TextureRect = _hotbar_icons[idx]
 	if skill.is_empty():
-		_hotbar_icons[idx].color = Color(0, 0, 0, 0)
+		icon_node.texture = null
 	else:
-		_hotbar_icons[idx].color = skill.get("color", Color(0.5, 0.5, 0.5))
+		var icon_path : String = skill.get("icon", "")
+		if icon_path != "" and ResourceLoader.exists(icon_path):
+			icon_node.texture = load(icon_path)
+		else:
+			icon_node.texture = null
 
 func _activate_hotbar_slot(idx : int) -> void:
 	if idx < 0 or idx >= HOTBAR_SLOTS:
@@ -1203,58 +1795,115 @@ func _activate_hotbar_slot(idx : int) -> void:
 	if _hotbar_cooldowns[idx] > 0.0:
 		_log_combat("[color=gray]" + skill.get("name", "") + " is on cooldown (" + str(int(_hotbar_cooldowns[idx])) + "s)[/color]")
 		return
-	# Self-cast skills (like Sensu Bean)
+	# Self-cast skills fire immediately (not queued)
 	var is_self_cast : bool = skill.get("self_cast", false)
-	if not is_self_cast:
-		# Check target
-		if _current_target == null or not is_instance_valid(_current_target) or _tgt_stat(_current_target, "is_dead", false):
-			_log_combat("[color=gray]No valid target[/color]")
+	if is_self_cast:
+		var cost : float = skill.get("action_cost", 0.0)
+		if ham_action < cost:
+			_log_combat("[color=gray]Not enough action[/color]")
 			return
-		# Check range
-		var dist : float = _active.global_position.distance_to(_current_target.global_position)
-		var atk_range : float = ATTACK_RANGE_MELEE if character_class == "melee" else ATTACK_RANGE_RANGED
-		if dist > atk_range:
-			_log_combat("[color=gray]Target out of range[/color]")
-			return
+		ham_action -= cost
+		_hotbar_cooldowns[idx] = skill.get("cooldown", 10.0)
+		_execute_self_cast(skill)
+		return
+
+	# Combat skills — queue them
+	if _combat_queue.size() >= QUEUE_MAX:
+		_log_combat("[color=gray]Queue full! (max %d)[/color]" % QUEUE_MAX)
+		return
+	# Check target exists
+	if _current_target == null or not is_instance_valid(_current_target) or _tgt_stat(_current_target, "is_dead", false):
+		_log_combat("[color=gray]No valid target[/color]")
+		return
 	# Check action cost
 	var cost : float = skill.get("action_cost", 0.0)
 	if ham_action < cost:
 		_log_combat("[color=gray]Not enough action[/color]")
 		return
-	# Spend action
-	ham_action -= cost
-	# Start cooldown
-	_hotbar_cooldowns[idx] = skill.get("cooldown", 10.0)
 
-	# Handle self-cast skills
-	if is_self_cast:
-		if skill.get("id", "") == "sensu_bean":
-			_sensu_active = true
-			_sensu_timer = SENSU_DURATION
-			_log_combat("[color=green]Sensu Bean activated! Healing over " + str(int(SENSU_DURATION)) + "s[/color]")
-			_spawn_damage_text(_active, "SENSU BEAN", Color(0.2, 1.0, 0.3))
-			_spawn_heal_effect(_active)
-		elif skill.get("id", "") == "sprint":
-			_sprint_active = true
-			_sprint_timer = SPRINT_DURATION
-			_log_combat("[color=aqua]Sprint activated! Moving 65% faster for " + str(int(SPRINT_DURATION)) + "s[/color]")
-			_spawn_damage_text(_active, "SPRINT", Color(0.3, 0.8, 1.0))
+	_combat_queue.append(skill.get("id", ""))
+	_log_combat("[color=cyan]Queued: " + skill.get("name", "") + " (" + str(_combat_queue.size()) + "/" + str(QUEUE_MAX) + ")[/color]")
+	# Start queue timer if this is the first skill queued
+	if _combat_queue.size() == 1:
+		_queue_timer = 0.5  # short delay before first execute
+
+func _execute_self_cast(skill : Dictionary) -> void:
+	if skill.get("id", "") == "sensu_bean":
+		_sensu_active = true
+		_sensu_timer = SENSU_DURATION
+		_log_combat("[color=green]Sensu Bean activated! Healing over " + str(int(SENSU_DURATION)) + "s[/color]")
+		_spawn_damage_text(_active, "SENSU BEAN", Color(0.2, 1.0, 0.3))
+		_spawn_heal_effect(_active)
+	elif skill.get("id", "") == "sprint":
+		_sprint_active = true
+		_sprint_timer = SPRINT_DURATION
+		_log_combat("[color=aqua]Sprint activated! Moving 65% faster for " + str(int(SPRINT_DURATION)) + "s[/color]")
+		_spawn_damage_text(_active, "SPRINT", Color(0.3, 0.8, 1.0))
+
+func _tick_combat_queue(delta : float) -> void:
+	if _combat_queue.is_empty():
 		return
+	if _current_target == null or not is_instance_valid(_current_target) or _tgt_stat(_current_target, "is_dead", false):
+		_combat_queue.clear()
+		return
+	_queue_timer -= delta
+	if _queue_timer <= 0.0:
+		_execute_queued_skill()
+		_queue_timer = QUEUE_INTERVAL
 
+func _execute_queued_skill() -> void:
+	if _combat_queue.is_empty():
+		return
+	var skill_id : String = _combat_queue.pop_front()
+	var skill : Dictionary = SKILL_DATA.get(skill_id, {})
+	if skill.is_empty():
+		return
+	# Check target and range
+	if _current_target == null or not is_instance_valid(_current_target) or _tgt_stat(_current_target, "is_dead", false):
+		_log_combat("[color=gray]Target lost — queue cleared[/color]")
+		_combat_queue.clear()
+		return
+	var dist : float = _active.global_position.distance_to(_current_target.global_position)
+	var atk_range : float = ATTACK_RANGE_MELEE if character_class == "melee" else ATTACK_RANGE_RANGED
+	if dist > atk_range:
+		_log_combat("[color=gray]Target out of range — " + skill.get("name", "") + " failed[/color]")
+		return
+	# Check and spend action cost
+	var cost : float = skill.get("action_cost", 0.0)
+	if ham_action < cost:
+		_log_combat("[color=gray]Not enough action for " + skill.get("name", "") + "[/color]")
+		return
+	ham_action -= cost
+	# Find hotbar slot to set cooldown
+	for i in range(HOTBAR_SLOTS):
+		if _hotbar_skills[i].get("id", "") == skill_id:
+			_hotbar_cooldowns[i] = skill.get("cooldown", 10.0)
+			break
 	# Apply damage
-	var dmg : float = BASE_DAMAGE * skill.get("dmg_mult", 1.0) + randf_range(-5, 10)
-	_tgt_take_damage(_current_target, dmg, "health")
+	var dmg : float = get_effective_damage() * skill.get("dmg_mult", 1.0) + randf_range(-5, 10)
+	if dmg > 0.0:
+		_tgt_take_damage(_current_target, dmg, "health")
 	# Apply state
 	var state_name : String = skill.get("state", "")
 	var state_dur : float = skill.get("state_dur", 0.0)
 	if state_name != "":
 		_tgt_apply_state(_current_target, state_name, state_dur)
 	# Play attack anim
-	_play_anim("attack2" if _active == _silver else "attack")
+	_play_anim("attack")
 	_attack_anim_timer = 1.0
-	# Log
+	_anim_state = "attack"
+	# Effects and logging
 	var sn := _tgt_display_name(_current_target)
-	_log_combat("[color=yellow]" + skill.get("name", "") + " → " + sn + " for " + str(int(dmg)) + " dmg[/color]")
+	if dmg > 0.0:
+		_log_combat("[color=yellow]" + skill.get("name", "") + " → " + sn + " for " + str(int(dmg)) + " dmg[/color]")
+		_spawn_damage_text(_current_target, str(int(dmg)), Color(1.0, 1.0, 0.2))
+	if character_class == "ranged":
+		_spawn_laser_effect(_active, _current_target, 0.4)
+	else:
+		get_tree().create_timer(0.4).timeout.connect(func():
+			if is_instance_valid(_current_target):
+				_spawn_melee_hit_effect(_current_target)
+		)
 	if state_name == "dizzy":
 		_log_combat("[color=orange]" + sn + " is dizzied for " + str(int(state_dur)) + "s![/color]")
 		_spawn_damage_text(_current_target, "DIZZY", Color(0.9, 0.8, 0.2))
@@ -1335,11 +1984,21 @@ func _build_skill_entry(parent : Panel, skill : Dictionary, y : int) -> void:
 	parent.add_child(entry)
 
 	# Icon
-	var icon := ColorRect.new()
-	icon.position = Vector2(8, 8)
-	icon.size = Vector2(40, 40)
-	icon.color = skill.get("color", Color(0.5, 0.5, 0.5))
-	entry.add_child(icon)
+	var icon_path : String = skill.get("icon", "")
+	if icon_path != "" and ResourceLoader.exists(icon_path):
+		var icon := TextureRect.new()
+		icon.position = Vector2(8, 8)
+		icon.size = Vector2(40, 40)
+		icon.texture = load(icon_path)
+		icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		entry.add_child(icon)
+	else:
+		var icon := ColorRect.new()
+		icon.position = Vector2(8, 8)
+		icon.size = Vector2(40, 40)
+		icon.color = skill.get("color", Color(0.5, 0.5, 0.5))
+		entry.add_child(icon)
 
 	# Name
 	var name_lbl := Label.new()
@@ -1391,6 +2050,507 @@ func _toggle_skills_window() -> void:
 		_skills_window.visible = _skills_visible
 
 # ════════════════════════════════════════════════════════════
+#  RADIAL MENU (SWG-style right-click pie menu)
+# ════════════════════════════════════════════════════════════
+func _open_radial_menu(screen_pos : Vector2) -> void:
+	_close_radial_menu()
+	# Raycast to see what we right-clicked
+	var hit := _raycast_from_mouse(screen_pos)
+	print("RADIAL: right-click at ", screen_pos, " hit type=", hit.type, " node=", hit.node)
+	if hit.type == "ground" or hit.type == "none":
+		return  # Don't open on empty ground
+
+	_radial_target_node = hit.node
+	_radial_target_type = hit.type
+
+	# Determine options based on what was clicked
+	var options : Array = []
+	match hit.type:
+		"mob":
+			options = [{"label": "Attack", "action": "attack"}]
+		"vehicle":
+			if _mounted:
+				options = [{"label": "Dismount", "action": "dismount"}]
+			else:
+				options = [
+					{"label": "Mount", "action": "mount"},
+					{"label": "Stash", "action": "stash"},
+				]
+		"terminal":
+			options = [{"label": "Use", "action": "use_terminal"}]
+		"player":
+			options = [
+				{"label": "Party Invite", "action": "party_invite"},
+				{"label": "Trade", "action": "trade"},
+				{"label": "Duel", "action": "duel"},
+			]
+		_:
+			options = [{"label": "Examine", "action": "examine"}]
+
+	if options.is_empty():
+		return
+
+	# Build the radial menu UI — compact buttons, no background glass
+	_radial_menu = Control.new()
+	_radial_menu.z_index = 100
+	_hud.add_child(_radial_menu)
+	_radial_menu_visible = true
+
+	var center := screen_pos
+	var count := options.size()
+
+	# Stack buttons vertically centered on click position, tight spacing
+	var btn_h := 28.0
+	var btn_w := 100.0
+	var gap := 4.0
+	var total_h := count * btn_h + (count - 1) * gap
+	var start_y := center.y - total_h * 0.5
+
+	for i in range(count):
+		var btn := Button.new()
+		btn.text = options[i].label
+		btn.custom_minimum_size = Vector2(btn_w, btn_h)
+		btn.position = Vector2(center.x - btn_w * 0.5, start_y + i * (btn_h + gap))
+		btn.add_theme_font_size_override("font_size", 11)
+
+		# Style — dark blue translucent like SWG
+		var btn_sb := StyleBoxFlat.new()
+		btn_sb.bg_color = Color(0.06, 0.15, 0.25, 0.9)
+		btn_sb.border_color = Color(0.2, 0.5, 0.7, 0.8)
+		btn_sb.set_border_width_all(1)
+		btn_sb.set_corner_radius_all(4)
+		btn.add_theme_stylebox_override("normal", btn_sb)
+
+		var btn_hover := StyleBoxFlat.new()
+		btn_hover.bg_color = Color(0.1, 0.3, 0.45, 0.95)
+		btn_hover.border_color = Color(0.3, 0.7, 0.9, 1.0)
+		btn_hover.set_border_width_all(1)
+		btn_hover.set_corner_radius_all(4)
+		btn.add_theme_stylebox_override("hover", btn_hover)
+
+		btn.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0))
+		btn.add_theme_color_override("font_hover_color", Color(0.9, 0.95, 1.0))
+
+		var action : String = options[i].action
+		btn.pressed.connect(_on_radial_action.bind(action))
+		_radial_menu.add_child(btn)
+
+func _make_radial_circle(center : Vector2, radius : float, color : Color) -> ColorRect:
+	# Approximation — use a ColorRect with rounded corners (true circle would need a shader)
+	var cr := ColorRect.new()
+	cr.size = Vector2(radius * 2, radius * 2)
+	cr.position = center - Vector2(radius, radius)
+	cr.color = color
+	cr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return cr
+
+func _close_radial_menu() -> void:
+	if _radial_menu and is_instance_valid(_radial_menu):
+		_radial_menu.queue_free()
+		_radial_menu = null
+	_radial_menu_visible = false
+	_radial_target_node = null
+	_radial_target_type = ""
+
+func _on_radial_action(action : String) -> void:
+	var target := _radial_target_node
+	var target_type := _radial_target_type
+	_close_radial_menu()
+
+	match action:
+		"attack":
+			# Set target and start auto-attacking
+			if target and is_instance_valid(target):
+				_current_target = target
+				_auto_attacking = true
+				_attack_timer = 0.0  # attack immediately
+				_update_target_indicator()
+				var dist : float = _active.global_position.distance_to(target.global_position)
+				var atk_range : float = ATTACK_RANGE_MELEE if character_class == "melee" else ATTACK_RANGE_RANGED
+				_log_combat("[color=yellow]Target: " + _tgt_display_name(target) + " (dist: " + str(int(dist)) + ", range: " + str(int(atk_range)) + ")[/color]")
+		"mount":
+			print("MOUNT ACTION: target=", target, " valid=", is_instance_valid(target) if target else false)
+			if target and is_instance_valid(target):
+				_vehicle_mount = target
+				_vehicle_base_y = target.position.y
+				var vname := target.name.to_lower()
+				_vehicle_can_fly = not ("landspeeder" in vname or "speeder" in vname)
+				print("MOUNT: setting vehicle=", target.name, " can_fly=", _vehicle_can_fly)
+				_toggle_mount(true)
+			else:
+				print("MOUNT: target is null or invalid!")
+		"dismount":
+			_toggle_mount()
+		"stash":
+			if target and not _mounted:
+				_log_combat("[color=gray]Vehicle stashed.[/color]")
+				target.visible = false
+		"use_terminal":
+			if target and is_instance_valid(target) and target.has_method("interact"):
+				target.interact(self)
+			else:
+				_log_combat("[color=yellow]You must be closer to use this.[/color]")
+		"party_invite":
+			_log_combat("[color=cyan]Party invite sent.[/color]")
+		"trade":
+			_log_combat("[color=cyan]Trade request sent.[/color]")
+		"duel":
+			_log_combat("[color=cyan]Duel request sent.[/color]")
+		"examine":
+			if target:
+				_log_combat("[color=gray]You examine " + str(target.name) + ".[/color]")
+
+# ════════════════════════════════════════════════════════════
+#  STATS WINDOW (L key)
+# ════════════════════════════════════════════════════════════
+var _stats_content : VBoxContainer = null
+
+func _toggle_stats_window() -> void:
+	_stats_visible = !_stats_visible
+	if _stats_window == null:
+		_build_stats_window()
+	_stats_window.visible = _stats_visible
+	if _stats_visible:
+		_refresh_stats_window()
+
+func _build_stats_window() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	_stats_window = Panel.new()
+	_stats_window.position = Vector2(vp.x * 0.5 - 180, vp.y * 0.5 - 250)
+	_stats_window.size = Vector2(360, 500)
+	var sty := StyleBoxFlat.new()
+	sty.bg_color = Color(0.06, 0.07, 0.12, 0.95)
+	sty.border_color = Color(0.35, 0.55, 0.85, 0.75)
+	sty.set_border_width_all(2)
+	sty.set_corner_radius_all(5)
+	_stats_window.add_theme_stylebox_override("panel", sty)
+	_stats_window.visible = false
+	_hud.add_child(_stats_window)
+
+	# Title
+	var title := Label.new()
+	title.text = "CHARACTER STATS"
+	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_color_override("font_color", Color(0.65, 0.9, 1.0))
+	title.position = Vector2(12, 8)
+	title.size = Vector2(300, 24)
+	_stats_window.add_child(title)
+
+	# Close button
+	var close_btn := Button.new()
+	close_btn.text = "X"
+	close_btn.position = Vector2(330, 5)
+	close_btn.size = Vector2(24, 24)
+	close_btn.pressed.connect(func(): _stats_visible = false; _stats_window.visible = false)
+	_stats_window.add_child(close_btn)
+
+	# Scrollable content
+	var scroll := ScrollContainer.new()
+	scroll.position = Vector2(8, 36)
+	scroll.size = Vector2(344, 455)
+	_stats_window.add_child(scroll)
+
+	_stats_content = VBoxContainer.new()
+	_stats_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(_stats_content)
+
+func _refresh_stats_window() -> void:
+	if _stats_content == null:
+		return
+	# Clear old
+	for c in _stats_content.get_children():
+		c.queue_free()
+
+	var name_str : String = CHAR_DISPLAY_NAMES.get(_selected_char_id, "Player")
+	_add_stat_header(name_str + "  —  Level " + str(level))
+	_add_stat_row("Class", character_class.to_upper())
+	_add_stat_row("XP", "%d / %d" % [int(exp_points), int(exp_needed)])
+	_add_stat_row("Unspent Points", str(unspent_points))
+
+	_add_stat_header("HAM")
+	_add_stat_row("Health", "%d / %d" % [int(ham_health), int(get_effective_max_health())])
+	_add_stat_row("Action", "%d / %d" % [int(ham_action), int(get_effective_max_action())])
+	_add_stat_row("Mind", "%d / %d" % [int(ham_mind), int(get_effective_max_mind())])
+
+	_add_stat_header("OFFENSE")
+	_add_stat_row("Accuracy", str(int(get_effective_accuracy())))
+	_add_stat_row("Damage", str(int(get_effective_damage())))
+
+	_add_stat_header("DEFENSE")
+	_add_stat_row("Melee Defense", str(int(_get_prof_stat("melee_defense"))))
+	_add_stat_row("Ranged Defense", str(int(_get_prof_stat("ranged_defense"))))
+	_add_stat_row("Dodge", str(int(_get_prof_stat("dodge"))))
+	_add_stat_row("Block", str(int(_get_prof_stat("block"))))
+	_add_stat_row("Counterattack", str(int(_get_prof_stat("counterattack"))))
+
+	_add_stat_header("STATE DEFENSE")
+	_add_stat_row("Def vs Dizzy", str(int(_get_prof_stat("defense_vs_dizzy"))))
+	_add_stat_row("Def vs Knockdown", str(int(_get_prof_stat("defense_vs_knockdown"))))
+	_add_stat_row("Def vs Stun", str(int(_get_prof_stat("defense_vs_stun"))))
+	_add_stat_row("Def vs Blind", str(int(_get_prof_stat("defense_vs_blind"))))
+
+	_add_stat_header("WOUNDS")
+	_add_stat_row("Health Wounds", str(int(wound_health)))
+	_add_stat_row("Action Wounds", str(int(wound_action)))
+	_add_stat_row("Mind Wounds", str(int(wound_mind)))
+
+func _add_stat_header(text : String) -> void:
+	var lbl := Label.new()
+	lbl.text = text
+	lbl.add_theme_font_size_override("font_size", 13)
+	lbl.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0))
+	_stats_content.add_child(lbl)
+	var sep := HSeparator.new()
+	_stats_content.add_child(sep)
+
+func _add_stat_row(label_text : String, value_text : String) -> void:
+	var hbox := HBoxContainer.new()
+	var lbl := Label.new()
+	lbl.text = label_text
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_color_override("font_color", Color(0.6, 0.62, 0.65))
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(lbl)
+	var val := Label.new()
+	val.text = value_text
+	val.add_theme_font_size_override("font_size", 12)
+	val.add_theme_color_override("font_color", Color(0.9, 0.9, 0.85))
+	val.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	val.custom_minimum_size.x = 120
+	hbox.add_child(val)
+	_stats_content.add_child(hbox)
+
+func _add_stat_row_with_btn(label_text : String, value_text : String, attr_id : String) -> void:
+	var hbox := HBoxContainer.new()
+	var lbl := Label.new()
+	lbl.text = label_text
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_color_override("font_color", Color(0.6, 0.62, 0.65))
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(lbl)
+	var val := Label.new()
+	val.text = value_text
+	val.add_theme_font_size_override("font_size", 12)
+	val.add_theme_color_override("font_color", Color(0.9, 0.9, 0.85))
+	val.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	val.custom_minimum_size.x = 80
+	hbox.add_child(val)
+	var btn := Button.new()
+	btn.text = "+"
+	btn.custom_minimum_size = Vector2(28, 22)
+	btn.disabled = unspent_points <= 0
+	btn.pressed.connect(func():
+		spend_stat_point(attr_id)
+		_refresh_stats_window()
+	)
+	hbox.add_child(btn)
+	_stats_content.add_child(hbox)
+
+func _get_prof_stat(stat_name : String) -> float:
+	var totals := ProfessionData.compute_total_modifiers(_learned_boxes)
+	return totals.get(stat_name, 0.0)
+
+# ════════════════════════════════════════════════════════════
+#  INVENTORY
+# ════════════════════════════════════════════════════════════
+var _inv_window : Panel = null
+var _inv_visible := false
+var _inv_slots : Array = []
+const INV_COLS := 6
+const INV_ROWS := 5
+const INV_SLOT_SIZE := 48
+
+func _toggle_inventory() -> void:
+	_inv_visible = !_inv_visible
+	if _inv_window == null:
+		_build_inventory()
+	_inv_window.visible = _inv_visible
+
+func _build_inventory() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	var w := INV_COLS * (INV_SLOT_SIZE + 4) + 24
+	var h := INV_ROWS * (INV_SLOT_SIZE + 4) + 60
+	_inv_window = Panel.new()
+	_inv_window.position = Vector2(vp.x * 0.5 - w * 0.5, vp.y * 0.5 - h * 0.5)
+	_inv_window.size = Vector2(w, h)
+	var sty := StyleBoxFlat.new()
+	sty.bg_color = Color(0.06, 0.07, 0.12, 0.95)
+	sty.border_color = Color(0.35, 0.55, 0.85, 0.75)
+	sty.set_border_width_all(2)
+	sty.set_corner_radius_all(5)
+	_inv_window.add_theme_stylebox_override("panel", sty)
+	_inv_window.visible = false
+	_hud.add_child(_inv_window)
+	# Title
+	var title := Label.new()
+	title.text = "INVENTORY"
+	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_color_override("font_color", Color(0.65, 0.9, 1.0))
+	title.position = Vector2(12, 6)
+	_inv_window.add_child(title)
+	# Grid of slots
+	for row in range(INV_ROWS):
+		for col in range(INV_COLS):
+			var slot := Panel.new()
+			slot.position = Vector2(12 + col * (INV_SLOT_SIZE + 4), 32 + row * (INV_SLOT_SIZE + 4))
+			slot.size = Vector2(INV_SLOT_SIZE, INV_SLOT_SIZE)
+			var slot_sty := StyleBoxFlat.new()
+			slot_sty.bg_color = Color(0.12, 0.13, 0.18, 0.9)
+			slot_sty.border_color = Color(0.3, 0.4, 0.55, 0.6)
+			slot_sty.set_border_width_all(1)
+			slot.add_theme_stylebox_override("panel", slot_sty)
+			_inv_window.add_child(slot)
+			_inv_slots.append(slot)
+
+# ════════════════════════════════════════════════════════════
+#  PROFESSION TREE
+# ════════════════════════════════════════════════════════════
+var _prof_window : Panel = null
+var _prof_visible := false
+var _prof_content : VBoxContainer = null
+
+func _toggle_profession_window() -> void:
+	_prof_visible = !_prof_visible
+	if _prof_window == null:
+		_build_profession_window()
+	_prof_window.visible = _prof_visible
+	if _prof_visible:
+		_refresh_profession_window()
+
+func _build_profession_window() -> void:
+	var vp := get_viewport().get_visible_rect().size
+	_prof_window = Panel.new()
+	_prof_window.position = Vector2(vp.x * 0.5 - 220, vp.y * 0.5 - 300)
+	_prof_window.size = Vector2(440, 600)
+	var sty := StyleBoxFlat.new()
+	sty.bg_color = Color(0.06, 0.07, 0.12, 0.95)
+	sty.border_color = Color(0.35, 0.55, 0.85, 0.75)
+	sty.set_border_width_all(2)
+	sty.set_corner_radius_all(5)
+	_prof_window.add_theme_stylebox_override("panel", sty)
+	_prof_window.visible = false
+	_hud.add_child(_prof_window)
+	# Title
+	var title := Label.new()
+	title.text = "PROFESSION TREE"
+	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_color_override("font_color", Color(0.65, 0.9, 1.0))
+	title.position = Vector2(12, 8)
+	_prof_window.add_child(title)
+	# Scrollable content
+	var scroll := ScrollContainer.new()
+	scroll.position = Vector2(8, 36)
+	scroll.size = Vector2(424, 556)
+	_prof_window.add_child(scroll)
+	_prof_content = VBoxContainer.new()
+	_prof_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(_prof_content)
+
+func _refresh_profession_window() -> void:
+	if _prof_content == null:
+		return
+	for c in _prof_content.get_children():
+		c.queue_free()
+	# Show base profession based on character class
+	var base_id := "brawler" if character_class == "melee" else "marksman"
+	var base_prof := ProfessionData.get_profession(base_id)
+	if base_prof.is_empty():
+		return
+	_add_prof_section(base_prof)
+	# Show available advanced professions
+	var advanced := ProfessionData.get_advanced_professions(base_id)
+	for adv in advanced:
+		_add_prof_section(adv)
+
+func _add_prof_section(prof : Dictionary) -> void:
+	# Header
+	var header := Label.new()
+	header.text = prof.name.to_upper()
+	header.add_theme_font_size_override("font_size", 14)
+	header.add_theme_color_override("font_color", Color(0.9, 0.75, 0.3))
+	_prof_content.add_child(header)
+	var sep := HSeparator.new()
+	_prof_content.add_child(sep)
+	# Novice box
+	_add_prof_box(prof.novice)
+	# Disciplines
+	for disc in prof.disciplines:
+		var disc_lbl := Label.new()
+		disc_lbl.text = "  " + disc.name
+		disc_lbl.add_theme_font_size_override("font_size", 12)
+		disc_lbl.add_theme_color_override("font_color", Color(0.5, 0.7, 0.9))
+		_prof_content.add_child(disc_lbl)
+		for box in disc.boxes:
+			_add_prof_box(box)
+	# Master
+	_add_prof_box(prof.master)
+
+func _add_prof_box(box : Dictionary) -> void:
+	var hbox := HBoxContainer.new()
+	var learned : bool = box.id in _learned_boxes
+	var can_learn := ProfessionData.can_learn_box(box, _learned_boxes, _xp_pools, _skill_points_available, _credits)
+	# Status indicator
+	var status := Label.new()
+	if learned:
+		status.text = "[+]"
+		status.add_theme_color_override("font_color", Color(0.3, 0.9, 0.3))
+	elif can_learn.can_learn:
+		status.text = "[ ]"
+		status.add_theme_color_override("font_color", Color(0.9, 0.9, 0.3))
+	else:
+		status.text = "[x]"
+		status.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+	status.add_theme_font_size_override("font_size", 11)
+	status.custom_minimum_size.x = 30
+	hbox.add_child(status)
+	# Name
+	var name_lbl := Label.new()
+	name_lbl.text = box.name + " (%dsp, %dxp)" % [box.cost_sp, box.xp_cost]
+	name_lbl.add_theme_font_size_override("font_size", 11)
+	name_lbl.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8) if not learned else Color(0.6, 0.9, 0.6))
+	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(name_lbl)
+	# Learn button
+	if not learned and can_learn.can_learn:
+		var btn := Button.new()
+		btn.text = "Learn"
+		btn.custom_minimum_size = Vector2(50, 20)
+		var box_id : String = box.id
+		btn.pressed.connect(func():
+			_learn_skill_box(box_id)
+		)
+		hbox.add_child(btn)
+	_prof_content.add_child(hbox)
+
+func _learn_skill_box(box_id : String) -> void:
+	var box := ProfessionData.find_box(box_id)
+	if box.is_empty():
+		return
+	var check := ProfessionData.can_learn_box(box, _learned_boxes, _xp_pools, _skill_points_available, _credits)
+	if not check.can_learn:
+		_log_combat("[color=red]Cannot learn: " + check.reason + "[/color]")
+		return
+	_learned_boxes.append(box_id)
+	_skill_points_available -= box.cost_sp
+	var xp_type : String = box.xp_type
+	_xp_pools[xp_type] = _xp_pools.get(xp_type, 0) - box.xp_cost
+	_credits -= box.credit_cost
+	_log_combat("[color=green]Learned: " + box.name + "[/color]")
+	# Apply modifiers
+	var mods : Dictionary = box.get("modifiers", {})
+	for key in mods:
+		if key == "max_health_bonus":
+			max_health += mods[key]
+		elif key == "max_action_bonus":
+			max_action_stat += mods[key]
+		elif key == "max_mind_bonus":
+			max_mind += mods[key]
+	# Refresh window
+	_refresh_profession_window()
+	if _stats_visible:
+		_refresh_stats_window()
+
+# ════════════════════════════════════════════════════════════
 #  MINIMAP
 # ════════════════════════════════════════════════════════════
 func _build_minimap() -> void:
@@ -1404,6 +2564,7 @@ func _build_minimap() -> void:
 	mm_style.set_border_width_all(2)
 	mm_style.set_corner_radius_all(4)
 	_minimap_panel.add_theme_stylebox_override("panel", mm_style)
+	_make_draggable(_minimap_panel)
 	_hud.add_child(_minimap_panel)
 
 	# Location label
@@ -1426,40 +2587,98 @@ func _build_minimap() -> void:
 	if _minimap_draw.get_script() != null:
 		_minimap_draw.scene_ref = self
 
+	# Coordinate display anchored below minimap
+	_coord_label = Label.new()
+	_coord_label.text = "X: 0  Y: 0  Z: 0"
+	_coord_label.add_theme_font_size_override("font_size", 10)
+	_coord_label.add_theme_color_override("font_color", Color(0.6, 0.75, 0.6))
+	_coord_label.position = Vector2(_minimap_panel.position.x, _minimap_panel.position.y + MMAP_SIZE + 4)
+	_coord_label.size = Vector2(MMAP_SIZE, 16)
+	_coord_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var coord_bg := StyleBoxFlat.new()
+	coord_bg.bg_color = Color(0.05, 0.08, 0.05, 0.85)
+	coord_bg.border_color = Color(0.3, 0.35, 0.3)
+	coord_bg.set_border_width_all(1)
+	coord_bg.set_corner_radius_all(3)
+	_coord_label.add_theme_stylebox_override("normal", coord_bg)
+	_hud.add_child(_coord_label)
+
 func _update_minimap() -> void:
 	if _minimap_draw == null or _active == null:
 		return
 	_minimap_draw.queue_redraw()
+	# Update coordinate display
+	if _coord_label and _active:
+		var p := _active.global_position
+		_coord_label.text = "X: %d  Y: %d  Z: %d" % [int(p.x), int(p.y), int(p.z)]
+		# Keep anchored below minimap (in case minimap was dragged)
+		_coord_label.position = Vector2(_minimap_panel.position.x, _minimap_panel.position.y + MMAP_SIZE + 4)
 
 # ════════════════════════════════════════════════════════════
 #  CHAT
 # ════════════════════════════════════════════════════════════
+var _chat_general_log : RichTextLabel
+var _chat_tab_active : String = "general"
+var _chat_tab_btns := {}
+var _chat_dragging := false
+var _chat_drag_offset := Vector2.ZERO
+
 func _build_chat() -> void:
 	var vp := get_viewport().get_visible_rect().size
 	_chat_panel = Panel.new()
-	_chat_panel.position = Vector2(10, vp.y - 220)
-	_chat_panel.size = Vector2(420, 200)
+	_chat_panel.position = Vector2(10, vp.y - 240)
+	_chat_panel.size = Vector2(420, 220)
 	var ch_style := StyleBoxFlat.new()
 	ch_style.bg_color = Color(0.04, 0.04, 0.04, 0.75)
 	ch_style.border_color = Color(0.25, 0.25, 0.3)
 	ch_style.set_border_width_all(1)
 	ch_style.set_corner_radius_all(4)
 	_chat_panel.add_theme_stylebox_override("panel", ch_style)
+	_chat_panel.gui_input.connect(_on_chat_panel_drag)
 	_hud.add_child(_chat_panel)
 
-	# Chat log
-	_chat_log = RichTextLabel.new()
-	_chat_log.position = Vector2(8, 8)
-	_chat_log.size = Vector2(404, 160)
-	_chat_log.bbcode_enabled = true
-	_chat_log.scroll_following = true
-	_chat_log.add_theme_font_size_override("normal_font_size", 12)
-	_chat_log.add_theme_color_override("default_color", Color(0.85, 0.85, 0.85))
-	_chat_panel.add_child(_chat_log)
+	# Tab buttons
+	var tab_y := 4.0
+	var tabs := ["General", "Combat"]
+	var tx := 8.0
+	for tab_name in tabs:
+		var btn := Button.new()
+		btn.text = tab_name
+		btn.position = Vector2(tx, tab_y)
+		btn.size = Vector2(70, 22)
+		btn.add_theme_font_size_override("font_size", 10)
+		btn.pressed.connect(_switch_chat_tab.bind(tab_name.to_lower()))
+		_chat_panel.add_child(btn)
+		_chat_tab_btns[tab_name.to_lower()] = btn
+		tx += 74.0
+
+	# General chat log
+	_chat_general_log = RichTextLabel.new()
+	_chat_general_log.position = Vector2(8, 30)
+	_chat_general_log.size = Vector2(404, 152)
+	_chat_general_log.bbcode_enabled = true
+	_chat_general_log.scroll_following = true
+	_chat_general_log.add_theme_font_size_override("normal_font_size", 12)
+	_chat_general_log.add_theme_color_override("default_color", Color(0.85, 0.85, 0.85))
+	_chat_panel.add_child(_chat_general_log)
+
+	# Combat log (hidden by default)
+	_combat_log = RichTextLabel.new()
+	_combat_log.position = Vector2(8, 30)
+	_combat_log.size = Vector2(404, 152)
+	_combat_log.bbcode_enabled = true
+	_combat_log.scroll_following = true
+	_combat_log.add_theme_font_size_override("normal_font_size", 12)
+	_combat_log.add_theme_color_override("default_color", Color(0.85, 0.85, 0.85))
+	_combat_log.visible = false
+	_chat_panel.add_child(_combat_log)
+
+	# Keep _chat_log pointing to general for backwards compat (general chat display)
+	_chat_log = _chat_general_log
 
 	# Chat input
 	_chat_input = LineEdit.new()
-	_chat_input.position = Vector2(8, 172)
+	_chat_input.position = Vector2(8, 190)
 	_chat_input.size = Vector2(404, 22)
 	_chat_input.placeholder_text = "Press Enter to chat..."
 	_chat_input.add_theme_font_size_override("font_size", 11)
@@ -1471,16 +2690,39 @@ func _build_chat() -> void:
 	_chat_input.text_submitted.connect(_on_chat_submit)
 	_chat_panel.add_child(_chat_input)
 
-	_chat_log.append_text("[color=gray]Welcome to Coronet. Press Enter to chat.[/color]\n")
+	_chat_general_log.append_text("[color=gray]Welcome to Coronet. Press Enter to chat.[/color]\n")
+	_switch_chat_tab("general")
+
+func _switch_chat_tab(tab_id : String) -> void:
+	_chat_tab_active = tab_id
+	_chat_general_log.visible = (tab_id == "general")
+	_combat_log.visible = (tab_id == "combat")
+	# Highlight active tab
+	for tid in _chat_tab_btns:
+		var btn : Button = _chat_tab_btns[tid]
+		if tid == tab_id:
+			btn.add_theme_color_override("font_color", Color(1, 0.9, 0.5))
+		else:
+			btn.remove_theme_color_override("font_color")
+
+func _on_chat_panel_drag(event : InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed and event.position.y < 28:  # Only drag from tab bar area
+			_chat_dragging = true
+			_chat_drag_offset = event.position
+		elif not event.pressed:
+			_chat_dragging = false
+	if event is InputEventMouseMotion and _chat_dragging:
+		_chat_panel.position += event.relative
 
 func _on_chat_submit(text : String) -> void:
 	if text.strip_edges().is_empty():
 		_chat_input.clear()
 		_chat_input.release_focus()
 		return
-	# Display locally
-	var nick := "Silver Sentinel" if _active == _silver else "Ember Guard"
-	_chat_log.append_text("[color=cyan]" + nick + ":[/color] " + text + "\n")
+	# Display locally in general chat
+	var nick : String = CHAR_DISPLAY_NAMES.get(_selected_char_id, "Player")
+	_chat_general_log.append_text("[color=cyan]" + nick + ":[/color] " + text + "\n")
 	# Send via Relay
 	if Relay and Relay.has_method("send_game_data"):
 		Relay.send_game_data({"cmd": "chat", "nick": nick, "msg": text})
@@ -1621,16 +2863,34 @@ func _tgt_apply_state(node : Node3D, state_name : String, duration : float) -> v
 		node.set_meta("state_" + state_name, duration)
 
 func _update_hud() -> void:
-	# Player bars
+	# Posture icon — follow player frame position
+	if _posture_label:
+		_posture_label.text = _KNOCKDOWN_ICON if state_knockdown > 0.0 else _STANDING_ICON
+	if _posture_box and _player_frame:
+		_posture_box.position = Vector2(_player_frame.position.x - 28, _player_frame.position.y + 2)
+	# Player bars — use effective max (wounds reduce max)
 	if _hp_bar:
-		_hp_bar.max_value = max_health
+		_hp_bar.max_value = get_effective_max_health()
 		_hp_bar.value = ham_health
 	if _action_bar:
-		_action_bar.max_value = max_action_stat
+		_action_bar.max_value = get_effective_max_action()
 		_action_bar.value = ham_action
 	if _mind_bar:
-		_mind_bar.max_value = max_mind
+		_mind_bar.max_value = get_effective_max_mind()
 		_mind_bar.value = ham_mind
+	# Wound overlays
+	if _hp_wound_ov:
+		_apply_wound_overlay(_hp_wound_ov, wound_health, max_health, 6.0, 208.0)
+	if _action_wound_ov:
+		_apply_wound_overlay(_action_wound_ov, wound_action, max_action_stat, 6.0, 208.0)
+	if _mind_wound_ov:
+		_apply_wound_overlay(_mind_wound_ov, wound_mind, max_mind, 6.0, 208.0)
+	# XP bar
+	if _xp_bar:
+		_xp_bar.max_value = exp_needed
+		_xp_bar.value = exp_points
+	if _xp_bar_lbl:
+		_xp_bar_lbl.text = "Lv%d  XP %d / %d" % [level, int(exp_points), int(exp_needed)]
 
 	# Target frame
 	var tgt_dead = _tgt_stat(_current_target, "is_dead", false) if _current_target and is_instance_valid(_current_target) else true
@@ -1643,7 +2903,9 @@ func _update_hud() -> void:
 		_tgt_action_bar.value = _tgt_stat(_current_target, "ham_action", 0.0)
 		_tgt_mind_bar.max_value = _tgt_stat(_current_target, "max_mind", 100.0)
 		_tgt_mind_bar.value = _tgt_stat(_current_target, "ham_mind", 0.0)
-		# Target debuff icons
+		# Target debuff icons — track target frame position
+		if _tgt_debuff_row:
+			_tgt_debuff_row.position = Vector2(_tgt_panel.position.x, _tgt_panel.position.y + 54)
 		_update_status_row(_tgt_debuff_row, _current_target, false)
 	else:
 		_tgt_panel.visible = false
@@ -1652,7 +2914,11 @@ func _update_hud() -> void:
 			_current_target = null
 			_auto_attacking = false
 
-	# Player buff icons
+	# Combat queue HUD
+	_update_combat_queue_hud()
+	# Player buff icons — track player frame position
+	if _player_buff_row and _player_frame:
+		_player_buff_row.position = Vector2(_player_frame.position.x, _player_frame.position.y + 54)
 	_update_status_row(_player_buff_row, null, true)
 
 func _update_status_row(row : HBoxContainer, target : Node3D, is_player : bool) -> void:
@@ -1804,13 +3070,16 @@ func _tick_combat(delta : float) -> void:
 	if dist > atk_range:
 		return
 
-	# Face the target
-	var dir : Vector3 = (_current_target.global_position - _active.global_position).normalized()
-	var target_angle := atan2(dir.x, dir.z)
-	# Red armor attack anim shoots left — rotate 90 degrees clockwise
-	if _active == _red and _attack_anim_timer > 0.0:
-		target_angle -= PI * 0.5
-	_active.rotation.y = lerp_angle(_active.rotation.y, target_angle, ROTATION_SPEED * delta)
+	# Face the target — only when NOT moving (movement direction trumps target facing)
+	var is_moving := Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_UP) or Input.is_key_pressed(KEY_DOWN) or Input.is_key_pressed(KEY_LEFT) or Input.is_key_pressed(KEY_RIGHT)
+	if not is_moving:
+		var dir : Vector3 = (_current_target.global_position - _active.global_position).normalized()
+		var target_angle := atan2(dir.x, dir.z)
+		# RedArmor attack anim shoots left — rotate 90 degrees clockwise to face target
+		# RedSoldier faces target directly (no offset needed)
+		if _selected_char_id == "RedArmor" and _attack_anim_timer > 0.0:
+			target_angle -= PI * 0.5
+		_active.rotation.y = lerp_angle(_active.rotation.y, target_angle, ROTATION_SPEED * delta)
 
 	# Attack timer
 	_attack_timer -= delta
@@ -1833,8 +3102,28 @@ func _do_attack() -> void:
 	_play_anim(atk_name)
 	_anim_state = "attack"
 	var ap := _get_active_anim()
+
+	# Speed up attack animation for soldiers (1.3x base, first half 1.7x)
+	var atk_speed := 1.0
+	if _selected_char_id in ["RedSoldier", "WhiteSoldier"]:
+		atk_speed = 1.3
+	if ap:
+		ap.speed_scale = atk_speed
+
 	if ap and ap.has_animation(atk_name):
-		_attack_anim_timer = ap.get_animation(atk_name).length
+		_attack_anim_timer = ap.get_animation(atk_name).length / atk_speed
+		# For soldiers: speed up first half more (1.7x), then normal speed for second half
+		if _selected_char_id == "RedSoldier":
+			var full_len : float = ap.get_animation(atk_name).length
+			var half_time : float = (full_len * 0.5) / 1.7  # first half at 1.7x
+			var second_half : float = (full_len * 0.5) / 1.3  # second half at 1.3x
+			_attack_anim_timer = half_time + second_half
+			ap.speed_scale = 1.7  # start fast
+			# Slow down to 1.3x at halfway point
+			get_tree().create_timer(half_time).timeout.connect(func():
+				if ap and is_instance_valid(ap):
+					ap.speed_scale = 1.3
+			)
 	else:
 		_attack_anim_timer = 2.0
 
@@ -1842,13 +3131,17 @@ func _do_attack() -> void:
 	var attack_data := {"is_ranged": character_class != "melee"}
 	var result := CombatEngine.roll_to_hit(self, _current_target, attack_data)
 
-	# Spawn attack effect based on class
+	# Spawn attack effect based on class — bullet timing
 	if character_class == "ranged":
-		_spawn_laser_effect(_active, _current_target)
+		var bullet_delay : float = _attack_anim_timer * 0.8
+		# RedSoldier fires 2.3s earlier total
+		if _selected_char_id == "RedSoldier":
+			bullet_delay = maxf(0.1, bullet_delay - 2.3)
+		_spawn_laser_effect(_active, _current_target, bullet_delay)
 	else:
 		# Delay melee hit to match swing
 		get_tree().create_timer(0.4).timeout.connect(func():
-			if is_instance_valid(_current_target):
+			if is_inside_tree() and is_instance_valid(_current_target):
 				_spawn_melee_hit_effect(_current_target)
 		)
 
@@ -1857,8 +3150,18 @@ func _do_attack() -> void:
 		"miss", "dodge":
 			_log_combat("[color=cyan]" + tgt_name + " dodges![/color]")
 			_spawn_damage_text(_current_target, "DODGE", Color(0.3, 0.8, 1.0))
-			# Play dodge anim on target
-			_play_anim_on_node(_current_target, "dodge")
+			# Play dodge anim on target — get full anim length so it plays completely
+			if _current_target == _active:
+				# Target is the player — use _play_anim and lock with timer
+				_play_anim("dodge")
+				_anim_state = "attack"  # reuse attack state to prevent idle override
+				var dodge_ap := _get_active_anim()
+				if dodge_ap and dodge_ap.has_animation("dodge"):
+					_attack_anim_timer = dodge_ap.get_animation("dodge").length
+				else:
+					_attack_anim_timer = 2.0
+			else:
+				_play_anim_on_node(_current_target, "dodge")
 		"block":
 			var reduction : float = result.get("reduction", 0.75)
 			var dmg := BASE_DAMAGE * (1.0 - reduction)
@@ -1889,14 +3192,19 @@ func _spawn_damage_text(target : Node3D, text : String, color : Color) -> void:
 	tw.set_parallel(true)
 	tw.tween_property(lbl, "position:y", lbl.position.y + 2.0, 1.2)
 	tw.tween_property(lbl, "modulate:a", 0.0, 1.2)
-	tw.chain().tween_callback(lbl.queue_free)
+	tw.chain().tween_callback(func():
+		if is_instance_valid(lbl):
+			lbl.queue_free()
+	)
 
 # ════════════════════════════════════════════════════════════
 #  ATTACK EFFECTS
 # ════════════════════════════════════════════════════════════
-func _spawn_laser_effect(from_node : Node3D, target : Node3D) -> void:
-	# Delay to match shoot anim
-	get_tree().create_timer(0.6).timeout.connect(func():
+func _spawn_laser_effect(from_node : Node3D, target : Node3D, delay : float = 0.6) -> void:
+	# Delay to match shoot anim (default 0.6s, or 80% of anim length)
+	get_tree().create_timer(delay).timeout.connect(func():
+		if not is_inside_tree():
+			return
 		if not is_instance_valid(from_node) or not is_instance_valid(target):
 			return
 		# Spawn a traveling bullet from shooter to target
@@ -1921,8 +3229,7 @@ func _spawn_laser_effect(from_node : Node3D, target : Node3D) -> void:
 		var tw := create_tween()
 		tw.tween_property(bullet, "global_position", end_pos, travel_time)
 		tw.tween_callback(func():
-			if is_instance_valid(bullet):
-				# Impact flash
+			if is_instance_valid(bullet) and bullet.is_inside_tree():
 				_spawn_impact_effect(end_pos)
 				bullet.queue_free()
 		)
@@ -1995,6 +3302,11 @@ func _input(event : InputEvent) -> void:
 			return
 	# Block game input when chat is focused
 	if _chat_input and _chat_input.has_focus():
+		# ESC unfocuses chat
+		if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+			_chat_input.clear()
+			_chat_input.release_focus()
+			get_viewport().set_input_as_handled()
 		return
 
 	# TAB — cycle targets
@@ -2015,81 +3327,173 @@ func _input(event : InputEvent) -> void:
 			_player_name_lbl.text = "Ember Guard"
 			_play_anim("idle")
 		elif event.keycode == KEY_ESCAPE:
-			_current_target = null
-			_auto_attacking = false
-			_update_target_indicator()
+			if _radial_menu_visible:
+				_close_radial_menu()
+			else:
+				_current_target = null
+				_auto_attacking = false
+				_update_target_indicator()
 		elif event.keycode == KEY_R:
 			_toggle_rain()
+		elif event.keycode == KEY_ALT:
+			if _can_walk:
+				_uses_walk = not _uses_walk
+				_log_combat("[color=gray]" + ("Walking" if _uses_walk else "Running") + "[/color]")
 		elif event.keycode == KEY_P:
 			_toggle_skills_window()
+		elif event.keycode == KEY_C:
+			_toggle_stats_window()
+		elif event.keycode == KEY_I:
+			_toggle_inventory()
+		elif event.keycode == KEY_K:
+			_toggle_profession_window()
 		# Hotbar keys 1-8
 		elif event.keycode >= KEY_1 and event.keycode <= KEY_8:
 			_activate_hotbar_slot(event.keycode - KEY_1)
 		# Spacebar — stand up from knockdown (only when not mounted)
 		elif event.keycode == KEY_F5:
 			_spawn_machine_walker()
+		elif event.keycode == KEY_F6:
+			_spawn_test_dummy()
 		elif event.keycode == KEY_SPACE and state_knockdown > 0.0 and not _mounted:
 			state_knockdown = 0.0
 			_play_anim("idle")
 			_log_combat("[color=green]You stand up![/color]")
 		# F — mount/dismount vehicle
 		elif event.keycode == KEY_F:
-			_toggle_mount()
+			pass  # F key no longer mounts — use radial menu
 
-	# RMB — hold to orbit camera
+	# RMB — short click = radial menu, hold+drag = orbit camera
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_RIGHT:
-			_rmb_held = event.pressed
-			if _rmb_held:
-				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+			if event.pressed:
+				_rmb_held = true
+				_rmb_press_pos = event.position
+				_rmb_press_time = Time.get_ticks_msec()
+				_rmb_dragged = false
 			else:
+				_rmb_held = false
 				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+				# If released quickly without dragging, open radial menu
+				var elapsed := Time.get_ticks_msec() - _rmb_press_time
+				if not _rmb_dragged and elapsed < 300:
+					_open_radial_menu(_rmb_press_pos)
+		elif event.button_index == MOUSE_BUTTON_MIDDLE and event.pressed:
+			_auto_run = not _auto_run
+			if _auto_run:
+				_log_combat("[color=gray]Auto-run ON[/color]")
+			else:
+				_log_combat("[color=gray]Auto-run OFF[/color]")
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			# Block camera zoom if hovering minimap
 			if _minimap_panel:
 				var mp := get_viewport().get_mouse_position()
 				if Rect2(_minimap_panel.global_position, _minimap_panel.size).has_point(mp):
 					return
-			_cam_zoom = clampf(_cam_zoom - 0.05, 0.3, 3.0)
+			# Zoom in
+			if _first_person:
+				pass  # Already in first person, can't zoom further
+			elif _cam_zoom <= 0.25:
+				# At or near minimum — next scroll enters first person
+				_first_person = true
+				_cam_pitch = 0.0  # Look straight ahead
+				# Don't hide character — other players need to see us in multiplayer
+				_camera.near = 0.5  # Clip through own model
+				_log_combat("[color=gray]First Person Mode[/color]")
+			else:
+				_cam_zoom = clampf(_cam_zoom - 0.05, 0.2, 3.0)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			if _minimap_panel:
 				var mp := get_viewport().get_mouse_position()
 				if Rect2(_minimap_panel.global_position, _minimap_panel.size).has_point(mp):
 					return
-			_cam_zoom = clampf(_cam_zoom + 0.05, 0.3, 3.0)
+			if _first_person:
+				# Exit first person back to closest 3rd person
+				_first_person = false
+				_cam_zoom = 0.25
+				_cam_pitch = 0.6  # Reset to default 3rd person pitch
+				_camera.near = 0.05  # Restore normal near clip
+				_log_combat("[color=gray]Third Person Mode[/color]")
+			else:
+				_cam_zoom = clampf(_cam_zoom + 0.05, 0.2, 3.0)
 
-	# RMB drag — orbit camera
+	# RMB drag — orbit camera (only after drag threshold)
 	if event is InputEventMouseMotion and _rmb_held:
-		_cam_yaw -= event.relative.x * CAM_MOUSE_SENSITIVITY
-		_cam_pitch = clampf(_cam_pitch + event.relative.y * CAM_MOUSE_SENSITIVITY, 0.1, 1.4)
+		if not _rmb_dragged and event.relative.length() > 3.0:
+			_rmb_dragged = true
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		if _rmb_dragged:
+			_cam_yaw -= event.relative.x * CAM_MOUSE_SENSITIVITY
+			var pitch_dir := -1.0 if _first_person else 1.0
+			var pitch_min := -1.2 if _first_person else 0.1
+			_cam_pitch = clampf(_cam_pitch + event.relative.y * CAM_MOUSE_SENSITIVITY * pitch_dir, pitch_min, 1.4)
 
-	# LMB — click to target mob (raycast)
+	# LMB — click to target mob (raycast), also close radial menu if clicking outside
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		_try_click_target(event.position)
+		if _radial_menu_visible:
+			# Check if click is on a radial button — if so, let the button handle it
+			var on_button := false
+			if _radial_menu and is_instance_valid(_radial_menu):
+				for child in _radial_menu.get_children():
+					if child is Button:
+						var r := Rect2(child.global_position, child.size)
+						if r.has_point(event.position):
+							on_button = true
+							break
+			if not on_button:
+				_close_radial_menu()
+		else:
+			_try_click_target(event.position)
 
 # ════════════════════════════════════════════════════════════
 #  CLICK TARGETING (raycast from mouse)
 # ════════════════════════════════════════════════════════════
-func _try_click_target(screen_pos : Vector2) -> void:
+func _raycast_from_mouse(screen_pos : Vector2) -> Dictionary:
+	# Returns {"node": Node3D or null, "position": Vector3, "type": String}
 	if _camera == null:
-		return
+		return {"node": null, "position": Vector3.ZERO, "type": "none"}
 	var from := _camera.project_ray_origin(screen_pos)
 	var dir := _camera.project_ray_normal(screen_pos)
 	var space := get_world_3d().direct_space_state
 	var query := PhysicsRayQueryParameters3D.create(from, from + dir * 100.0)
 	var result := space.intersect_ray(query)
 	if result.is_empty():
-		return
-	# Check if hit a mob
-	var hit_node : Node = result.get("collider")
-	while hit_node and not (hit_node is CoronetMob):
-		hit_node = hit_node.get_parent()
-	if hit_node is CoronetMob and not hit_node.is_dead:
-		_current_target = hit_node
-		_auto_attacking = true
-		_attack_timer = 0.3
-		_update_target_indicator()
-		_log_combat("[color=yellow]Target: " + _tgt_display_name(_current_target) + "[/color]")
+		return {"node": null, "position": Vector3.ZERO, "type": "none"}
+	var hit_pos : Vector3 = result.get("position", Vector3.ZERO)
+	var collider : Node = result.get("collider")
+	# Walk up the tree to find a meaningful parent
+	var node : Node = collider
+	while node and node != self:
+		if node is CoronetMob or node is MachineWalker:
+			return {"node": node, "position": hit_pos, "type": "mob"}
+		if node.has_method("take_damage") and node.get("mob_name") != null:
+			return {"node": node, "position": hit_pos, "type": "mob"}
+		# Check if it's any vehicle/mount
+		var vname := node.name.to_lower()
+		if "vehicle" in vname or "landspeeder" in vname or "speeder" in vname or "mount" in vname or "voyager" in vname or "shuttle" in vname:
+			return {"node": node, "position": hit_pos, "type": "vehicle"}
+		if _vehicle_mount and (node == _vehicle_mount or node.get_parent() == _vehicle_mount):
+			return {"node": _vehicle_mount, "position": hit_pos, "type": "vehicle"}
+		if node.has_meta("interactable"):
+			return {"node": node, "position": hit_pos, "type": node.get_meta("interactable")}
+		node = node.get_parent()
+	# Hit ground or unrecognized object — ignore for targeting
+	return {"node": null, "position": hit_pos, "type": "ground"}
+
+func _try_click_target(screen_pos : Vector2) -> void:
+	var hit := _raycast_from_mouse(screen_pos)
+	if hit.type == "mob":
+		var mob : Node3D = hit.node
+		if not mob.get("is_dead"):
+			var was_attacking := _auto_attacking and _current_target != null
+			_current_target = mob
+			_update_target_indicator()
+			_log_combat("[color=yellow]Target: " + _tgt_display_name(_current_target) + "[/color]")
+			# Only auto-attack if already in combat, otherwise just target
+			if was_attacking:
+				_auto_attacking = true
+				_attack_timer = 0.3
+	# Don't detarget on ground click — only ESC or new target detargets
 
 # ════════════════════════════════════════════════════════════
 #  PROCESS
@@ -2116,9 +3520,15 @@ func _process(delta : float) -> void:
 	# Tick combat states
 	if state_knockdown > 0.0:
 		state_knockdown -= delta
+		# Lower character during KD so they lie on the ground
+		_active.position.y = lerp(_active.position.y, -0.8, 8.0 * delta)
 		_update_camera(delta)
 		_update_hud()
 		return  # KD blocks all
+	else:
+		# Raise back up after KD
+		if _active.position.y < -0.01:
+			_active.position.y = lerp(_active.position.y, 0.0, 8.0 * delta)
 
 	if state_dizzy > 0.0: state_dizzy -= delta
 	if state_stun > 0.0: state_stun -= delta
@@ -2175,12 +3585,17 @@ func _process(delta : float) -> void:
 		var v_input := Vector3.ZERO
 		if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
 			v_input.z -= 1.0
+			_auto_run = false
 		if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
 			v_input.z += 1.0
+			_auto_run = false
 		if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
 			v_input.x -= 1.0
 		if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
 			v_input.x += 1.0
+		# Auto-run for vehicle
+		if _auto_run and v_input.length_squared() < 0.01:
+			v_input.z = -1.0
 		# Fly up/down
 		if Input.is_key_pressed(KEY_SPACE):
 			v_input.y += 1.0
@@ -2207,8 +3622,8 @@ func _process(delta : float) -> void:
 		if _vehicle_cur_speed > 0.1 and _vehicle_last_dir.length() > 0.01:
 			_vehicle_mount.position += _vehicle_last_dir * _vehicle_cur_speed * delta
 
-		# Vertical movement (always immediate)
-		if v_input.y != 0:
+		# Vertical movement — only for flying vehicles
+		if _vehicle_can_fly and v_input.y != 0:
 			_vehicle_mount.position.y += v_input.y * VEHICLE_FLY_SPEED * delta
 		_vehicle_mount.position.y = maxf(0.5, _vehicle_mount.position.y)
 
@@ -2244,17 +3659,26 @@ func _process(delta : float) -> void:
 		return  # Skip normal character movement
 
 	# ── NORMAL CHARACTER MOVEMENT ──
+	# Block movement while chat is focused
+	var chat_focused := _chat_input != null and _chat_input.has_focus()
 	var input := Vector3.ZERO
-	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
-		input.z -= 1.0
-	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
-		input.z += 1.0
-	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
-		input.x -= 1.0
-	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
-		input.x += 1.0
+	if not chat_focused:
+		if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
+			input.z -= 1.0
+			_auto_run = false
+		if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
+			input.z += 1.0
+			_auto_run = false
+		if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+			input.x -= 1.0
+		if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
+			input.x += 1.0
+	# Auto-run — keep moving forward based on camera direction
+	if _auto_run and not chat_focused and input.length_squared() < 0.01:
+		input.z = -1.0
 
-	var speed := SPRINT_SPEED if _sprint_active else MOVE_SPEED
+	var base_speed := WALK_SPEED if _uses_walk else MOVE_SPEED
+	var speed := SPRINT_SPEED if _sprint_active else base_speed
 	var moving := input.length_squared() > 0.01
 	if moving:
 		input = input.normalized()
@@ -2262,16 +3686,28 @@ func _process(delta : float) -> void:
 		_active.position += rotated * speed * delta
 		var target_angle := atan2(rotated.x, rotated.z)
 		_active.rotation.y = lerp_angle(_active.rotation.y, target_angle, ROTATION_SPEED * delta)
-		# Movement always overrides attack anim
-		if _anim_state != "run":
-			_play_anim("run")
-			_anim_state = "run"
+		# Set move animation — with blender, attack continues on upper body
+		var move_anim : String = "walk" if _uses_walk and not _sprint_active else "run"
+		if _anim_state != move_anim and _anim_state != "attack":
+			_play_anim(move_anim)
+			_anim_state = move_anim
+		elif _anim_state == "attack" and _anim_blender and _anim_blender.is_active():
+			# Blender active — set run on lower body, attack continues on upper
+			_anim_blender.play_base(StringName(move_anim))
+			_anim_state = move_anim
+		elif _anim_state == "attack":
+			# No blender — movement overrides attack (old behavior)
+			_play_anim(move_anim)
+			_anim_state = move_anim
 			_attack_anim_timer = 0.0
 	else:
 		# Not moving: respect attack/dodge timer before returning to idle
 		if _attack_anim_timer > 0.0:
 			pass  # let attack or dodge anim finish
-		elif _anim_state != "idle":
+		elif _anim_state != "idle" and _anim_state != "attack":
+			_play_anim("idle")
+			_anim_state = "idle"
+		elif _anim_state != "idle" and _attack_anim_timer <= 0.0:
 			_play_anim("idle")
 			_anim_state = "idle"
 
@@ -2279,6 +3715,8 @@ func _process(delta : float) -> void:
 
 	# Combat
 	_tick_combat(delta)
+	_tick_combat_queue(delta)
+	_tick_wound_regen(delta)
 	_tick_vehicle_hover(delta)
 	_tick_rain()
 	_tick_hotbar(delta)
@@ -2294,21 +3732,40 @@ func _process(delta : float) -> void:
 func _update_camera(delta : float) -> void:
 	if _active == null or _camera == null:
 		return
-	var base_dist := VEHICLE_CAM_DISTANCE if _mounted else CAM_DISTANCE
-	var dist : float = base_dist * _cam_zoom
+
 	var look_target : Vector3
 	if _mounted and _vehicle_mount and is_instance_valid(_vehicle_mount):
 		look_target = _vehicle_mount.position
 	else:
 		look_target = _active.position
-	var offset := Vector3(
-		dist * sin(_cam_yaw) * cos(_cam_pitch),
-		dist * sin(_cam_pitch),
-		dist * cos(_cam_yaw) * cos(_cam_pitch)
-	)
-	var target_pos : Vector3 = look_target + offset
-	if delta > 0.0:
-		_camera.position = _camera.position.lerp(target_pos, 8.0 * delta)
+
+	if _first_person:
+		# First person — camera at character head height, looking forward
+		var forward := Vector3(
+			-sin(_cam_yaw) * cos(_cam_pitch),
+			sin(_cam_pitch),
+			-cos(_cam_yaw) * cos(_cam_pitch)
+		).normalized()
+		# Place camera slightly in front of head to avoid seeing own model
+		var head_pos := look_target + Vector3(0, 1.8, 0) + forward * 0.3
+		var fp_target := head_pos + forward * 5.0
+		# Snap instantly — no lerp lag in first person
+		_camera.position = head_pos
+		_camera.look_at(fp_target)
+		# Rotate character to face camera direction
+		_active.rotation.y = _cam_yaw
 	else:
-		_camera.position = target_pos
-	_camera.look_at(look_target + CAM_LOOK_OFFSET)
+		# Third person orbit camera
+		var base_dist := VEHICLE_CAM_DISTANCE if _mounted else CAM_DISTANCE
+		var dist : float = base_dist * _cam_zoom
+		var offset := Vector3(
+			dist * sin(_cam_yaw) * cos(_cam_pitch),
+			dist * sin(_cam_pitch),
+			dist * cos(_cam_yaw) * cos(_cam_pitch)
+		)
+		var target_pos : Vector3 = look_target + offset
+		if delta > 0.0:
+			_camera.position = _camera.position.lerp(target_pos, 8.0 * delta)
+		else:
+			_camera.position = target_pos
+		_camera.look_at(look_target + CAM_LOOK_OFFSET)

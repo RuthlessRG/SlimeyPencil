@@ -3,13 +3,13 @@ class_name MachineWalker
 
 ## MachineWalker mob — attacks back when hit, plays KD anim on knockdown.
 
-const MODEL_PATH := "res://Characters/Coronet/NPC/MachineWalker/idle/Meshy_AI_android_war_machine_f_biped_Animation_Idle_5_frame_rate_60.fbx"
+const MODEL_PATH := "res://Coronet/NPC/MachineWalker/idle/Meshy_AI_android_war_machine_f_biped_Animation_Idle_5_frame_rate_60.fbx"
 const ANIM_PATHS := {
-	"walk":    "res://Characters/Coronet/NPC/MachineWalker/walk/Meshy_AI_android_war_machine_f_biped_Animation_Walking_frame_rate_60.fbx",
-	"attack":  "res://Characters/Coronet/NPC/MachineWalker/attack/attack1/Meshy_AI_android_war_machine_f_biped_Animation_Left_Hook_from_Guard_frame_rate_60.fbx",
-	"attack2": "res://Characters/Coronet/NPC/MachineWalker/attack/attack2/Meshy_AI_android_war_machine_f_biped_Animation_Punch_Combo_frame_rate_60.fbx",
-	"attack3": "res://Characters/Coronet/NPC/MachineWalker/attack/attack3/Meshy_AI_android_war_machine_f_biped_Animation_Triple_Combo_Attack_frame_rate_60.fbx",
-	"kd":      "res://Characters/Coronet/NPC/MachineWalker/kd/Meshy_AI_android_war_machine_f_biped_Animation_Knock_Down_1_frame_rate_60.fbx",
+	"walk":    "res://Coronet/NPC/MachineWalker/walk/Meshy_AI_android_war_machine_f_biped_Animation_Walking_frame_rate_60.fbx",
+	"attack":  "res://Coronet/NPC/MachineWalker/attack/attack1/Meshy_AI_android_war_machine_f_biped_Animation_Left_Hook_from_Guard_frame_rate_60.fbx",
+	"attack2": "res://Coronet/NPC/MachineWalker/attack/attack2/Meshy_AI_android_war_machine_f_biped_Animation_Punch_Combo_frame_rate_60.fbx",
+	"attack3": "res://Coronet/NPC/MachineWalker/attack/attack3/Meshy_AI_android_war_machine_f_biped_Animation_Triple_Combo_Attack_frame_rate_60.fbx",
+	"kd":      "res://Coronet/NPC/MachineWalker/kd/Meshy_AI_android_war_machine_f_biped_Animation_Knock_Down_1_frame_rate_60.fbx",
 }
 
 @export var mob_name : String = "Machine Walker"
@@ -49,6 +49,16 @@ func _ready() -> void:
 	ham_action = max_action
 	ham_mind = max_mind
 	_spawn_model()
+	# Add collision body for raycast targeting
+	var body := StaticBody3D.new()
+	var coll := CollisionShape3D.new()
+	var shape := CapsuleShape3D.new()
+	shape.radius = 1.0
+	shape.height = 3.0
+	coll.shape = shape
+	coll.position = Vector3(0, 1.5, 0)
+	body.add_child(coll)
+	add_child(body)
 
 func _spawn_model() -> void:
 	if not ResourceLoader.exists(MODEL_PATH):
@@ -189,6 +199,7 @@ func _process(delta : float) -> void:
 
 	# Knockdown — can't act
 	if state_knockdown > 0.0:
+		state_knockdown -= delta
 		# Only lower model in second half of KD anim (after the fall)
 		if _model and _anim:
 			var kd_len := 0.0
@@ -197,6 +208,10 @@ func _process(delta : float) -> void:
 			var playback_pos := _anim.current_animation_position if _anim.current_animation == "kd" else kd_len
 			if kd_len > 0.0 and playback_pos > kd_len * 0.5:
 				_model.position.y = lerp(_model.position.y, -1.2, 8.0 * delta)
+		if state_knockdown <= 0.0:
+			state_knockdown = 0.0
+			# Auto stand — play idle
+			_play_mob_anim("idle")
 		return
 	else:
 		if _model and _model.position.y < -0.01:
@@ -256,13 +271,21 @@ func _do_mob_attack() -> void:
 				player._spawn_damage_text(player._active, "MISS", Color(0.7, 0.7, 0.7))
 				player._log_combat("[color=gray]" + mob_name + " misses you[/color]")
 				player._play_anim("dodge")
-				player._attack_anim_timer = 0.8
+				var dodge_ap_m = player._get_active_anim()
+				if dodge_ap_m and dodge_ap_m.has_animation("dodge"):
+					player._attack_anim_timer = dodge_ap_m.get_animation("dodge").length
+				else:
+					player._attack_anim_timer = 2.0
 				player._anim_state = "attack"
 			"dodge":
 				player._spawn_damage_text(player._active, "DODGE", Color(0.3, 0.8, 1.0))
 				player._log_combat("[color=cyan]You dodge " + mob_name + "'s attack![/color]")
 				player._play_anim("dodge")
-				player._attack_anim_timer = 0.8
+				var dodge_ap_d = player._get_active_anim()
+				if dodge_ap_d and dodge_ap_d.has_animation("dodge"):
+					player._attack_anim_timer = dodge_ap_d.get_animation("dodge").length
+				else:
+					player._attack_anim_timer = 2.0
 				player._anim_state = "attack"
 			"block":
 				var reduction : float = result.get("reduction", 0.75)
@@ -277,6 +300,11 @@ func _do_mob_attack() -> void:
 				player.ham_health = maxf(0.0, player.ham_health)
 				player._spawn_damage_text(player._active, str(int(dmg)), Color(1, 0.3, 0.3))
 				player._log_combat("[color=red]" + mob_name + " hits you for " + str(int(dmg)) + " damage[/color]")
+				# Chance to inflict wounds
+				if randf() < player.WOUND_CHANCE:
+					var wound_amt := randf_range(player.WOUND_AMOUNT_MIN, player.WOUND_AMOUNT_MAX)
+					player.apply_wound("health", wound_amt)
+					player._log_combat("[color=gray]You suffer %d health wounds![/color]" % int(wound_amt))
 
 func _find_player() -> Node:
 	var parent := get_parent()
@@ -308,7 +336,8 @@ func apply_combat_state(state_name : String, duration : float) -> void:
 		"dizzy":
 			state_dizzy = maxf(state_dizzy, duration)
 		"knockdown":
-			state_knockdown = maxf(state_knockdown, duration)
+			# Mobs auto-stand — cap KD to 10 seconds
+			state_knockdown = maxf(state_knockdown, minf(duration, 10.0))
 			if _anim and _anim.has_animation("kd"):
 				_anim.stop()
 				_anim.play("kd", -1, 1.3)  # 30% faster
@@ -322,6 +351,11 @@ func apply_combat_state(state_name : String, duration : float) -> void:
 func _die() -> void:
 	is_dead = true
 	_current_target = null
+	# Grant XP to player
+	var parent := get_parent()
+	if parent and parent.has_method("grant_xp"):
+		var xp_amount : float = 30.0 + level * 15.0
+		parent.grant_xp(xp_amount)
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector3(0.1, 0.1, 0.1), 1.0)
 	tw.tween_callback(queue_free)
