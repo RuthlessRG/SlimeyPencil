@@ -40,6 +40,7 @@
 [ext_resource type="PackedScene" uid="uid://dfksmmoaf6jli" path="res://Coronet/buildings/b28/source/PSX Japanese Apartment.fbx" id="39_bomax"]
 [ext_resource type="PackedScene" uid="uid://sxcj7rst7vfg" path="res://Coronet/Mounts/ship1keep/source/sp_1.blend" id="40_k64gw"]
 [ext_resource type="PackedScene" uid="uid://skkad3y0thjh" path="res://Coronet/Mounts/spidershipgood/animated-sci_fi_ship.glb" id="41_fu6q7"]
+[ext_resource type="PackedScene" uid="uid://6tqichjwlhht" path="res://Coronet/Mounts/newshipstry/Meshy_AI_a_spaceship_0324032111_texture_fbx/Meshy_AI_a_spaceship_0324032111_texture.fbx" id="42_aesud"]
 [ext_resource type="PackedScene" uid="uid://cnrqxui7akncj" path="res://Coronet/Mounts/transport/Transport Shuttle_Blender Game Engine_blend.blend" id="42_bavek"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
@@ -230,5 +231,8 @@ visible = false
 [node name="Spaceship2" type="MeshInstance3D" parent="." unique_id=1628395437]
 transform = Transform3D(0.49, 0, 0, 0, 0.49, 0, 0, 0, 0.49, -24.781454, 1711.1921, 1091.874)
 mesh = ExtResource("37_jhfpr")
+
+[node name="Meshy_AI_a_spaceship_0324032111_texture" parent="." unique_id=1264464368 instance=ExtResource("42_aesud")]
+transform = Transform3D(15.86, 0, 0, 0, 15.86, 0, 0, 0, 15.86, 0, 11.537748, 0)
 
 [editable path="Transport Shuttle_Blender Game Engine_blend"]
