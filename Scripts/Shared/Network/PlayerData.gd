@@ -2,34 +2,40 @@ extends Node
 
 # ═══════════════════════════════════════════════════════════════════════
 #  PlayerData.gd — Autoload Singleton
-#  Authentication and character persistence via Nakama + PostgreSQL.
-#  Replaces the local JSON file approach.
+#  Authentication and multi-character persistence via Nakama + PostgreSQL.
 #
 #  Flow:
 #    1. StartScreen awaits login() or register()
 #    2. On success → Relay.init_socket() is called automatically
-#    3. Character data is stored in Nakama Storage Engine (PostgreSQL)
+#    3. Characters stored as array in Nakama Storage (up to 3 per account)
 #    4. On scene exit / mission complete → save_character(player)
 # ═══════════════════════════════════════════════════════════════════════
 
 const STORAGE_COLLECTION : String = "player"
-const STORAGE_KEY        : String = "character"
-# Nakama email auth requires email format; we append this fake domain
-# so players still only ever type a plain username in the UI.
+const STORAGE_KEY_CHARS  : String = "characters"
+const MAX_CHARACTERS     : int    = 3
 const EMAIL_DOMAIN       : String = "@miniswg.game"
 
+# ── Session ────────────────────────────────────────────────────────
 var username     : String = ""
+var is_logged_in : bool   = false
+var last_error   : String = ""
+
+# ── Character slots ────────────────────────────────────────────────
+var characters       : Array = []
+var active_char_index : int  = -1
+
+# ── Active character shortcuts (gameplay code reads these) ─────────
 var nickname     : String = ""
+var profession   : String = ""
+var skin         : String = ""
 var char_class   : String = ""
 var credits      : int    = 0
 var level        : int    = 1
 var exp_points   : float  = 0.0
-var is_logged_in : bool   = false
-var last_error   : String = ""   # human-readable error from last auth attempt
 
-# ── Auth ──────────────────────────────────────────────────────────────
+# ── Auth ───────────────────────────────────────────────────────────
 
-## Returns true on success. Check last_error on failure.
 func login(uname: String, password: String) -> bool:
 	last_error = ""
 	var client : NakamaClient = Relay.get_client()
@@ -53,7 +59,6 @@ func login(uname: String, password: String) -> bool:
 	await _apply_session(uname, session)
 	return true
 
-## Returns true on success. Check last_error on failure.
 func register(uname: String, password: String) -> bool:
 	last_error = ""
 	var client : NakamaClient = Relay.get_client()
@@ -79,62 +84,129 @@ func register(uname: String, password: String) -> bool:
 	await _apply_session(uname, session)
 	return true
 
-## Kept for API compatibility; Nakama doesn't expose a lookup without auth.
 func account_exists(_uname: String) -> bool:
 	return false
 
 func _apply_session(uname: String, session: NakamaSession) -> void:
 	username     = uname.strip_edges()
-	nickname     = username
 	is_logged_in = true
-	Relay.nickname = nickname
-	# Open the multiplayer socket now that we have a valid session
+	Relay.nickname = username
 	await Relay.init_socket(session)
-	# Load stored character data (level, credits, class, xp)
-	await _load_character(session)
+	await _load_characters(session)
 
-# ── Storage ───────────────────────────────────────────────────────────
+# ── Character Management ───────────────────────────────────────────
 
-func _load_character(session: NakamaSession) -> void:
+func _load_characters(session: NakamaSession) -> void:
 	var client : NakamaClient = Relay.get_client()
+	# Try new multi-character key first
 	var result = await client.read_storage_objects_async(session, [
-		NakamaStorageObjectId.new(STORAGE_COLLECTION, STORAGE_KEY, session.user_id)
+		NakamaStorageObjectId.new(STORAGE_COLLECTION, STORAGE_KEY_CHARS, session.user_id)
 	])
-	if result.is_exception() or result.objects.is_empty():
-		return  # new account — defaults are fine
-	var cd = JSON.parse_string(result.objects[0].value)
-	if not cd is Dictionary:
-		return
-	char_class = str(cd.get("char_class",  ""))
-	credits    = int(cd.get("credits",     0))
-	level      = int(cd.get("level",       1))
-	exp_points = float(cd.get("exp_points", 0.0))
+	if not result.is_exception() and not result.objects.is_empty():
+		var data = JSON.parse_string(result.objects[0].value)
+		if data is Array:
+			characters = data
+			return
+	# Migration: check old single-character key
+	var old_result = await client.read_storage_objects_async(session, [
+		NakamaStorageObjectId.new(STORAGE_COLLECTION, "character", session.user_id)
+	])
+	if not old_result.is_exception() and not old_result.objects.is_empty():
+		var old_data = JSON.parse_string(old_result.objects[0].value)
+		if old_data is Dictionary:
+			# Migrate old character to new format
+			old_data["nickname"] = username
+			old_data["profession"] = "streetfighter" if old_data.get("char_class", "") == "melee" else "gunslinger"
+			old_data["skin"] = "Silverium"
+			characters = [old_data]
+			await _save_characters()
+			return
+	characters = []
 
-## Call this when a player's stats change (scene exit, mission complete, etc.)
-func save_character(player: Node) -> void:
+func _save_characters() -> void:
 	if not is_logged_in:
 		return
 	var session : NakamaSession = Relay.get_session()
 	if session == null:
 		return
-	var cls_val = player.get("character_class")
-	var cr_val  = player.get("credits")
-	var lv_val  = player.get("level")
-	var xp_val  = player.get("exp_points")
-	var cd = {
-		"char_class":  cls_val  if cls_val  != null else char_class,
-		"credits":     cr_val   if cr_val   != null else credits,
-		"level":       lv_val   if lv_val   != null else level,
-		"exp_points":  xp_val   if xp_val   != null else exp_points,
-	}
 	var client : NakamaClient = Relay.get_client()
 	await client.write_storage_objects_async(session, [
 		NakamaWriteStorageObject.new(
 			STORAGE_COLLECTION,
-			STORAGE_KEY,
-			2,   # read:  public (other players can't read your stats, server can)
-			1,   # write: owner only
-			JSON.stringify(cd),
-			""   # version: empty = unconditional write
+			STORAGE_KEY_CHARS,
+			2, 1,
+			JSON.stringify(characters),
+			""
 		)
 	])
+
+func create_character(nick: String, prof: String, skin_id: String) -> bool:
+	if characters.size() >= MAX_CHARACTERS:
+		last_error = "Maximum characters reached (3)."
+		return false
+	for c in characters:
+		if c.get("nickname", "").to_lower() == nick.to_lower():
+			last_error = "You already have a character with that name."
+			return false
+	var cls = "melee" if prof == "streetfighter" else "ranged"
+	var new_char := {
+		"nickname": nick,
+		"profession": prof,
+		"skin": skin_id,
+		"char_class": cls,
+		"credits": 0,
+		"level": 1,
+		"exp_points": 0.0,
+	}
+	characters.append(new_char)
+	active_char_index = characters.size() - 1
+	_apply_active_character()
+	await _save_characters()
+	return true
+
+func delete_character(index: int) -> void:
+	if index < 0 or index >= characters.size():
+		return
+	characters.remove_at(index)
+	if active_char_index >= characters.size():
+		active_char_index = characters.size() - 1
+	await _save_characters()
+
+func select_character(index: int) -> void:
+	if index < 0 or index >= characters.size():
+		return
+	active_char_index = index
+	_apply_active_character()
+
+func _apply_active_character() -> void:
+	if active_char_index < 0 or active_char_index >= characters.size():
+		return
+	var c : Dictionary = characters[active_char_index]
+	nickname   = c.get("nickname", "")
+	profession = c.get("profession", "")
+	skin       = c.get("skin", "")
+	char_class = c.get("char_class", "")
+	credits    = int(c.get("credits", 0))
+	level      = int(c.get("level", 1))
+	exp_points = float(c.get("exp_points", 0.0))
+	Relay.nickname = nickname
+
+## Call from gameplay when stats change (scene exit, mission complete, etc.)
+func save_character(player: Node) -> void:
+	if not is_logged_in or active_char_index < 0 or active_char_index >= characters.size():
+		return
+	var session : NakamaSession = Relay.get_session()
+	if session == null:
+		return
+	var c : Dictionary = characters[active_char_index]
+	var cls_val = player.get("character_class")
+	var cr_val  = player.get("credits")
+	var lv_val  = player.get("level")
+	var xp_val  = player.get("exp_points")
+	c["char_class"]  = cls_val  if cls_val  != null else char_class
+	c["credits"]     = cr_val   if cr_val   != null else credits
+	c["level"]       = lv_val   if lv_val   != null else level
+	c["exp_points"]  = xp_val   if xp_val   != null else exp_points
+	characters[active_char_index] = c
+	_apply_active_character()
+	await _save_characters()
