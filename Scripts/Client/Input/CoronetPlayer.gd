@@ -101,6 +101,46 @@ const CHAR_DISPLAY_NAMES := {
 	"WhiteSoldier":  "White Soldier",
 }
 
+# Skins that have rigged FBX (skeleton + correct textures — work fully)
+const SKIN_RIGGED_FBX := {
+	"CloudTrooper": "res://Coronet/charactercolors/CloudTrooper/Meshy_AI_Azure_Sentinel_biped/Meshy_AI_Azure_Sentinel_biped_Animation_Walking_withSkin.fbx",
+	"RedWedding": "res://Coronet/charactercolors/RedWedding/Meshy_AI_Azure_Sentinel_biped/Meshy_AI_Azure_Sentinel_biped_Animation_Walking_withSkin.fbx",
+	"CyberBH": "res://Coronet/charactercolors/CyberBH/CyberBH_rigged.fbx",
+	"DarkForest": "res://Coronet/charactercolors/DarkForest/DarkForest_rigged.fbx",
+	"DesertStorm": "res://Coronet/charactercolors/DesertStorm/DesertStorm_rigged.fbx",
+	"GilleCamo": "res://Coronet/charactercolors/GilleCamo/GilleCamo_rigged.fbx",
+	"MoltenCore": "res://Coronet/charactercolors/MoltenCore/MoltenCore_rigged.fbx",
+	"Silverium": "res://Coronet/charactercolors/Silverium/Silverium_rigged.fbx",
+	"Tron": "res://Coronet/charactercolors/Tron/Tron_rigged.fbx",
+	"TindremicSteel": "res://Coronet/charactercolors/TindremicSteel/TindremicSteel_rigged.fbx",
+}
+
+# Color tint for skins without rigged FBX (applied on top of profession's idle model)
+const SKIN_TINT := {
+	"CyberBH": Color(0.25, 0.85, 0.95),
+	"DarkForest": Color(0.35, 0.55, 0.30),
+	"DesertStorm": Color(0.90, 0.80, 0.55),
+	"MoltenCore": Color(0.95, 0.55, 0.15),
+	"Silverium": Color(0.78, 0.80, 0.85),
+	"GilleCamo": Color(0.50, 0.58, 0.38),
+	"Tron": Color(0.15, 0.90, 1.00),
+	"TindremicSteel": Color(0.62, 0.64, 0.70),
+}
+
+# Skin ID → base color texture path (kept for future use when rigged FBX available)
+const SKIN_TEXTURE := {
+	"CloudTrooper": "res://Coronet/charactercolors/CloudTrooper/Meshy_AI_Azure_Sentinel_biped/Meshy_AI_Azure_Sentinel_biped_Animation_Walking_withSkin_0.png",
+	"CyberBH": "res://Coronet/charactercolors/CyberBH/Meshy_AI_Azure_Sentinel_0324195504_texture_fbx/Meshy_AI_Azure_Sentinel_0324195504_texture.png",
+	"DarkForest": "res://Coronet/charactercolors/DarkForest/Meshy_AI_Azure_Sentinel_0324195217_texture_fbx/Meshy_AI_Azure_Sentinel_0324195217_texture.png",
+	"DesertStorm": "res://Coronet/charactercolors/DesertStorm/Meshy_AI_Azure_Sentinel_0324195344_texture_fbx/Meshy_AI_Azure_Sentinel_0324195344_texture.png",
+	"MoltenCore": "res://Coronet/charactercolors/MoltenCore/Meshy_AI_Azure_Sentinel_0324195410_texture_fbx/Meshy_AI_Azure_Sentinel_0324195410_texture.png",
+	"RedWedding": "res://Coronet/charactercolors/RedWedding/Meshy_AI_Azure_Sentinel_biped/Meshy_AI_Azure_Sentinel_biped_Animation_Walking_withSkin_0.png",
+	"Silverium": "res://Coronet/charactercolors/Silverium/Meshy_AI_Azure_Sentinel_0324195433_texture_fbx/Meshy_AI_Azure_Sentinel_0324195433_texture.png",
+	"GilleCamo": "res://Coronet/charactercolors/GilleCamo/Meshy_AI_Azure_Sentinel_0325071735_texture_fbx/Meshy_AI_Azure_Sentinel_0325071735_texture.png",
+	"Tron": "res://Coronet/charactercolors/Tron/Meshy_AI_Azure_Sentinel_0325070913_texture_fbx/Meshy_AI_Azure_Sentinel_0325070913_texture.png",
+	"TindremicSteel": "res://Coronet/charactercolors/TindremicSteel/Meshy_AI_Azure_Sentinel_0325070948_texture_fbx/Meshy_AI_Azure_Sentinel_0325070948_texture.png",
+}
+
 # ── NODES ───────────────────────────────────────────────────
 var _silver : Node3D
 var _red    : Node3D
@@ -366,17 +406,27 @@ func _ready() -> void:
 			if "Iron_Sentinel" in n or "Ember_Guard" in n:
 				child.visible = false
 				child.process_mode = Node.PROCESS_MODE_DISABLED
-		# Spawn selected character from FBX
-		var fbx_path : String = CHAR_IDLE_FBX[_selected_char_id]
-		if ResourceLoader.exists(fbx_path):
+		# Use skin's _withSkin.fbx if available (has skeleton + correct textures)
+		# Otherwise fall back to profession's idle FBX with color tint
+		var fbx_path : String = ""
+		var _needs_tint := false
+		if PlayerData.skin in SKIN_RIGGED_FBX:
+			fbx_path = SKIN_RIGGED_FBX[PlayerData.skin]
+		else:
+			fbx_path = CHAR_IDLE_FBX.get(_selected_char_id, "")
+			_needs_tint = PlayerData.skin != ""
+		if fbx_path != "" and ResourceLoader.exists(fbx_path):
 			var scene : PackedScene = load(fbx_path)
 			var inst : Node3D = scene.instantiate()
 			inst.name = "PlayerCharacter"
 			inst.position = Vector3(0, 0, 1.5)
 			add_child(inst)
 			_active = inst
-		character_class = CHAR_CLASSES.get(_selected_char_id, "melee")
-		_can_walk = CHAR_HAS_WALK.get(_selected_char_id, false)
+			# Apply color tint for skins without rigged FBX
+			if _needs_tint and PlayerData.skin in SKIN_TINT:
+				_apply_skin_tint(inst, SKIN_TINT[PlayerData.skin])
+		character_class = CHAR_CLASSES.get(_selected_char_id, PlayerData.char_class if PlayerData.char_class != "" else "melee")
+		_can_walk = CHAR_HAS_WALK.get(_selected_char_id, true)
 		_uses_walk = false
 	else:
 		# Default: use pre-placed scene characters (for testing without char select)
@@ -463,7 +513,8 @@ func _ready() -> void:
 		_active.set_meta("ham_mind", 600.0)
 		_active.set_meta("max_mind", 600.0)
 		_active.set_meta("is_dead", false)
-		_active.set_meta("display_name", CHAR_DISPLAY_NAMES.get(_selected_char_id, "Player"))
+		var _display_name : String = PlayerData.nickname if PlayerData.nickname != "" else CHAR_DISPLAY_NAMES.get(_selected_char_id, "Player")
+		_active.set_meta("display_name", _display_name)
 		_active.set_meta("accuracy", 60.0)
 		_active.set_meta("defense", 40.0)
 	# Spawn at the starport (near Transport Shuttle) — shifted -100 Z
@@ -515,6 +566,48 @@ func _setup_anim_blender() -> void:
 # ════════════════════════════════════════════════════════════
 #  ANIMATION HELPERS
 # ════════════════════════════════════════════════════════════
+func _apply_skin_tint(model: Node3D, tint: Color) -> void:
+	var meshes := _find_all_mesh_instances(model)
+	for mi in meshes:
+		var mi_node : MeshInstance3D = mi as MeshInstance3D
+		if mi_node.mesh == null:
+			continue
+		for surf_idx in range(mi_node.mesh.get_surface_count()):
+			var base_mat : Material = mi_node.mesh.surface_get_material(surf_idx)
+			if base_mat is StandardMaterial3D:
+				var new_mat : StandardMaterial3D = base_mat.duplicate() as StandardMaterial3D
+				new_mat.albedo_color = tint
+				mi_node.set_surface_override_material(surf_idx, new_mat)
+	print("[SKIN] Applied tint ", tint, " to ", meshes.size(), " meshes")
+
+func _apply_skin_texture(model: Node3D, texture_path: String) -> void:
+	var tex : Texture2D = load(texture_path) as Texture2D
+	if tex == null:
+		print("[SKIN] Could not load texture: ", texture_path)
+		return
+	var meshes := _find_all_mesh_instances(model)
+	var count := 0
+	for mi in meshes:
+		var mi_node : MeshInstance3D = mi as MeshInstance3D
+		if mi_node.mesh == null:
+			continue
+		for surf_idx in range(mi_node.mesh.get_surface_count()):
+			var new_mat := StandardMaterial3D.new()
+			new_mat.albedo_texture = tex
+			new_mat.metallic = 0.3
+			new_mat.roughness = 0.7
+			mi_node.set_surface_override_material(surf_idx, new_mat)
+			count += 1
+	print("[SKIN] Applied texture '", texture_path.get_file(), "' to ", count, " surfaces across ", meshes.size(), " meshes")
+
+func _find_all_mesh_instances(node: Node) -> Array:
+	var result := []
+	if node is MeshInstance3D:
+		result.append(node)
+	for child in node.get_children():
+		result.append_array(_find_all_mesh_instances(child))
+	return result
+
 func _find_skeleton(root : Node) -> Skeleton3D:
 	for child in root.get_children():
 		if child is Skeleton3D:
@@ -1491,7 +1584,7 @@ func _build_hud() -> void:
 	_posture_box.add_child(_posture_label)
 
 	_player_name_lbl = Label.new()
-	_player_name_lbl.text = CHAR_DISPLAY_NAMES.get(_selected_char_id, "Player")
+	_player_name_lbl.text = PlayerData.nickname if PlayerData.nickname != "" else CHAR_DISPLAY_NAMES.get(_selected_char_id, "Player")
 	_player_name_lbl.position = Vector2(6, 1)
 	_player_name_lbl.size = Vector2(208, 14)
 	_player_name_lbl.add_theme_font_size_override("font_size", 10)
@@ -2292,7 +2385,7 @@ func _refresh_stats_window() -> void:
 	for c in _stats_content.get_children():
 		c.queue_free()
 
-	var name_str : String = CHAR_DISPLAY_NAMES.get(_selected_char_id, "Player")
+	var name_str : String = PlayerData.nickname if PlayerData.nickname != "" else CHAR_DISPLAY_NAMES.get(_selected_char_id, "Player")
 	_add_stat_header(name_str + "  —  Level " + str(level))
 	_add_stat_row("Class", character_class.to_upper())
 	_add_stat_row("XP", "%d / %d" % [int(exp_points), int(exp_needed)])
@@ -2752,7 +2845,7 @@ func _on_chat_submit(text : String) -> void:
 		_chat_input.release_focus()
 		return
 	# Display locally in general chat
-	var nick : String = CHAR_DISPLAY_NAMES.get(_selected_char_id, "Player")
+	var nick : String = PlayerData.nickname if PlayerData.nickname != "" else CHAR_DISPLAY_NAMES.get(_selected_char_id, "Player")
 	_chat_general_log.append_text("[color=cyan]" + nick + ":[/color] " + text + "\n")
 	# Send via Relay
 	if Relay and Relay.has_method("send_game_data"):
