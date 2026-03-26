@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://4g04ipb2tc1d" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_Normal.jpg" id="11_terrain_normal"]
 [ext_resource type="Texture2D" uid="uid://d2n4qxi6jeyx4" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_Roughness.jpg" id="12_terrain_rough"]
 [ext_resource type="Texture2D" uid="uid://bp7p6cp4tyeqv" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_AO.jpg" id="13_terrain_ao"]
-[ext_resource type="PackedScene" uid="uid://dd0wjxjw4lhip" path="res://Coronet/Terminal/Meshy_AI_Data_Terminal_Module_0323130107_texture.fbx" id="14_e2oyx"]
+[ext_resource type="PackedScene" uid="uid://dd0wjxjw4lhip" path="res://Coronet/buildings/Terminal/Meshy_AI_Data_Terminal_Module_0323130107_texture.fbx" id="14_e2oyx"]
 [ext_resource type="PackedScene" uid="uid://cx7y2m5yo3tt0" path="res://Coronet/Mounts/landspeeder/Meshy_AI_Nebula_Voyager_0323130742_texture.fbx" id="15_4hl71"]
 [ext_resource type="PackedScene" uid="uid://bwcv2et1c1k1k" path="res://Coronet/buildings/building1/Meshy_AI_A_building_with_light_0323141306_texture.fbx" id="16_ac3t0"]
 [ext_resource type="PackedScene" uid="uid://d2q0jo17xer45" path="res://Coronet/buildings/b7/bluebuilding.fbx" id="16_ikke8"]

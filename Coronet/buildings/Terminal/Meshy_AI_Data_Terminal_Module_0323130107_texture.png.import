@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bnkirjknny7o8"
-path="res://.godot/imported/Meshy_AI_Data_Terminal_Module_0323130107_texture.png-ab20488f33235cec4cf01ac0df9831ef.ctex"
+path="res://.godot/imported/Meshy_AI_Data_Terminal_Module_0323130107_texture.png-96b71966f48f06f68de29e5cdeaeb8de.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Coronet/Terminal/Meshy_AI_Data_Terminal_Module_0323130107_texture.png"
-dest_files=["res://.godot/imported/Meshy_AI_Data_Terminal_Module_0323130107_texture.png-ab20488f33235cec4cf01ac0df9831ef.ctex"]
+source_file="res://Coronet/buildings/Terminal/Meshy_AI_Data_Terminal_Module_0323130107_texture.png"
+dest_files=["res://.godot/imported/Meshy_AI_Data_Terminal_Module_0323130107_texture.png-96b71966f48f06f68de29e5cdeaeb8de.ctex"]
 
 [params]
 

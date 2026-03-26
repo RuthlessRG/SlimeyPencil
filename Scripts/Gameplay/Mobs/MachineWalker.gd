@@ -270,34 +270,18 @@ func _do_mob_attack() -> void:
 			"miss":
 				player._spawn_damage_text(player._active, "MISS", Color(0.7, 0.7, 0.7))
 				player._log_combat("[color=gray]" + mob_name + " misses you[/color]")
-				player._play_anim("dodge")
-				var dodge_ap_m = player._get_active_anim()
-				if dodge_ap_m and dodge_ap_m.has_animation("dodge"):
-					player._attack_anim_timer = dodge_ap_m.get_animation("dodge").length
-				else:
-					player._attack_anim_timer = 2.0
-				player._anim_state = "attack"
 			"dodge":
 				player._spawn_damage_text(player._active, "DODGE", Color(0.3, 0.8, 1.0))
 				player._log_combat("[color=cyan]You dodge " + mob_name + "'s attack![/color]")
-				player._play_anim("dodge")
-				var dodge_ap_d = player._get_active_anim()
-				if dodge_ap_d and dodge_ap_d.has_animation("dodge"):
-					player._attack_anim_timer = dodge_ap_d.get_animation("dodge").length
-				else:
-					player._attack_anim_timer = 2.0
-				player._anim_state = "attack"
 			"block":
 				var reduction : float = result.get("reduction", 0.75)
 				var dmg := (attack_damage + randf_range(-3.0, 5.0)) * (1.0 - reduction)
-				player.ham_health -= dmg
-				player.ham_health = maxf(0.0, player.ham_health)
+				player._tgt_take_damage(player._active, dmg, "health")
 				player._spawn_damage_text(player._active, str(int(dmg)), Color(1.0, 0.6, 0.2))
 				player._log_combat("[color=orange]You block " + mob_name + "! (" + str(int(dmg)) + " dmg)[/color]")
 			_:  # hit
 				var dmg := attack_damage + randf_range(-3.0, 5.0)
-				player.ham_health -= dmg
-				player.ham_health = maxf(0.0, player.ham_health)
+				player._tgt_take_damage(player._active, dmg, "health")
 				player._spawn_damage_text(player._active, str(int(dmg)), Color(1, 0.3, 0.3))
 				player._log_combat("[color=red]" + mob_name + " hits you for " + str(int(dmg)) + " damage[/color]")
 				# Chance to inflict wounds
@@ -305,6 +289,18 @@ func _do_mob_attack() -> void:
 					var wound_amt := randf_range(player.WOUND_AMOUNT_MIN, player.WOUND_AMOUNT_MAX)
 					player.apply_wound("health", wound_amt)
 					player._log_combat("[color=gray]You suffer %d health wounds![/color]" % int(wound_amt))
+
+		# Player auto-retaliates when attacked
+		if not player._auto_attacking and player._current_target == null:
+			var atk_range : float = player.ATTACK_RANGE_MELEE if player.character_class == "melee" else player.ATTACK_RANGE_RANGED
+			var p_dist : float = player._active.global_position.distance_to(global_position)
+			if p_dist <= atk_range:
+				player._current_target = self
+				player._auto_attacking = true
+				player._in_combat = true
+				player._attack_timer = 0.0
+				player._update_target_indicator()
+				player._log_combat("[color=yellow]Retaliating against " + mob_name + "![/color]")
 
 func _find_player() -> Node:
 	var parent := get_parent()

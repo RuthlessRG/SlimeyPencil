@@ -5,64 +5,28 @@ extends Node2D
 
 # ── Skin definitions (one per color variant) ───────────────────────
 const SKINS := {
-	"CloudTrooper": {
-		"display_name": "Cloud Trooper",
-		"fbx": "res://Coronet/charactercolors/CloudTrooper/Meshy_AI_Azure_Sentinel_biped/Meshy_AI_Azure_Sentinel_biped_Animation_Walking_withSkin.fbx",
-		"color": Color(0.70, 0.82, 0.95),
-		"offset": Vector3.ZERO,
-	},
-	"CyberBH": {
-		"display_name": "Cyber BH",
-		"fbx": "res://Coronet/charactercolors/CyberBH/Meshy_AI_Azure_Sentinel_0324195504_texture_fbx/Meshy_AI_Azure_Sentinel_0324195504_texture.fbx",
-		"color": Color(0.20, 0.80, 0.92),
+	"TindremicSteel": {
+		"display_name": "Tindremic Steel",
+		"fbx": "res://Coronet/Character/Skins/TindremicSteel/Meshy_AI__0325134432_texture_fbx/Meshy_AI__0325134432_texture.fbx",
+		"color": Color(0.60, 0.62, 0.68),
 		"offset": Vector3(0.0, 0.85, 0.0),
 	},
-	"DarkForest": {
-		"display_name": "Dark Forest",
-		"fbx": "res://Coronet/charactercolors/DarkForest/Meshy_AI_Azure_Sentinel_0324195217_texture_fbx/Meshy_AI_Azure_Sentinel_0324195217_texture.fbx",
-		"color": Color(0.22, 0.50, 0.28),
+	"CyberHunter": {
+		"display_name": "Cyber Hunter",
+		"fbx": "res://Coronet/Character/Skins/CyberHunter/Meshy_AI__0325135932_texture_fbx/Meshy_AI__0325135932_texture_fbx/Meshy_AI__0325135932_texture.fbx",
+		"color": Color(0.20, 0.80, 0.92),
 		"offset": Vector3(0.0, 0.85, 0.0),
 	},
 	"DesertStorm": {
 		"display_name": "Desert Storm",
-		"fbx": "res://Coronet/charactercolors/DesertStorm/Meshy_AI_Azure_Sentinel_0324195344_texture_fbx/Meshy_AI_Azure_Sentinel_0324195344_texture.fbx",
+		"fbx": "res://Coronet/Character/Skins/DesertStorm/Meshy_AI__0325135607_texture_fbx/Meshy_AI__0325135607_texture_fbx/Meshy_AI__0325135607_texture.fbx",
 		"color": Color(0.88, 0.78, 0.52),
-		"offset": Vector3(0.0, 0.85, 0.0),
-	},
-	"MoltenCore": {
-		"display_name": "Molten Core",
-		"fbx": "res://Coronet/charactercolors/MoltenCore/Meshy_AI_Azure_Sentinel_0324195410_texture_fbx/Meshy_AI_Azure_Sentinel_0324195410_texture.fbx",
-		"color": Color(0.92, 0.38, 0.15),
 		"offset": Vector3(0.0, 0.85, 0.0),
 	},
 	"RedWedding": {
 		"display_name": "Red Wedding",
-		"fbx": "res://Coronet/charactercolors/RedWedding/Meshy_AI_Azure_Sentinel_biped/Meshy_AI_Azure_Sentinel_biped_Animation_Walking_withSkin.fbx",
+		"fbx": "res://Coronet/Character/Skins/RedWedding/Meshy_AI__0325135906_texture_fbx/Meshy_AI__0325135906_texture_fbx/Meshy_AI__0325135906_texture.fbx",
 		"color": Color(0.88, 0.18, 0.22),
-		"offset": Vector3.ZERO,
-	},
-	"Silverium": {
-		"display_name": "Silverium",
-		"fbx": "res://Coronet/charactercolors/Silverium/Meshy_AI_Azure_Sentinel_0324195433_texture_fbx/Meshy_AI_Azure_Sentinel_0324195433_texture.fbx",
-		"color": Color(0.75, 0.78, 0.84),
-		"offset": Vector3(0.0, 0.85, 0.0),
-	},
-	"GilleCamo": {
-		"display_name": "Gille Camo",
-		"fbx": "res://Coronet/charactercolors/GilleCamo/Meshy_AI_Azure_Sentinel_0325071735_texture_fbx/Meshy_AI_Azure_Sentinel_0325071735_texture.fbx",
-		"color": Color(0.45, 0.55, 0.35),
-		"offset": Vector3(0.0, 0.85, 0.0),
-	},
-	"Tron": {
-		"display_name": "Tron",
-		"fbx": "res://Coronet/charactercolors/Tron/Meshy_AI_Azure_Sentinel_0325070913_texture_fbx/Meshy_AI_Azure_Sentinel_0325070913_texture.fbx",
-		"color": Color(0.10, 0.85, 0.95),
-		"offset": Vector3(0.0, 0.85, 0.0),
-	},
-	"TindremicSteel": {
-		"display_name": "Tindremic Steel",
-		"fbx": "res://Coronet/charactercolors/TindremicSteel/Meshy_AI_Azure_Sentinel_0325070948_texture_fbx/Meshy_AI_Azure_Sentinel_0325070948_texture.fbx",
-		"color": Color(0.60, 0.62, 0.68),
 		"offset": Vector3(0.0, 0.85, 0.0),
 	},
 }
@@ -205,9 +169,9 @@ func _build_ui() -> void:
 	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 
 	var cam := Camera3D.new()
-	cam.position = Vector3(0, 1.0, 3.2)
+	cam.position = Vector3(0, 1.0, 4.0)
 	cam.rotation.x = deg_to_rad(-5.5)
-	cam.fov = 38
+	cam.fov = 35
 	_viewport.add_child(cam)
 
 	var light := DirectionalLight3D.new()

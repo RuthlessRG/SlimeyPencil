@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dd0wjxjw4lhip"
-path="res://.godot/imported/Meshy_AI_Data_Terminal_Module_0323130107_texture.fbx-02ee708c15d15ba6507933a130aa6416.scn"
+path="res://.godot/imported/Meshy_AI_Data_Terminal_Module_0323130107_texture.fbx-c0090c67a9312a811bf5b4c864cec58c.scn"
 
 [deps]
 
-source_file="res://Coronet/Terminal/Meshy_AI_Data_Terminal_Module_0323130107_texture.fbx"
-dest_files=["res://.godot/imported/Meshy_AI_Data_Terminal_Module_0323130107_texture.fbx-02ee708c15d15ba6507933a130aa6416.scn"]
+source_file="res://Coronet/buildings/Terminal/Meshy_AI_Data_Terminal_Module_0323130107_texture.fbx"
+dest_files=["res://.godot/imported/Meshy_AI_Data_Terminal_Module_0323130107_texture.fbx-c0090c67a9312a811bf5b4c864cec58c.scn"]
 
 [params]
 
