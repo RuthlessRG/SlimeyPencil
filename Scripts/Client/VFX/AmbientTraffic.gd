@@ -4,46 +4,20 @@ extends Node3D
 ## Creates a bustling sci-fi city feel with varied ship types, speeds, heights.
 
 const SHIP_MODELS := [
-	"res://Coronet/Mounts/skinnyfliesoffscreen/space ship.FBX.fbx",
 	"res://Coronet/Mounts/spidershipgood/animated-sci_fi_ship.glb",
 	"res://Coronet/Mounts/transport/Transport Shuttle_fbx.fbx",
-	"res://Coronet/Mounts/coalidgood/source/Spaceship COLAID1 50k.fbx",
-	"res://Coronet/Mounts/newshipstry/Meshy_AI_Create_war_spaceship_0324031412_texture_fbx/Meshy_AI_Create_war_spaceship_0324031412_texture.fbx",
-	"res://Coronet/Mounts/newshipstry/Meshy_AI_Small_silver_spaceshi_0324031401_texture_fbx/Meshy_AI_Small_silver_spaceshi_0324031401_texture.fbx",
-	"res://Coronet/Mounts/newshipstry/Meshy_AI_Spaceship_Explorer_0324031351_texture_fbx/Meshy_AI_Spaceship_Explorer_0324031351_texture.fbx",
-	"res://Coronet/Mounts/newshipstry/Meshy_AI_Spaceship_Model_0324031223_texture_fbx/Meshy_AI_Spaceship_Model_0324031223_texture.fbx",
-	"res://Coronet/Mounts/newshipstry/Meshy_AI_a_spaceship_0324032111_texture_fbx/Meshy_AI_a_spaceship_0324032111_texture.fbx",
-	"res://Coronet/Mounts/newshipstry/Meshy_AI_fighter_space_ship_0324031756_texture_fbx/Meshy_AI_fighter_space_ship_0324031756_texture.fbx",
 ]
 
 # Ship scales — tuned per model
 const SHIP_SCALES := [
-	0.3,   # 0 skinny ship
-	0.4,   # 1 spider ship
-	0.04,  # 2 transport shuttle
-	0.03,  # 3 colaid
-	0.5,   # 4 war spaceship (meshy)
-	0.5,   # 5 small silver (meshy)
-	0.5,   # 6 explorer (meshy)
-	0.5,   # 7 spaceship model (meshy)
-	0.5,   # 8 a spaceship (meshy)
-	0.5,   # 9 fighter (meshy)
+	0.4,   # 0 spider ship
+	0.04,  # 1 transport shuttle
 ]
 
 # Rotation offsets — FBX forward varies per model
-# Meshy models typically face -Z, Godot forward is -Z, so 0.0 should work
-# Adjust if a ship flies sideways or backward
 const SHIP_ROT_OFFSETS := [
-	0.0,       # 0 skinny
-	PI,        # 1 spider — faces backward
-	PI,        # 2 transport — faces backward
-	0.0,       # 3 colaid — was PI but faced opposite, so 0
-	0.0,       # 4 war spaceship (meshy — should be correct)
-	0.0,       # 5 small silver (meshy)
-	0.0,       # 6 explorer (meshy)
-	0.0,       # 7 spaceship model (meshy)
-	0.0,       # 8 a spaceship (meshy)
-	0.0,       # 9 fighter (meshy)
+	PI,        # 0 spider — faces backward
+	PI,        # 1 transport — faces backward
 ]
 
 const MAX_SHIPS := 20
