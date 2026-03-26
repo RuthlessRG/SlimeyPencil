@@ -266,6 +266,13 @@ var _sprint_cooldown_timer := 0.0
 
 # ── AMBIENT MUSIC + FOOTSTEPS ─────────────────────────────
 var _music_player : AudioStreamPlayer = null
+var _combat_music_player : AudioStreamPlayer = null
+var _combat_tracks : Array = []
+var _combat_track_idx := 0
+var _combat_music_active := false
+const COMBAT_MUSIC_FADE := 1.5
+const COMBAT_MUSIC_VOL := -12.0
+const AMBIENT_MUSIC_VOL := -15.0
 var _footstep_player : AudioStreamPlayer3D = null
 var _footstep_playing := false
 
@@ -573,6 +580,7 @@ func _ready() -> void:
 	_setup_rain()
 	_setup_ambient_traffic()
 	_setup_ambient_music()
+	_setup_combat_music()
 	_setup_footsteps()
 
 # ════════════════════════════════════════════════════════════
@@ -969,6 +977,74 @@ func _setup_ambient_music() -> void:
 		_music_player.bus = "Master"
 		add_child(_music_player)
 		_music_player.play()
+
+func _setup_combat_music() -> void:
+	var s1 = load("res://Sounds/battlemusic.mp3") as AudioStream
+	var s2 = load("res://Sounds/battlemusic2.mp3") as AudioStream
+	_combat_tracks.clear()
+	if s1: _combat_tracks.append(s1)
+	if s2: _combat_tracks.append(s2)
+	_combat_music_player = AudioStreamPlayer.new()
+	_combat_music_player.volume_db = -80.0
+	_combat_music_player.bus = "Master"
+	add_child(_combat_music_player)
+
+func _start_combat_music() -> void:
+	if _combat_music_active or _combat_tracks.is_empty():
+		return
+	_combat_music_active = true
+	# Fade out ambient
+	if _music_player and _music_player.playing:
+		var tw := create_tween()
+		tw.tween_property(_music_player, "volume_db", -80.0, COMBAT_MUSIC_FADE)
+	# Play combat track
+	_combat_track_idx = 0
+	_play_combat_track()
+
+func _play_combat_track() -> void:
+	if _combat_tracks.is_empty() or _combat_music_player == null:
+		return
+	_combat_music_player.stream = _combat_tracks[_combat_track_idx]
+	_combat_music_player.volume_db = -80.0
+	_combat_music_player.play()
+	var tw := create_tween()
+	tw.tween_property(_combat_music_player, "volume_db", COMBAT_MUSIC_VOL, COMBAT_MUSIC_FADE)
+	var track_len : float = _combat_tracks[_combat_track_idx].get_length()
+	var wait := maxf(0.1, track_len - COMBAT_MUSIC_FADE)
+	get_tree().create_timer(wait).timeout.connect(_fade_combat_to_next)
+
+func _fade_combat_to_next() -> void:
+	if not _combat_music_active or _combat_music_player == null:
+		return
+	var tw := create_tween()
+	tw.tween_property(_combat_music_player, "volume_db", -80.0, COMBAT_MUSIC_FADE)
+	tw.finished.connect(func():
+		if not _combat_music_active or _combat_music_player == null:
+			return
+		_combat_music_player.stop()
+		_combat_track_idx = (_combat_track_idx + 1) % _combat_tracks.size()
+		_play_combat_track()
+	)
+
+func _stop_combat_music() -> void:
+	if not _combat_music_active:
+		return
+	_combat_music_active = false
+	# Fade out combat
+	if _combat_music_player and _combat_music_player.playing:
+		var tw := create_tween()
+		tw.tween_property(_combat_music_player, "volume_db", -80.0, COMBAT_MUSIC_FADE)
+		tw.finished.connect(func():
+			if _combat_music_player:
+				_combat_music_player.stop()
+		)
+	# Fade ambient back in
+	if _music_player:
+		_music_player.volume_db = -80.0
+		if not _music_player.playing:
+			_music_player.play()
+		var tw2 := create_tween()
+		tw2.tween_property(_music_player, "volume_db", AMBIENT_MUSIC_VOL, COMBAT_MUSIC_FADE)
 
 func _setup_footsteps() -> void:
 	_footstep_player = AudioStreamPlayer3D.new()
@@ -2842,7 +2918,7 @@ func _attach_weapon_to_hand(item: Dictionary) -> void:
 	# Position/rotation/scale relative to BoneAttachment3D (RightHand bone)
 	weapon.position = Vector3(0.239, 0.174, -0.281)
 	weapon.rotation_degrees = Vector3(18.6, 54.1, -177.9)
-	weapon.scale = Vector3(1.0, 1.0, 1.0)
+	weapon.scale = Vector3(0.8, 0.8, 0.8)
 	attachment.add_child(weapon)
 	# Apply textures from the same folder if the mesh is untextured
 	var folder := mesh_path.get_base_dir() + "/"
@@ -4469,8 +4545,13 @@ func _process(delta : float) -> void:
 	if _arm_node and state_knockdown <= 0.0:
 		_arm_node.position.y = 0.0
 
-	# Update combat state
+	# Update combat state + music
+	var was_in_combat := _in_combat
 	_in_combat = _auto_attacking and _current_target != null and is_instance_valid(_current_target)
+	if _in_combat and not was_in_combat:
+		_start_combat_music()
+	elif not _in_combat and was_in_combat:
+		_stop_combat_music()
 
 	# Combat
 	_tick_combat(delta)

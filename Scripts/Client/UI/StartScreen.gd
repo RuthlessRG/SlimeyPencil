@@ -9,6 +9,10 @@ extends Node2D
 
 var _canvas       : CanvasLayer      = null
 var _music        : AudioStreamPlayer = null
+var _music_tracks : Array = []
+var _music_idx    : int = 0
+const MUSIC_FADE_TIME := 2.0
+const MUSIC_VOLUME := -28.0
 var _user_field   : LineEdit         = null
 var _pass_field   : LineEdit         = null
 var _status_lbl   : Label            = null
@@ -31,14 +35,46 @@ func _ready() -> void:
 	Relay.connect_to_relay()
 
 func _start_music() -> void:
-	var stream = load("res://Sounds/music_start1.mp3") as AudioStream
-	if stream == null: return
-	_music            = AudioStreamPlayer.new()
-	_music.stream     = stream
-	_music.volume_db  = -28.0
-	_music.bus        = "Master"
+	var s1 = load("res://Sounds/startscreenmusic.mp3") as AudioStream
+	var s2 = load("res://Sounds/startscreenmusic2.mp3") as AudioStream
+	_music_tracks.clear()
+	if s1: _music_tracks.append(s1)
+	if s2: _music_tracks.append(s2)
+	if _music_tracks.is_empty():
+		return
+	_music = AudioStreamPlayer.new()
+	_music.volume_db = -80.0  # start silent, fade in
+	_music.bus = "Master"
 	add_child(_music)
+	_music_idx = 0
+	_play_next_track()
+
+func _play_next_track() -> void:
+	if _music_tracks.is_empty() or _music == null:
+		return
+	_music.stream = _music_tracks[_music_idx]
 	_music.play()
+	# Fade in
+	var fade_in := create_tween()
+	fade_in.tween_property(_music, "volume_db", MUSIC_VOLUME, MUSIC_FADE_TIME)
+	# Wait for track to near its end, then fade out and switch
+	var track_length : float = _music_tracks[_music_idx].get_length()
+	var wait_time := maxf(0.1, track_length - MUSIC_FADE_TIME)
+	get_tree().create_timer(wait_time).timeout.connect(_fade_to_next_track)
+
+func _fade_to_next_track() -> void:
+	if _music == null or not is_instance_valid(_music):
+		return
+	# Fade out current
+	var fade_out := create_tween()
+	fade_out.tween_property(_music, "volume_db", -80.0, MUSIC_FADE_TIME)
+	await fade_out.finished
+	if _music == null or not is_instance_valid(_music):
+		return
+	_music.stop()
+	# Advance to next track (loop)
+	_music_idx = (_music_idx + 1) % _music_tracks.size()
+	_play_next_track()
 
 # ── UI BUILD ──────────────────────────────────────────────────
 func _build_ui() -> void:
