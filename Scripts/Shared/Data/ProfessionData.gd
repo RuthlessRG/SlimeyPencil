@@ -30,7 +30,7 @@ static func get_base_stats() -> Dictionary:
 
 static func get_all_professions() -> Array:
 	return [
-		_brawler(),
+		_streetfighter(),
 		_marksman(),
 		_mma(),
 		_fencing(),
@@ -39,11 +39,11 @@ static func get_all_professions() -> Array:
 	]
 
 static func get_base_professions() -> Array:
-	return [_brawler(), _marksman()]
+	return [_streetfighter(), _marksman()]
 
 static func get_advanced_professions(base_id: String) -> Array:
 	match base_id:
-		"brawler":
+		"streetfighter":
 			return [_mma(), _fencing()]
 		"marksman":
 			return [_gunslinger(), _sniper()]
@@ -55,68 +55,44 @@ static func get_profession(prof_id: String) -> Dictionary:
 			return p
 	return {}
 
-# ── BRAWLER (Base Melee) ─────────────────────────────────────
-static func _brawler() -> Dictionary:
+# ── STREET FIGHTER (Base Melee) ──────────────────────────────
+static func _streetfighter() -> Dictionary:
 	return {
-		"id": "brawler", "name": "Brawler", "is_base": true,
-		"desc": "Close-quarters combat specialist. Foundation for all melee professions.",
+		"id": "streetfighter", "name": "Street Fighter", "is_base": true,
+		"desc": "Close-quarters combat specialist. Master the streets before advancing to MMA or Fencing.",
 		"advances_to": ["mma", "fencing"],
 		"novice": {
-			"id": "brawler_novice", "name": "Novice Brawler",
+			"id": "sf_novice", "name": "Novice Street Fighter",
 			"cost_sp": 15, "xp_type": "melee", "xp_cost": 0, "credit_cost": 0,
 			"requires": [],
-			"modifiers": {"accuracy": 5, "melee_defense": 5, "melee_damage": 3},
+			"modifiers": {"accuracy": 5, "melee_damage": 3, "melee_defense": 5},
 			"abilities": [],
+			"subtitle": "Street Fighting",
 		},
 		"disciplines": [
-			{ "name": "Unarmed", "boxes": [
-				{"id": "brawler_unarmed_01", "name": "Unarmed I", "cost_sp": 2, "xp_type": "melee", "xp_cost": 500, "credit_cost": 100, "requires": ["brawler_novice"],
-				 "modifiers": {"accuracy": 5, "melee_damage": 3}, "abilities": []},
-				{"id": "brawler_unarmed_02", "name": "Unarmed II", "cost_sp": 3, "xp_type": "melee", "xp_cost": 1500, "credit_cost": 250, "requires": ["brawler_unarmed_01"],
-				 "modifiers": {"accuracy": 8, "melee_damage": 5}, "abilities": ["dizzy_punch"]},
-				{"id": "brawler_unarmed_03", "name": "Unarmed III", "cost_sp": 4, "xp_type": "melee", "xp_cost": 4000, "credit_cost": 500, "requires": ["brawler_unarmed_02"],
-				 "modifiers": {"accuracy": 10, "melee_damage": 8}, "abilities": []},
-				{"id": "brawler_unarmed_04", "name": "Unarmed IV", "cost_sp": 5, "xp_type": "melee", "xp_cost": 8000, "credit_cost": 1000, "requires": ["brawler_unarmed_03"],
-				 "modifiers": {"accuracy": 12, "melee_damage": 10, "defense_vs_knockdown": 5}, "abilities": ["knockdown_blow"]},
-			]},
-			{ "name": "One Hand", "boxes": [
-				{"id": "brawler_onehand_01", "name": "One Hand I", "cost_sp": 2, "xp_type": "melee", "xp_cost": 500, "credit_cost": 100, "requires": ["brawler_novice"],
-				 "modifiers": {"accuracy": 5, "melee_damage": 4, "dodge": 2}, "abilities": []},
-				{"id": "brawler_onehand_02", "name": "One Hand II", "cost_sp": 3, "xp_type": "melee", "xp_cost": 1500, "credit_cost": 250, "requires": ["brawler_onehand_01"],
-				 "modifiers": {"accuracy": 8, "melee_damage": 6, "dodge": 4}, "abilities": ["riposte"]},
-				{"id": "brawler_onehand_03", "name": "One Hand III", "cost_sp": 4, "xp_type": "melee", "xp_cost": 4000, "credit_cost": 500, "requires": ["brawler_onehand_02"],
-				 "modifiers": {"accuracy": 10, "melee_damage": 8, "dodge": 6}, "abilities": []},
-				{"id": "brawler_onehand_04", "name": "One Hand IV", "cost_sp": 5, "xp_type": "melee", "xp_cost": 8000, "credit_cost": 1000, "requires": ["brawler_onehand_03"],
-				 "modifiers": {"accuracy": 12, "melee_damage": 10, "dodge": 8, "block": 3}, "abilities": ["blade_flurry"]},
-			]},
-			{ "name": "Two Hand", "boxes": [
-				{"id": "brawler_twohand_01", "name": "Two Hand I", "cost_sp": 2, "xp_type": "melee", "xp_cost": 500, "credit_cost": 100, "requires": ["brawler_novice"],
-				 "modifiers": {"accuracy": 4, "melee_damage": 6, "melee_defense": 3}, "abilities": []},
-				{"id": "brawler_twohand_02", "name": "Two Hand II", "cost_sp": 3, "xp_type": "melee", "xp_cost": 1500, "credit_cost": 250, "requires": ["brawler_twohand_01"],
-				 "modifiers": {"accuracy": 6, "melee_damage": 10, "melee_defense": 5}, "abilities": ["power_attack"]},
-				{"id": "brawler_twohand_03", "name": "Two Hand III", "cost_sp": 4, "xp_type": "melee", "xp_cost": 4000, "credit_cost": 500, "requires": ["brawler_twohand_02"],
-				 "modifiers": {"accuracy": 8, "melee_damage": 14, "melee_defense": 8}, "abilities": []},
-				{"id": "brawler_twohand_04", "name": "Two Hand IV", "cost_sp": 5, "xp_type": "melee", "xp_cost": 8000, "credit_cost": 1000, "requires": ["brawler_twohand_03"],
-				 "modifiers": {"accuracy": 10, "melee_damage": 18, "melee_defense": 10, "block": 5}, "abilities": ["cleave"]},
-			]},
-			{ "name": "Toughness", "boxes": [
-				{"id": "brawler_tough_01", "name": "Toughness I", "cost_sp": 2, "xp_type": "melee", "xp_cost": 500, "credit_cost": 100, "requires": ["brawler_novice"],
-				 "modifiers": {"melee_defense": 5, "defense_vs_knockdown": 3, "max_health_bonus": 50}, "abilities": []},
-				{"id": "brawler_tough_02", "name": "Toughness II", "cost_sp": 3, "xp_type": "melee", "xp_cost": 1500, "credit_cost": 250, "requires": ["brawler_tough_01"],
-				 "modifiers": {"melee_defense": 8, "defense_vs_knockdown": 5, "max_health_bonus": 100}, "abilities": []},
-				{"id": "brawler_tough_03", "name": "Toughness III", "cost_sp": 4, "xp_type": "melee", "xp_cost": 4000, "credit_cost": 500, "requires": ["brawler_tough_02"],
-				 "modifiers": {"melee_defense": 10, "defense_vs_knockdown": 8, "max_health_bonus": 150}, "abilities": []},
-				{"id": "brawler_tough_04", "name": "Toughness IV", "cost_sp": 5, "xp_type": "melee", "xp_cost": 8000, "credit_cost": 1000, "requires": ["brawler_tough_03"],
-				 "modifiers": {"melee_defense": 12, "defense_vs_knockdown": 12, "defense_vs_dizzy": 5, "max_health_bonus": 200}, "abilities": []},
+			{ "name": "Street Fighter", "boxes": [
+				{"id": "sf_01", "name": "Street Fighter I", "cost_sp": 2, "xp_type": "melee", "xp_cost": 500, "credit_cost": 100, "requires": ["sf_novice"],
+				 "modifiers": {"accuracy": 5, "melee_damage": 5, "dodge": 3}, "abilities": [],
+				 "subtitle": "Street Fighting"},
+				{"id": "sf_02", "name": "Street Fighter II", "cost_sp": 3, "xp_type": "melee", "xp_cost": 1500, "credit_cost": 250, "requires": ["sf_01"],
+				 "modifiers": {"accuracy": 8, "melee_damage": 8, "melee_defense": 5, "max_health_bonus": 100}, "abilities": ["dizzy_punch"],
+				 "subtitle": "Stunning Attack"},
+				{"id": "sf_03", "name": "Street Fighter III", "cost_sp": 4, "xp_type": "melee", "xp_cost": 4000, "credit_cost": 500, "requires": ["sf_02"],
+				 "modifiers": {"accuracy": 10, "melee_damage": 12, "dodge": 5, "defense_vs_knockdown": 5}, "abilities": ["knockdown_blow"],
+				 "subtitle": "Blinding Attack"},
+				{"id": "sf_04", "name": "Street Fighter IV", "cost_sp": 5, "xp_type": "melee", "xp_cost": 8000, "credit_cost": 1000, "requires": ["sf_03"],
+				 "modifiers": {"accuracy": 12, "melee_damage": 15, "melee_defense": 10, "block": 5}, "abilities": ["berserk"],
+				 "subtitle": "Street Fundamentals"},
 			]},
 		],
 		"master": {
-			"id": "brawler_master", "name": "Master Brawler",
+			"id": "sf_master", "name": "Master Street Fighter",
 			"cost_sp": 6, "xp_type": "melee", "xp_cost": 15000, "credit_cost": 5000,
-			"requires": ["brawler_unarmed_04", "brawler_onehand_04", "brawler_twohand_04", "brawler_tough_04"],
-			"modifiers": {"accuracy": 15, "melee_defense": 15, "melee_damage": 12, "dodge": 8, "block": 5},
-			"abilities": ["berserk"],
-			"grants_title": "Master Brawler",
+			"requires": ["sf_04"],
+			"modifiers": {"accuracy": 15, "melee_damage": 20, "dodge": 10, "counterattack": 8, "melee_defense": 15},
+			"abilities": ["finishing_move"],
+			"grants_title": "Master Street Fighter",
+			"subtitle": "Street Fighter",
 		},
 	}
 
@@ -190,11 +166,11 @@ static func _mma() -> Dictionary:
 	return {
 		"id": "mma", "name": "MMA Fighter", "is_base": false,
 		"desc": "Master of mixed martial arts. Devastating unarmed strikes and grapples.",
-		"requires_base": "brawler",
+		"requires_base": "streetfighter",
 		"novice": {
 			"id": "mma_novice", "name": "Novice MMA Fighter",
 			"cost_sp": 15, "xp_type": "melee", "xp_cost": 12000, "credit_cost": 2000,
-			"requires": ["brawler_master"],
+			"requires": ["sf_master"],
 			"modifiers": {"accuracy": 10, "melee_damage": 8, "melee_defense": 8, "defense_vs_knockdown": 5},
 			"abilities": ["spinning_kick"],
 		},
@@ -255,11 +231,11 @@ static func _fencing() -> Dictionary:
 	return {
 		"id": "fencing", "name": "Fencer", "is_base": false,
 		"desc": "Precision swordsman. Lightning fast parries and lethal ripostes.",
-		"requires_base": "brawler",
+		"requires_base": "streetfighter",
 		"novice": {
 			"id": "fencing_novice", "name": "Novice Fencer",
 			"cost_sp": 15, "xp_type": "melee", "xp_cost": 12000, "credit_cost": 2000,
-			"requires": ["brawler_master"],
+			"requires": ["sf_master"],
 			"modifiers": {"accuracy": 10, "melee_damage": 6, "dodge": 8, "block": 5},
 			"abilities": ["lunge"],
 		},

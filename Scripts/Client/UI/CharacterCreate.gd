@@ -5,46 +5,28 @@ extends Node2D
 
 # ── Skin definitions (one per color variant) ───────────────────────
 const SKINS := {
-	"CloudTrooper": {
-		"display_name": "Cloud Trooper",
-		"fbx": "res://Coronet/charactercolors/CloudTrooper/Meshy_AI_Azure_Sentinel_biped/Meshy_AI_Azure_Sentinel_biped_Animation_Walking_withSkin.fbx",
-		"color": Color(0.70, 0.82, 0.95),
-		"offset": Vector3.ZERO,
-	},
-	"CyberBH": {
-		"display_name": "Cyber BH",
-		"fbx": "res://Coronet/charactercolors/CyberBH/Meshy_AI_Azure_Sentinel_0324195504_texture_fbx/Meshy_AI_Azure_Sentinel_0324195504_texture.fbx",
-		"color": Color(0.20, 0.80, 0.92),
+	"TindremicSteel": {
+		"display_name": "Tindremic Steel",
+		"fbx": "res://Coronet/Character/Skins/TindremicSteel/Meshy_AI__0325134432_texture_fbx/Meshy_AI__0325134432_texture.fbx",
+		"color": Color(0.60, 0.62, 0.68),
 		"offset": Vector3(0.0, 0.85, 0.0),
 	},
-	"DarkForest": {
-		"display_name": "Dark Forest",
-		"fbx": "res://Coronet/charactercolors/DarkForest/Meshy_AI_Azure_Sentinel_0324195217_texture_fbx/Meshy_AI_Azure_Sentinel_0324195217_texture.fbx",
-		"color": Color(0.22, 0.50, 0.28),
+	"CyberHunter": {
+		"display_name": "Cyber Hunter",
+		"fbx": "res://Coronet/Character/Skins/CyberHunter/Meshy_AI__0325135932_texture_fbx/Meshy_AI__0325135932_texture_fbx/Meshy_AI__0325135932_texture.fbx",
+		"color": Color(0.20, 0.80, 0.92),
 		"offset": Vector3(0.0, 0.85, 0.0),
 	},
 	"DesertStorm": {
 		"display_name": "Desert Storm",
-		"fbx": "res://Coronet/charactercolors/DesertStorm/Meshy_AI_Azure_Sentinel_0324195344_texture_fbx/Meshy_AI_Azure_Sentinel_0324195344_texture.fbx",
+		"fbx": "res://Coronet/Character/Skins/DesertStorm/Meshy_AI__0325135607_texture_fbx/Meshy_AI__0325135607_texture_fbx/Meshy_AI__0325135607_texture.fbx",
 		"color": Color(0.88, 0.78, 0.52),
-		"offset": Vector3(0.0, 0.85, 0.0),
-	},
-	"MoltenCore": {
-		"display_name": "Molten Core",
-		"fbx": "res://Coronet/charactercolors/MoltenCore/Meshy_AI_Azure_Sentinel_0324195410_texture_fbx/Meshy_AI_Azure_Sentinel_0324195410_texture.fbx",
-		"color": Color(0.92, 0.38, 0.15),
 		"offset": Vector3(0.0, 0.85, 0.0),
 	},
 	"RedWedding": {
 		"display_name": "Red Wedding",
-		"fbx": "res://Coronet/charactercolors/RedWedding/Meshy_AI_Azure_Sentinel_biped/Meshy_AI_Azure_Sentinel_biped_Animation_Walking_withSkin.fbx",
+		"fbx": "res://Coronet/Character/Skins/RedWedding/Meshy_AI__0325135906_texture_fbx/Meshy_AI__0325135906_texture_fbx/Meshy_AI__0325135906_texture.fbx",
 		"color": Color(0.88, 0.18, 0.22),
-		"offset": Vector3.ZERO,
-	},
-	"Silverium": {
-		"display_name": "Silverium",
-		"fbx": "res://Coronet/charactercolors/Silverium/Meshy_AI_Azure_Sentinel_0324195433_texture_fbx/Meshy_AI_Azure_Sentinel_0324195433_texture.fbx",
-		"color": Color(0.75, 0.78, 0.84),
 		"offset": Vector3(0.0, 0.85, 0.0),
 	},
 }
@@ -187,9 +169,9 @@ func _build_ui() -> void:
 	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 
 	var cam := Camera3D.new()
-	cam.transform.origin = Vector3(0, 1.0, 3.2)
-	cam.look_at(Vector3(0, 0.7, 0))
-	cam.fov = 38
+	cam.position = Vector3(0, 1.0, 4.0)
+	cam.rotation.x = deg_to_rad(-5.5)
+	cam.fov = 35
 	_viewport.add_child(cam)
 
 	var light := DirectionalLight3D.new()
@@ -456,7 +438,7 @@ func _load_skin(idx: int) -> void:
 		_current_model = fbx.instantiate()
 		_current_model.transform = Transform3D.IDENTITY
 		_current_model.position = skin_data.get("offset", Vector3.ZERO)
-		_current_model.rotate_y(deg_to_rad(180))
+		_current_model.rotate_y(deg_to_rad(0))
 		_model_pivot.add_child(_current_model)
 
 func _on_prev_skin() -> void:
@@ -510,10 +492,10 @@ func _style_prof_btn(btn: Button, col: Color, selected: bool) -> void:
 	btn.add_theme_color_override("font_color", col if selected else Color(col.r, col.g, col.b, 0.70))
 
 func _style_create_btn() -> void:
-	var ready = _selected_profession != ""
-	_create_btn.disabled = not ready
+	var is_ready = _selected_profession != ""
+	_create_btn.disabled = not is_ready
 	var bs = StyleBoxFlat.new()
-	if ready:
+	if is_ready:
 		bs.bg_color = Color(0.06, 0.22, 0.10, 0.95)
 		bs.border_color = Color(0.20, 0.90, 0.35, 1.00)
 	else:
@@ -525,7 +507,7 @@ func _style_create_btn() -> void:
 	_create_btn.add_theme_stylebox_override("normal", bs)
 	_create_btn.add_theme_stylebox_override("disabled", bs)
 	_create_btn.add_theme_stylebox_override("hover", bsh)
-	var col = Color(0.30, 0.95, 0.45) if ready else Color(0.40, 0.40, 0.45)
+	var col = Color(0.30, 0.95, 0.45) if is_ready else Color(0.40, 0.40, 0.45)
 	_create_btn.add_theme_color_override("font_color", col)
 	_create_btn.add_theme_color_override("font_disabled_color", col)
 

@@ -8,22 +8,18 @@
 [ext_resource type="Texture2D" uid="uid://4g04ipb2tc1d" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_Normal.jpg" id="11_terrain_normal"]
 [ext_resource type="Texture2D" uid="uid://d2n4qxi6jeyx4" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_Roughness.jpg" id="12_terrain_rough"]
 [ext_resource type="Texture2D" uid="uid://bp7p6cp4tyeqv" path="res://Assets/Terrain/Concrete_Pavement_wjwjcis_4K_AO.jpg" id="13_terrain_ao"]
-[ext_resource type="PackedScene" uid="uid://dd0wjxjw4lhip" path="res://Coronet/Terminal/Meshy_AI_Data_Terminal_Module_0323130107_texture.fbx" id="14_e2oyx"]
+[ext_resource type="PackedScene" uid="uid://dd0wjxjw4lhip" path="res://Coronet/buildings/Terminal/Meshy_AI_Data_Terminal_Module_0323130107_texture.fbx" id="14_e2oyx"]
 [ext_resource type="PackedScene" uid="uid://cx7y2m5yo3tt0" path="res://Coronet/Mounts/landspeeder/Meshy_AI_Nebula_Voyager_0323130742_texture.fbx" id="15_4hl71"]
 [ext_resource type="PackedScene" uid="uid://bwcv2et1c1k1k" path="res://Coronet/buildings/building1/Meshy_AI_A_building_with_light_0323141306_texture.fbx" id="16_ac3t0"]
 [ext_resource type="PackedScene" uid="uid://d2q0jo17xer45" path="res://Coronet/buildings/b7/bluebuilding.fbx" id="16_ikke8"]
 [ext_resource type="PackedScene" uid="uid://ddl2d4qsn1m2s" path="res://Coronet/buildings/b2/Meshy_AI_building_tower_0323141416_texture.fbx" id="17_i6tfk"]
-[ext_resource type="ArrayMesh" uid="uid://d4hixqafj3fjt" path="res://Coronet/Mounts/testship2/ship04.obj" id="17_uc8yl"]
 [ext_resource type="PackedScene" uid="uid://djfplqxab657n" path="res://Coronet/buildings/b3/Meshy_AI_cyberpunk_city_store__0323141922_texture.fbx" id="19_ivbhk"]
-[ext_resource type="PackedScene" uid="uid://d0teoabofrkv3" path="res://Coronet/buildings/b10/source/Sci-fi building 4.fbx" id="19_llyn7"]
-[ext_resource type="PackedScene" uid="uid://demr7y2bllucc" path="res://Coronet/buildings/b14/source/building_01.FBX.fbx" id="20_84gth"]
 [ext_resource type="PackedScene" uid="uid://brcxqdfmpolvw" path="res://Coronet/buildings/b4/Meshy_AI_Neon_city_corner_buil_0323141934_texture.fbx" id="20_st04s"]
 [ext_resource type="PackedScene" uid="uid://bsrwok0dins6o" path="res://Coronet/buildings/b5/Meshy_AI_office_building_in_Au_0323141339_texture.fbx" id="21_0r62c"]
 [ext_resource type="PackedScene" uid="uid://domcuxbs0paro" path="res://Coronet/buildings/b17/source/2 Free Building.fbx" id="21_y4qkm"]
 [ext_resource type="PackedScene" uid="uid://c7upqwvofggme" path="res://Coronet/buildings/buildingtest/usethis/трианон.FBX" id="22_ikke8"]
 [ext_resource type="ArrayMesh" uid="uid://bxhyfqum4y756" path="res://Coronet/buildings/buildingtest/hospitalusethis/10075_Hospital Building_V1_L3.obj" id="23_ivbhk"]
 [ext_resource type="PackedScene" uid="uid://du0rov2hd5jvt" path="res://Coronet/buildings/b8/source/Sci-fi building 7.fbx" id="23_t47dy"]
-[ext_resource type="PackedScene" uid="uid://cv0ks4imt08oe" path="res://Coronet/buildings/b9/source/Sci-fi building 11.fbx" id="24_hir64"]
 [ext_resource type="PackedScene" uid="uid://dtrk8rqfrd650" path="res://Coronet/buildings/b11/source/Sci-fi building.fbx" id="25_32gix"]
 [ext_resource type="PackedScene" uid="uid://c5fo0opqrbo11" path="res://Coronet/buildings/b12/source/Sci-fi building.fbx" id="26_jhfpr"]
 [ext_resource type="PackedScene" uid="uid://dyqouwshodj87" path="res://Coronet/buildings/b15generator/source/Generator_low.fbx" id="27_oasf7"]
@@ -93,7 +89,7 @@ directional_shadow_max_distance = 80.0
 [node name="Ground" type="StaticBody3D" parent="." unique_id=709955233]
 
 [node name="GroundMesh" type="MeshInstance3D" parent="Ground" unique_id=1257531852]
-transform = Transform3D(3.06, 0, 0, 0, 3.06, 0, 0, 0, 3.06, 11.221817, 0, -56.31967)
+transform = Transform3D(3.06, 0, 0, 0, 3.06, 0, 0, 0, 3.06, 11.176405, 0.074020386, -56.444977)
 mesh = SubResource("PlaneMesh_1")
 surface_material_override/0 = SubResource("StandardMaterial3D_grass")
 
@@ -118,13 +114,16 @@ transform = Transform3D(-1.5147022, 0, 0.030035995, 0, 1.5149997, 0, -0.03003599
 transform = Transform3D(-1.28289, 0, -2.8220901, 0, 3.1, 0, 2.8220901, 0, -1.28289, 42.260803, 1.7351999, 46.298313)
 
 [node name="bluebuilding" parent="." unique_id=353157382 instance=ExtResource("16_ikke8")]
-transform = Transform3D(9.150095, 0, -2.8207064, 0, 9.574998, 0, 2.8207064, 0, 9.150095, 139.1748, -5.087122, -248.06166)
+transform = Transform3D(9.317329, 0, -2.8722596, 0, 9.75, 0, 2.8722596, 0, 9.317329, 139.1748, -5.087122, -248.06166)
 
 [node name="building1" parent="." unique_id=10888048 instance=ExtResource("16_ac3t0")]
 transform = Transform3D(-0.28172618, 0, -50.759216, 0, 64.016, 0, 50.759216, 0, -0.28172618, 284.10254, 39.138836, 49.298325)
 
 [node name="grey building" parent="." unique_id=160549197 instance=ExtResource("17_i6tfk")]
 transform = Transform3D(77.655045, 0, -36.768734, 0, 85.91996, 0, 36.768734, 0, 77.655045, 70.78078, 82.837814, -28.760906)
+
+[node name="grey building3" parent="." unique_id=733514588 instance=ExtResource("17_i6tfk")]
+transform = Transform3D(1.0886536, 0, 85.9131, 0, 85.91997, 0, -85.9131, 0, 1.0886536, -176.41159, 82.837814, -79.979095)
 
 [node name="grey building2" parent="." unique_id=1803778813 instance=ExtResource("17_i6tfk")]
 transform = Transform3D(72.97753, 0, 11.734849, 0, 73.915, 0, -11.734849, 0, 72.97753, -32.557114, 66.01083, -200.92287)
@@ -141,29 +140,30 @@ transform = Transform3D(48.72344, 0, 41.535862, 0, 64.02502, 0, -41.535862, 0, 4
 [node name="трианон" parent="." unique_id=1865062093 instance=ExtResource("22_ikke8")]
 transform = Transform3D(0.99696887, 0, 1.0111641, 0, 1.42, 0, -1.0111641, 0, 0.99696887, -15.762253, -5.8786163, -48.903046)
 
+[node name="трианон2" parent="." unique_id=1914757078 instance=ExtResource("22_ikke8")]
+transform = Transform3D(-0.9578934, 0, -1.0482554, 0, 1.4200001, 0, 1.0482554, 0, -0.9578934, 275.60687, -5.8786163, 196.25308)
+
+[node name="трианон3" parent="." unique_id=168891925 instance=ExtResource("22_ikke8")]
+transform = Transform3D(-1.1856066, 0, 0.7814961, 0, 1.4200002, 0, -0.7814961, 0, -1.1856066, -243.07768, -5.8786163, 202.66284)
+
+[node name="трианон4" parent="." unique_id=839833706 instance=ExtResource("22_ikke8")]
+transform = Transform3D(0.9137259, 0, 1.0869701, 0, 1.4200002, 0, -1.0869701, 0, 0.9137259, -252.46819, -5.8786163, -314.7016)
+
+[node name="трианон5" parent="." unique_id=484578942 instance=ExtResource("22_ikke8")]
+transform = Transform3D(1.2169094, 0, -0.7317997, 0, 1.4200003, 0, 0.7317997, 0, 1.2169094, 264.68982, -5.8786163, -318.9638)
+
 [node name="bighospital" type="MeshInstance3D" parent="." unique_id=649154324]
 transform = Transform3D(-0.00026180138, -0.02999721, -0.00031415708, -4.743821e-11, -0.000314169, 0.029998355, -0.02999886, 0.00026178698, 2.7416154e-06, -127.413635, -21.143847, 75.018265)
 mesh = ExtResource("23_ivbhk")
 
-[node name="ship2" type="MeshInstance3D" parent="." unique_id=1008777032]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 159.87141, 1.9856148, 117.032616)
-mesh = ExtResource("17_uc8yl")
-skeleton = NodePath("../Ground")
-
 [node name="vehiclemount2" parent="." unique_id=2059327579 instance=ExtResource("2_dkyxw")]
 transform = Transform3D(0.25946915, 0, 8.681123, 0, 8.685, 0, -8.681123, 0, 0.25946915, 137.87132, 4.697813, 103.478836)
 
-[node name="Sci-fi building 4" parent="." unique_id=48706583 instance=ExtResource("19_llyn7")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -251.95483, 18.567295, 15.218369)
-
-[node name="building_01_FBX" parent="." unique_id=251274908 instance=ExtResource("20_84gth")]
-transform = Transform3D(196.8166, 0, -14.363487, 0, 197.34003, 0, 14.363487, 0, 196.8166, 106.42926, -0.7181244, -199.98755)
-
 [node name="Meshy_AI_A_building_with_light_0323141306_texture" parent="." unique_id=1569246641 instance=ExtResource("16_ac3t0")]
-transform = Transform3D(-60.4544, 0, -17.88675, 0, 85.3069, 0, 17.88675, 0, -60.4544, -4.9751835, 51.20897, -238.7121)
+transform = Transform3D(-62.799683, 0, -5.5561123, 0, 85.3069, 0, 5.5561123, 0, -62.799683, 4.732649, 51.20897, -244.81725)
 
 [node name="2 Free Building" parent="." unique_id=1404407194 instance=ExtResource("21_y4qkm")]
-transform = Transform3D(100.12135, 0, -5.077183, 0, 100.249985, 0, 5.077183, 0, 100.12135, -210.01971, -3.4364948, -18.27224)
+transform = Transform3D(100.22363, 0, -2.2988925, 0, 100.24997, 0, 2.2988925, 0, 100.22363, -210.01971, -3.4364948, -18.27224)
 
 [node name="vehiclemount" parent="." unique_id=1651523641 instance=ExtResource("2_dkyxw")]
 transform = Transform3D(-0.66509545, 0, -8.659496, 0, 8.685, 0, 8.659496, 0, -0.66509545, -57.83204, 4.697813, 41.641533)
@@ -173,16 +173,16 @@ transform = Transform3D(0.255, 0, 0, 0, 0.255, 0, 0, 0, 0.255, 162.31317, 1361.7
 skeleton = NodePath("../Ground")
 
 [node name="Sci-fi building 7" parent="." unique_id=1149085440 instance=ExtResource("23_t47dy")]
-transform = Transform3D(1.2384717, 0, 0.12732826, 0, 1.2449995, 0, -0.12732826, 0, 1.2384717, -188.92627, 6.4189243, -182.21307)
-
-[node name="Sci-fi building 11" parent="." unique_id=1333944864 instance=ExtResource("24_hir64")]
-transform = Transform3D(0.6768064, 0, 0.47176045, 0, 0.82499987, 0, -0.47176045, 0, 0.6768064, 162.74962, -1.659298, -160.99847)
+transform = Transform3D(1.4274756, 0, 0.1467599, 0, 1.435, 0, -0.1467599, 0, 1.4274756, -188.92627, 6.4189243, -182.21307)
 
 [node name="Sci-fi building" parent="." unique_id=1120936341 instance=ExtResource("25_32gix")]
-transform = Transform3D(0.5100678, 0, -0.9689458, 0, 1.095, 0, 0.9689458, 0, 0.5100678, 71.195885, -5.2312775, 104.90698)
+transform = Transform3D(0.638167, 0, -1.2122883, 0, 1.37, 0, 1.2122883, 0, 0.638167, 71.195885, -5.2312775, 104.90698)
+
+[node name="Sci-fi building3" parent="." unique_id=351495393 instance=ExtResource("25_32gix")]
+transform = Transform3D(1.4834648, 0, -0.79909736, 0, 1.1729997, 0, 0.79909736, 0, 1.4834648, -264.0034, -3.0504608, 106.33273)
 
 [node name="Sci-fi building2" parent="." unique_id=2053271870 instance=ExtResource("26_jhfpr")]
-transform = Transform3D(-0.7914227, 0, -0.14722452, 0, 0.8049998, 0, 0.14722452, 0, -0.7914227, 158.8847, 1.4036102, 65.636566)
+transform = Transform3D(-0.5554112, 0, 0.9494833, 0, 1.1, 0, -0.9494833, 0, -0.5554112, 174.31442, 1.4036102, 82.27019)
 
 [node name="Generator_low" parent="." unique_id=1626329665 instance=ExtResource("27_oasf7")]
 transform = Transform3D(2.92, 0, 0, 0, 2.92, 0, 0, 0, 2.92, -23.34126, 0.98218673, 30.5456)
@@ -209,10 +209,13 @@ transform = Transform3D(-0.13193464, 0, 3.467491, 0, 3.47, 0, -3.467491, 0, -0.1
 transform = Transform3D(-0.10754472, 0, 5.4139323, 0, 5.4150004, 0, -5.4139323, 0, -0.10754472, -131.38489, -0.68747234, 104.327446)
 
 [node name="Sketchfab_Scene" parent="." unique_id=1233168503 instance=ExtResource("38_bomax")]
-transform = Transform3D(32.534695, 0, 0.9980035, 0, 69.452, 0, -0.9980035, 0, 32.534695, 91.11777, 35.31495, -174.81715)
+transform = Transform3D(50.733738, 0, -13.148982, 0, 111.827, 0, 13.148982, 0, 50.733738, 100.29095, 39.064857, -204.56438)
 
 [node name="Building 00" parent="." unique_id=15097215 instance=ExtResource("38_krpup")]
 transform = Transform3D(-146.20976, 0, 419.78653, 0, 444.52, 0, -419.78653, 0, -146.20976, -332.10223, -0.13453674, 412.52606)
+
+[node name="Building 01" parent="." unique_id=1004371318 instance=ExtResource("38_krpup")]
+transform = Transform3D(-407.7567, 0, -177.00998, 0, 444.52005, 0, 177.00998, 0, -407.7567, 421.77423, -0.13453674, 178.82181)
 
 [node name="PSX Japanese Apartment" parent="." unique_id=634738521 instance=ExtResource("39_bomax")]
 transform = Transform3D(-2.8548114, 0, -6.522609, 0, 7.1200004, 0, 6.522609, 0, -2.8548114, 37.94492, -1.6829758, -46.677185)
@@ -234,7 +237,7 @@ transform = Transform3D(0.49, 0, 0, 0, 0.49, 0, 0, 0, 0.49, -24.781454, 1711.192
 mesh = ExtResource("37_jhfpr")
 
 [node name="Meshy_AI_a_spaceship_0324032111_texture" parent="." unique_id=1264464368 instance=ExtResource("42_aesud")]
-transform = Transform3D(15.86, 0, 0, 0, 15.86, 0, 0, 0, 15.86, 0, 11.537748, 0)
+transform = Transform3D(222.6, 0, 0, 0, 222.6, 0, 0, 0, 222.6, 0, 159.02753, 1548.8054)
 
 [node name="HubAmbience" type="AudioStreamPlayer" parent="." unique_id=845088360]
 stream = ExtResource("hub_music_1")
