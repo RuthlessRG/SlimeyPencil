@@ -9,7 +9,7 @@ extends Node
 # ═══════════════════════════════════════════════════════════════════════
 
 # ── Set USE_LOCAL_SERVER = true to connect to local Docker Desktop ────
-const USE_LOCAL_SERVER : bool   = true
+const USE_LOCAL_SERVER : bool   = false
 
 const LOCAL_HOST  : String = "localhost"
 const PROD_HOST   : String = "24.199.102.143"
